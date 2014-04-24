@@ -1,7 +1,7 @@
 {
   "name": "koop-agol",
   "version": "0.0.1",
-  "description": "An ArcGIS Online wrapper for koop ",
+  "description": "An ArcGIS Online wrapper for koop",
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -11,13 +11,15 @@
   },
   "dependencies": {
     "koop-server": "*",
-    "geohub": "0.3.0",
     "config": "~0.4.35",
-    "ejs": "~1.0.0"
+    "ejs": "~1.0.0",
+    "node.extend": "~1.0.10"
   },
   "author": "Chris Helm",
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "supertest": "~0.11.0"
+    "supertest": "~0.11.0",
+    "should": "~3.3.1",
+    "yaml": "~0.2.3"
   }
 }
