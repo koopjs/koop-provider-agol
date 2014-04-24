@@ -67,7 +67,7 @@ var Controller = extend({
   },
 
   findItemData: function(req, res){
-    var _get = function(id, item, options, callback){
+    var _get = function(id, item, key, options, callback){
        agol.find( id, function( err, data ){
         if (err) {
           callback(err, null);
@@ -77,7 +77,7 @@ var Controller = extend({
             options.layer = 0;
           }
 
-          agol.getItemData( data.host, item, options, function(error, itemJson){
+          agol.getItemData( data.host, item, key, options, function(error, itemJson){
             if (error) {
               callback( error, null);
             // if we have status return right away
@@ -98,20 +98,21 @@ var Controller = extend({
     Cache.getInfo(['agol', req.params.item, (req.params.layer || 0)].join(':'), function(err, info){
 
       var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+        
+      // sort the req.query before we hash so we are consistent 
+      var sorted_query = {};
+      _(req.query).keys().sort().each(function (key) {
+        if (key != 'url_only'){
+          sorted_query[key] = req.query[key];
+        }
+      });
+      // build the file key as an MD5 hash that's a join on the paams and look for the file 
+      var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+      var key = crypto.createHash('md5').update(toHash).digest('hex');
 
       // check format for exporting data
       if ( req.params.format ){
-        // sort the req.query before we hash so we are consistent 
-        var sorted_query = {};
-        _(req.query).keys().sort().each(function (key) {
-          if (key != 'url_only'){
-            sorted_query[key] = req.query[key];
-          }
-        });
 
-        // build the file key as an MD5 hash that's a join on the paams and look for the file 
-        var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-        var key = crypto.createHash('md5').update(toHash).digest('hex');
 
         // use the item as the file dir so we can organize exports by id
         var dir = req.params.item + '_' + ( req.params.layer || 0 );
@@ -142,7 +143,7 @@ var Controller = extend({
             // if we do then return 
             // else proceed 
           req.query.format = req.params.format;
-          _get(req.params.id, req.params.item, req.query, function( err, itemJson ){
+          _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
             if (err){
               res.send(err, 500 );
             } else if ( !itemJson.data[0].features.length ){
@@ -176,7 +177,7 @@ var Controller = extend({
           req.query.layer = req.params.layer;
         }
         // get the esri json data for the service
-        _get(req.params.id, req.params.item, req.query, function( err, itemJson ){
+        _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
             if (err) {
               res.send( err, 500 );
             } else {

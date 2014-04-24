@@ -49,7 +49,7 @@ var AGOL = function(){
   };
 
   // got the service and get the item
-  this.getItemData = function( host, itemId, options, callback ){
+  this.getItemData = function( host, itemId, hash, options, callback ){
     var self = this;
     this.getItem(host, itemId, options, function( err, itemJson ){
       
@@ -70,7 +70,7 @@ var AGOL = function(){
               if ( itemJson.type == 'Feature Collection' ){
                 self.getFeatureCollection( host + self.agol_path, itemId, itemJson, options, callback );
               } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
-                self.getFeatureService( itemId, itemJson, options, callback );
+                self.getFeatureService( itemId, itemJson, hash, options, callback );
               } else {
                 callback('Requested Item must be a Feature Collection', null);
               }
@@ -79,7 +79,7 @@ var AGOL = function(){
             if ( itemJson.type == 'Feature Collection' ){
               self.getFeatureCollection( host + self.agol_path, itemId, itemJson, options, callback );
             } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
-              self.getFeatureService( itemId, itemJson, options, callback );
+              self.getFeatureService( itemId, itemJson, hash, options, callback );
             } else {
               callback('Requested Item must be a Feature Collection', null);
             }
@@ -118,7 +118,7 @@ var AGOL = function(){
     });
   };
 
-  this.getFeatureService = function( id, itemJson, options, callback){
+  this.getFeatureService = function( id, itemJson, hash, options, callback){
     var self = this;
     if ( !itemJson.url ){
       callback( 'Missing url parameter for Feature Service Item', null );
@@ -127,7 +127,7 @@ var AGOL = function(){
       Cache.get( 'agol', id, options, function(err, entry ){
         if ( err ){
           // no data in the cache; request new data 
-          self.makeFeatureServiceRequest( id, itemJson, options, callback );
+          self.makeFeatureServiceRequest( id, itemJson, hash, options, callback );
  
         } else if ( entry && entry[0] && entry[0].status == 'processing' ){
           itemJson.data = [{features:[]}];
@@ -142,7 +142,7 @@ var AGOL = function(){
   };
 
 
-  this.makeFeatureServiceRequest = function( id, itemJson, options, callback ){
+  this.makeFeatureServiceRequest = function( id, itemJson, hash, options, callback ){
     var self = this;
     // get the ids only
     var idUrl = itemJson.url + '/' + (options.layer || 0) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
@@ -173,7 +173,7 @@ var AGOL = function(){
             self.singlePageFeatureService( id, itemJson, options, callback );
           // We HAVE to page 
           } else {
-            self.pageFeatureService( id, itemJson, idJson.count, options, callback );
+            self.pageFeatureService( id, itemJson, idJson.count, hash, options, callback );
           }
         }
       } catch (e) {
@@ -227,7 +227,7 @@ var AGOL = function(){
 
 
   // handles pagin over the feature service 
-  this.pageFeatureService = function( id, itemJson, count, options, callback ){
+  this.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
     var self = this;    
 
     // get the featureservice info 
@@ -288,7 +288,9 @@ var AGOL = function(){
           // queuse up the requests for each page 
           self.requestQueue( count, pageRequests, id, itemJson, (options.layer || 0), function(err,data){
             Tasker.taskQueue.push( {
-              key: [ 'agol', id ].join(':'),
+              dir: id + '_' + (options.layer||0),
+              hash: hash,
+              key: ['agol', id].join(":"),
               options: options
             }, function(){});
           });
