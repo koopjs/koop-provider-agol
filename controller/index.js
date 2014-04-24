@@ -139,10 +139,22 @@ var Controller = extend({
             res.send( 'No features exist for the requested FeatureService layer', 500 );
           } else {
             Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], function(err, result){
-              if (err) {
-                res.send( err, 500 );
+              if ( req.query.url_only ){
+                // check for Peechee
+                console.log(config.peechee, result);
+
+                if ( config.peechee ){
+                  config.peechee.path('', result, function(e, url){
+                    console.log('PATH', e, url);
+                    res.json({url:url});
+                  });  
+                }
               } else {
-                res.sendfile( result );
+                if (err) {
+                  res.send( err, 500 );
+                } else {
+                  res.sendfile( result );
+                }
               }
             });
           }
