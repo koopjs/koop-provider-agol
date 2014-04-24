@@ -152,7 +152,7 @@ describe('FeatureService Proxy Provider', function(){
 
       it('should return 200 when a when accessing a feature service w/more than 1000', function(done) {
           request(koop)
-            .get('/agol/arcgis/5eb31a7a8a594396965d9965465321c9')
+            .get('/agol/arcgis/5eb31a7a8a594396965d9965465321c9/1')
             .end(function(err, res){
               res.should.have.status(200);
               done();
