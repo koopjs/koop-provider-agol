@@ -7,7 +7,7 @@ global.config = config;
 
 before(function (done) {
     Cache.db = PostGIS.connect( config.db.postgis.conn );
-    try { koop.register(require("../index.js")); } catch(e){}
+    try { koop.register(require("../index.js")); } catch(e){ console.log(e)}
     done();
 });
 
