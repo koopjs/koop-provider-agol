@@ -104,7 +104,9 @@ var Controller = extend({
         // sort the req.query before we hash so we are consistent 
         var sorted_query = {};
         _(req.query).keys().sort().each(function (key) {
-          sorted_query[key] = req.query[key];
+          if (key != 'url_only'){
+            sorted_query[key] = req.query[key];
+          }
         });
 
         // build the file key as an MD5 hash that's a join on the paams and look for the file 
