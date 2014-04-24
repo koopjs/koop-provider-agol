@@ -78,7 +78,6 @@ var Controller = extend({
           }
 
           agol.getItemData( data.host, item, options, function(error, itemJson){
-            //console.log('CONTROLLER', itemJson);
             if (error) {
               callback( error, null);
             // if we have status return right away
@@ -99,82 +98,95 @@ var Controller = extend({
 
     // CHECK the time since our last cache entry 
     // if > 24 hours since; clear cache and wipe files 
-    // else move on 
+    // else move on
+    Cache.getInfo(['agol', req.params.item, (req.params.layer || 0)].join(':'), function(err, info){
 
-    // check format for exporting data
-    if ( req.params.format ){
-      // sort the req.query before we hash so we are consistent 
-      var sorted_query = {};
-      _(req.query).keys().sort().each(function (key) {
-        sorted_query[key] = req.query[key];
-      });
+      var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
 
-      // build the file key as an MD5 hash that's a join on the paams and look for the file 
-      var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-      var key = crypto.createHash('md5').update(toHash).digest('hex');
+      // check format for exporting data
+      if ( req.params.format ){
+        // sort the req.query before we hash so we are consistent 
+        var sorted_query = {};
+        _(req.query).keys().sort().each(function (key) {
+          sorted_query[key] = req.query[key];
+        });
 
-      // use the item as the file dir so we can organize exports by id
-      var dir = req.params.item + '_' + ( req.params.layer || 0 );
-      
-      var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
-      
-      // if we have a layer then append it to the query params 
-      if ( req.params.layer ) {
-        req.query.layer = req.params.layer;
-      }
+        // build the file key as an MD5 hash that's a join on the paams and look for the file 
+        var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+        var key = crypto.createHash('md5').update(toHash).digest('hex');
 
-      if (fs.existsSync( fileName )){
-        res.sendfile( fileName );
-      } else {
+        // use the item as the file dir so we can organize exports by id
+        var dir = req.params.item + '_' + ( req.params.layer || 0 );
+        
+        var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+        
+        // if we have a layer then append it to the query params 
+        if ( req.params.layer ) {
+          req.query.layer = req.params.layer;
+        }
 
-        // check the koop status table to see if we have a job running 
-          // if we do then return 
-          // else proceed 
-        req.query.format = req.params.format;
-        _get(req.params.id, req.params.item, req.query, function( err, itemJson ){
-          //console.log(itemJson.data[req.query.layer || 0]);
-          if (err){
-            res.send(err, 500 );
-          } else if ( !itemJson.data[0].features.length ){
-            res.send( 'No features exist for the requested FeatureService layer', 500 );
+        if ( fs.existsSync( fileName ) && !is_expired ){
+          if ( req.query.url_only ){
+            // check for Peechee
+            if ( peechee ){
+              peechee.path( dir, key+'.'+req.params.format, function(e, url){
+                res.json({url:url});
+              });
+            } else {
+              res.json({url: req.protocol +'://'+req.get('host') + req.originalUrl.split('?')[0]});
+            }
           } else {
-            Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], function(err, result){
-              if ( req.query.url_only ){
-                // check for Peechee
-                console.log(config.peechee, result);
-
-                if ( config.peechee ){
-                  config.peechee.path('', result, function(e, url){
-                    console.log('PATH', e, url);
-                    res.json({url:url});
-                  });  
-                }
-              } else {
-                if (err) {
-                  res.send( err, 500 );
-                } else {
-                  res.sendfile( result );
-                }
-              }
-            });
+            res.sendfile( fileName );
           }
+        } else {
+
+          // check the koop status table to see if we have a job running 
+            // if we do then return 
+            // else proceed 
+          req.query.format = req.params.format;
+          _get(req.params.id, req.params.item, req.query, function( err, itemJson ){
+            if (err){
+              res.send(err, 500 );
+            } else if ( !itemJson.data[0].features.length ){
+              res.send( 'No features exist for the requested FeatureService layer', 500 );
+            } else {
+              Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], function(err, result){
+                if ( req.query.url_only ){
+                  // check for Peechee
+                  if ( peechee ){
+                    peechee.path( dir, key+'.'+req.params.format, function(e, url){
+                      res.json({url:url});
+                    });  
+                  } else {
+                    res.json({url: req.protocol +'://'+req.get('host') + req.originalUrl.split('?')[0]});
+                  }
+                } else {
+                  if (err) {
+                    res.send( err, 500 );
+                  } else {
+                    res.sendfile( result );
+                  }
+                }
+              });
+            }
+          });
+        }
+
+      } else {
+        // if we have a layer then append it to the query params 
+        if ( req.params.layer ) {
+          req.query.layer = req.params.layer;
+        }
+        // get the esri json data for the service
+        _get(req.params.id, req.params.item, req.query, function( err, itemJson ){
+            if (err) {
+              res.send( err, 500 );
+            } else {
+              res.send( itemJson );
+            }
         });
       }
-
-    } else {
-      // if we have a layer then append it to the query params 
-      if ( req.params.layer ) {
-        req.query.layer = req.params.layer;
-      }
-      // get the esri json data for the service
-      _get(req.params.id, req.params.item, req.query, function( err, itemJson ){
-          if (err) {
-            res.send( err, 500 );
-          } else {
-            res.send( itemJson );
-          }
-      });
-    }
+    });
   },
 
   del: function(req, res){
