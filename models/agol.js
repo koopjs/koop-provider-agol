@@ -144,6 +144,13 @@ var AGOL = function(){
 
   this.makeFeatureServiceRequest = function( id, itemJson, options, callback ){
     var self = this;
+
+    // check the last char on the url
+    // protects us from urls registered with layers already in the url 
+    if ( parseInt(itemJson.url.charAt( itemJson.url.length-1 )) >= 0 ){
+      itemJson.url = itemJson.url.substring(0, itemJson.url.length - 2);
+    }
+
     // get the ids only
     var idUrl = itemJson.url + '/' + (options.layer || 0) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
 
@@ -169,15 +176,17 @@ var AGOL = function(){
             callback( null, itemJson );
 
           // Count is low 
-          } else if (idJson.count < 1000){
+          } else if ( idJson.count < 1000 ){
             self.singlePageFeatureService( id, itemJson, options, callback );
           // We HAVE to page 
-          } else {
+          } else if ( idJson.count >= 1000 ){
             self.pageFeatureService( id, itemJson, idJson.count, options, callback );
+          } else {
+            callback( 'Unable to count features, make sure the layer you requested exists', null );
           }
         }
       } catch (e) {
-        callback( 'Unknown layer, make the layer you requested exists', null );
+        callback( 'Unknown layer, make sure the layer you requested exists', null );
       }
     });
   };
@@ -230,6 +239,9 @@ var AGOL = function(){
   this.pageFeatureService = function( id, itemJson, count, options, callback ){
     var self = this;    
 
+    // check to make sure the layer is not in the url
+    console.log(itemJson.url);
+
     // get the featureservice info 
     self.getFeatureServiceInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
       // creates the empty table
@@ -263,7 +275,7 @@ var AGOL = function(){
             pageRequests;
 
           // build legit offset based page requests 
-          if ( serviceInfo.advancedQueryCapabilities.supportsPagination ){
+          if ( serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
 
             var nPages = Math.ceil(count / maxCount);
             pageRequests = self.buildOffsetPages( nPages, itemJson.url, maxCount, options );
