@@ -180,7 +180,7 @@ var AGOL = function(){
             self.singlePageFeatureService( id, itemJson, options, callback );
           // We HAVE to page 
           } else if ( idJson.count >= 1000 ){
-            self.pageFeatureService( id, itemJson, idJson.count, options, callback );
+            self.pageFeatureService( id, itemJson, idJson.count, hash, options, callback );
           } else {
             callback( 'Unable to count features, make sure the layer you requested exists', null );
           }
@@ -238,9 +238,6 @@ var AGOL = function(){
   // handles pagin over the feature service 
   this.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
     var self = this;    
-
-    // check to make sure the layer is not in the url
-    console.log(itemJson.url);
 
     // get the featureservice info 
     self.getFeatureServiceInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
