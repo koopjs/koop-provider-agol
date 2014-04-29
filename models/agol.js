@@ -166,7 +166,7 @@ var AGOL = function(){
         if (idJson.error){
           callback( idJson.error.message + ': ' + idUrl, null );
         } else {
-          //console.log('COUNT', idJson.count, id);
+          console.log('COUNT', idJson.count, id);
 
           // WHEN COUNT IS 0 - No Features 
           if (idJson.count == 0){
@@ -296,6 +296,7 @@ var AGOL = function(){
 
           // queuse up the requests for each page 
           self.requestQueue( count, pageRequests, id, itemJson, (options.layer || 0), function(err,data){
+            console.log('finished');
             Tasker.taskQueue.push( {
               dir: id + '_' + (options.layer||0),
               hash: hash,

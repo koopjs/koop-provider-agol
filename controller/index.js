@@ -113,6 +113,8 @@ var Controller = extend({
       // check format for exporting data
       if ( req.params.format ){
 
+        // change geojson to json
+        req.params.format = req.params.format.replace('geojson', 'json');
 
         // use the item as the file dir so we can organize exports by id
         var dir = req.params.item + '_' + ( req.params.layer || 0 );
