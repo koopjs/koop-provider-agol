@@ -274,7 +274,7 @@ var AGOL = function(){
           itemJson.expires_at = expiration;
           callback(null, itemJson);
 
-          var maxCount = parseInt(serviceInfo.maxRecordCount),
+          var maxCount = parseInt(serviceInfo.maxRecordCount) || 1000,
             pageRequests;
 
           // build legit offset based page requests 
@@ -283,10 +283,9 @@ var AGOL = function(){
             var nPages = Math.ceil(count / maxCount);
             pageRequests = self.buildOffsetPages( nPages, itemJson.url, maxCount, options );
 
-          } else {
+          } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
             var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField );
-
             request.get( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
               pageRequests = self.buildObjectIDPages(
@@ -298,11 +297,20 @@ var AGOL = function(){
               );
             });
 
+          } else {
+            // default to sequential objectID paging
+            pageRequests = self.buildObjectIDPages(
+                itemJson.url,
+                0,
+                count,
+                maxCount,
+                options
+            );
           }
 
           // queuse up the requests for each page 
           self.requestQueue( count, pageRequests, id, itemJson, (options.layer || 0), function(err,data){
-            console.log('finished');
+            //console.log('done');
             Tasker.taskQueue.push( {
               dir: id + '_' + (options.layer||0),
               hash: hash,
@@ -346,7 +354,7 @@ var AGOL = function(){
     var reqs = [], 
       pageMax;
 
-    var pages = Math.ceil(max / maxCount);
+    var pages = ( max == maxCount ) ? max : Math.ceil(max / maxCount);
 
     for (i=1; i < pages+1; i++){
       pageMax = i*maxCount;
@@ -397,6 +405,7 @@ var AGOL = function(){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
+      //console.log('get', task.req, i++);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body);
@@ -408,6 +417,7 @@ var AGOL = function(){
     }, 4);
 
     // add all the page urls to the queue 
+    //console.log(reqs);
     q.push(reqs, function(err){ if (err) console.log(err); });
 
   };
