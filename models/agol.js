@@ -196,39 +196,44 @@ var AGOL = function(){
   // make a request to a single page feature service 
   this.singlePageFeatureService = function( id, itemJson, options, callback ){
     var self = this;
-    // we can the data in one shot
-    var url = itemJson.url + '/' + (options.layer || 0) + '/query?outSR=4326&where=1=1&f=json&outFields=*';
-    if (options.geometry){
-      url += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
-    }
-    // get the features 
-    request.get(url, function(err, data ){
-      if (err) {
-        callback(err, null);
-      } else {
-        try {
-          var json = {features: JSON.parse( data.body ).features};
-          // convert to GeoJSON 
-          GeoJSON.fromEsri( json, function(err, geojson){
+    // get the featureservice info 
+    this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
 
-            geojson.name = itemJson.name;
-            geojson.updated_at = itemJson.modified;
-            geojson.expires_at = new Date().getTime() + self.cacheLife;
-
-            // save the data 
-            Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
-              if ( success ) {
-                itemJson.data = [geojson];
-                callback( null, itemJson );
-              } else {
-                callback( err, null );
-              }
-            });
-          });
-        } catch (e){
-          callback( 'Unable to parse Feature Service response', null );
-        }
+      // we can the data in one shot
+      var url = itemJson.url + '/' + (options.layer || 0) + '/query?outSR=4326&where=1=1&f=json&outFields=*';
+      if (options.geometry){
+        url += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
       }
+      // get the features 
+      request.get(url, function(err, data ){
+        if (err) {
+          callback(err, null);
+        } else {
+          try {
+            var json = {features: JSON.parse( data.body ).features};
+            // convert to GeoJSON 
+            GeoJSON.fromEsri( json, function(err, geojson){
+
+              geojson.name = itemJson.name;
+              geojson.updated_at = itemJson.modified;
+              geojson.expires_at = new Date().getTime() + self.cacheLife;
+              geojson.info = serviceInfo;
+
+              // save the data 
+              Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
+                if ( success ) {
+                  itemJson.data = [geojson];
+                  callback( null, itemJson );
+                } else {
+                  callback( err, null );
+                }
+              });
+            });
+          } catch (e){
+            callback( 'Unable to parse Feature Service response', null );
+          }
+        }
+      });
     });
   };
 
@@ -240,7 +245,7 @@ var AGOL = function(){
     var self = this;    
 
     // get the featureservice info 
-    self.getFeatureServiceInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
+    this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
       // creates the empty table
       Cache.remove('agol', id, {layer: (options.layer || 0)}, function(){
 
@@ -251,6 +256,7 @@ var AGOL = function(){
           updated_at: itemJson.modified,
           expires_at: expiration,
           name: itemJson.name,
+          info: serviceInfo,
           features:[]
         };
 
@@ -407,7 +413,7 @@ var AGOL = function(){
   };
 
   // Gets the feature service info 
-  this.getFeatureServiceInfo = function( url, layer, callback ){
+  this.getFeatureServiceLayerInfo = function( url, layer, callback ){
     request.get( url +'/'+ layer + '?f=json', function( err, res ){
       var json = JSON.parse( res.body );
       callback( err, json );
