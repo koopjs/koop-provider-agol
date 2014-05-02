@@ -219,8 +219,18 @@ var Controller = extend({
       if (err) {
         res.send( err, 500);
       } else {
+        // sort the req.query before we hash so we are consistent 
+        var sorted_query = {};
+        _(req.query).keys().sort().each(function (key) {
+          if (key != 'url_only'){
+            sorted_query[key] = req.query[key];
+          }
+        });
+        // build the file key as an MD5 hash that's a join on the paams and look for the file 
+        var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+        var key = crypto.createHash('md5').update(toHash).digest('hex');
         // Get the item 
-        agol.getItemData( data.host, req.params.item, req.query, function(error, itemJson){
+        agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
           if (error) {
             res.send( error, 500);
           } else {
@@ -262,9 +272,19 @@ var Controller = extend({
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
+          // sort the req.query before we hash so we are consistent 
+          var sorted_query = {};
+          _(req.query).keys().sort().each(function (key) {
+            if (key != 'url_only'){
+              sorted_query[key] = req.query[key];
+            }
+          });
+          // build the file key as an MD5 hash that's a join on the paams and look for the file 
+          var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+          var key = crypto.createHash('md5').update(toHash).digest('hex');
 
           // Get the item 
-          agol.getItemData( data.host, req.params.item, req.query, function(error, itemJson){
+          agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
             if (error) {
               res.send( error, 500);
             } else {
@@ -352,8 +372,20 @@ var Controller = extend({
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
+
+          // sort the req.query before we hash so we are consistent 
+          var sorted_query = {};
+          _(req.query).keys().sort().each(function (key) {
+            if (key != 'url_only'){
+              sorted_query[key] = req.query[key];
+            }
+          });
+          // build the file key as an MD5 hash that's a join on the paams and look for the file 
+          var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+          var key = crypto.createHash('md5').update(toHash).digest('hex');
+
           // Get the item
-          agol.getItemData( data.host, req.params.item, req.query, function(error, itemJson){
+          agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
             if (error) {
               res.send( error, 500);
             } else {
