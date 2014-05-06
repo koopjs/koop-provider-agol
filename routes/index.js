@@ -80,14 +80,9 @@ module.exports = {
     action: 'preview'
   },
 
-  'get /agol/:id/:item/tiles/:z/:x/:y.:format': {
+  'get /agol/:id/:item/:layer/tiles/:z/:x/:y.:format': {
     controller: 'agol',
     action: 'tiles'
-  },
-
-  'get /agol/:id/:item/export.:format': {
-    controller: 'agol',
-    action: 'findItemData'
   }
 
 }

@@ -67,7 +67,7 @@ var AGOL = function(){
 
           // check for infon on last edit date 
           // set is_expired to false if it hasnt changed
-          if ( info.retrieved_at && info.info && info.info.editingInfo ){
+          if ( info && info.retrieved_at && info.info && info.info.editingInfo ){
             if ( info.retrieved_at > info.info.editingInfo.lastEditDate ){
               is_expired = false;
             }

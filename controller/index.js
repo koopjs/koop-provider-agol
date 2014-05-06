@@ -328,8 +328,9 @@ var Controller = extend({
       layer = req.params.layer || 0;
 
     var _send = function( err, data ){
+      console.log(data)
       req.params.key = key + ':' + layer;
-        GeoJSON.fromEsri( data, function(err, geojson){
+        GeoJSON.fromEsri( data[0], function(err, geojson){
           Tiles.get( req.params, geojson, function(err, tile){
             if ( req.params.format == 'png'){
               res.sendfile( tile );
