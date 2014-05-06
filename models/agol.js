@@ -65,6 +65,14 @@ var AGOL = function(){
 
           var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
 
+          // check for infon on last edit date 
+          // set is_expired to false if it hasnt changed
+          if ( info.retrieved_at && info.info && info.info.editingInfo ){
+            if ( info.retrieved_at > info.info.editingInfo.lastEditDate ){
+              is_expired = false;
+            }
+          }
+
           if ( is_expired ) {
             Cache.remove('agol', itemId, options, function(err, res){
               if ( itemJson.type == 'Feature Collection' ){
@@ -218,6 +226,7 @@ var AGOL = function(){
               geojson.updated_at = itemJson.modified;
               geojson.expires_at = new Date().getTime() + self.cacheLife;
               geojson.info = serviceInfo;
+              geojson.retrieved_at = new Date().getTime(); 
 
               // save the data 
               Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
@@ -272,6 +281,7 @@ var AGOL = function(){
           status: 'processing',
           updated_at: itemJson.modified,
           expires_at: expiration,
+          retrieved_at: new Date().getTime(), 
           name: itemJson.name,
           info: serviceInfo,
           features:[]
