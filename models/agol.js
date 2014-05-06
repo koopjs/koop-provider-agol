@@ -244,8 +244,25 @@ var AGOL = function(){
   this.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
     var self = this;    
 
+    var _page = function( count, pageRequests, id, itemJson, layerId){
+      self.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
+        console.log('done');
+        Tasker.taskQueue.push( {
+          dir: id + '_' + layerId,
+          hash: hash,
+          key: ['agol', id].join(":"),
+          options: options
+        }, function(){});
+      });
+    };
+
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
+      // sanitize any single quotes in the service description
+      if (serviceInfo && serviceInfo.description){
+        serviceInfo.description = serviceInfo.description.replace(/'/g, '')
+      }
+
       // creates the empty table
       Cache.remove('agol', id, {layer: (options.layer || 0)}, function(){
 
@@ -282,19 +299,34 @@ var AGOL = function(){
 
             var nPages = Math.ceil(count / maxCount);
             pageRequests = self.buildOffsetPages( nPages, itemJson.url, maxCount, options );
+            _page( count, pageRequests, id, itemJson, (options.layer || 0));
 
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
             var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField );
             request.get( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
-              pageRequests = self.buildObjectIDPages(
-                itemJson.url,
-                statsJson.features[0].attributes.min,
-                statsJson.features[0].attributes.max,
-                maxCount,
-                options
-              );
+
+              if ( statsJson.error ){
+                // default to sequential objectID paging
+                pageRequests = self.buildObjectIDPages(
+                  itemJson.url,
+                  0,
+                  count,
+                  maxCount,
+                  options
+                );
+                _page( count, pageRequests, id, itemJson, (options.layer || 0));
+              } else {
+                pageRequests = self.buildObjectIDPages(
+                  itemJson.url,
+                  statsJson.features[0].attributes.min,
+                  statsJson.features[0].attributes.max,
+                  maxCount,
+                  options
+                );
+                _page( count, pageRequests, id, itemJson, (options.layer || 0));
+              }
             });
 
           } else {
@@ -306,18 +338,8 @@ var AGOL = function(){
                 maxCount,
                 options
             );
+            _page( count, pageRequests, id, itemJson, (options.layer || 0));
           }
-
-          // queuse up the requests for each page 
-          self.requestQueue( count, pageRequests, id, itemJson, (options.layer || 0), function(err,data){
-            //console.log('done');
-            Tasker.taskQueue.push( {
-              dir: id + '_' + (options.layer||0),
-              hash: hash,
-              key: ['agol', id].join(":"),
-              options: options
-            }, function(){});
-          });
 
         });
       });
@@ -417,7 +439,6 @@ var AGOL = function(){
     }, 4);
 
     // add all the page urls to the queue 
-    //console.log(reqs);
     q.push(reqs, function(err){ if (err) console.log(err); });
 
   };
