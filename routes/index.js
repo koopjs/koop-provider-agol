@@ -34,6 +34,11 @@ module.exports = {
     action: 'findItem'
   },
 
+  'get /agol/:id/:item/:layer/drop': {
+    controller: 'agol',
+    action: 'dropItem'
+  },
+
   'get /agol/:id/:item/data/:layer': {
     controller: 'agol',
     action: 'findItemData'

@@ -32,6 +32,13 @@ var AGOL = function(){
   this.agol_path = '/sharing/rest/content/items/';
 
   // got the service and get the item
+  this.dropItem = function( host, itemId, options, callback ){
+    Cache.remove('agol', itemId, options, function(err, res){
+      callback(err, res);
+    });
+  };
+
+  // got the service and get the item
   this.getItem = function( host, itemId, options, callback ){
     var url = host + this.agol_path + itemId+'?f=json';
     request.get(url, function(err, data ){

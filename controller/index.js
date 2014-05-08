@@ -66,6 +66,30 @@ var Controller = extend({
     }
   },
 
+  // drops the cache for an item
+  dropItem: function(req, res){
+    // if we have a layer then append it to the query params 
+    if ( req.params.layer ) {
+      req.query.layer = req.params.layer;
+    }
+
+    agol.find(req.params.id, function(err, data){
+      if (err) {
+        res.send( err, 500);
+      } else {
+        // Get the item 
+        agol.dropItem( data.host, req.params.item, req.query, function(error, itemJson){
+          if (error) {
+            res.send( error, 500);
+          } else {
+            res.json( itemJson );
+          }
+        });
+      }
+    });
+  },
+
+
   findItemData: function(req, res){
     var _get = function(id, item, key, options, callback){
        agol.find( id, function( err, data ){
