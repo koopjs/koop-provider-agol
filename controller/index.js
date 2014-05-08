@@ -328,17 +328,14 @@ var Controller = extend({
       layer = req.params.layer || 0;
 
     var _send = function( err, data ){
-      console.log(data)
       req.params.key = key + ':' + layer;
-        GeoJSON.fromEsri( data[0], function(err, geojson){
-          Tiles.get( req.params, geojson, function(err, tile){
-            if ( req.params.format == 'png'){
-              res.sendfile( tile );
-            } else {
-              res.send( tile );
-            }
-          });
-        });
+      Tiles.get( req.params, data[0], function(err, tile){
+        if ( req.params.format == 'png'){
+          res.sendfile( tile );
+        } else {
+          res.send( tile );
+        }
+      });
     }
 
     // build the geometry from z,x,y
