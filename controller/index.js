@@ -161,6 +161,8 @@ var Controller = extend({
               res.json({url: req.protocol +'://'+req.get('host') + req.originalUrl.split('?')[0]});
             }
           } else {
+            res.charset = 'utf-8';
+            res.contentType('text');
             res.sendfile( fileName );
           }
         } else {
@@ -189,7 +191,9 @@ var Controller = extend({
                   if (err) {
                     res.send( err, 500 );
                   } else {
-                    res.sendfile( result );
+                    res.charset = 'utf-8';
+                    res.contentType('text');
+                    res.sendfile(result);
                   }
                 }
               });
