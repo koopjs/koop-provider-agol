@@ -57,7 +57,8 @@ var Controller = extend({
           agol.getItem( data.host, req.params.item, req.query, function(error, itemJson){
             if (error) {
               res.send( error, 500);
-            } else { 
+            } else {
+              res.contentType('text'); 
               res.json( itemJson );
             }
           });
@@ -161,8 +162,9 @@ var Controller = extend({
               res.json({url: req.protocol +'://'+req.get('host') + req.originalUrl.split('?')[0]});
             }
           } else {
-            res.charset = 'utf-8';
-            res.contentType('text');
+            if (req.params.format == 'json' || req.params.format == 'geojson'){
+              res.contentType('text');
+            }
             res.sendfile( fileName );
           }
         } else {
@@ -191,8 +193,9 @@ var Controller = extend({
                   if (err) {
                     res.send( err, 500 );
                   } else {
-                    res.charset = 'utf-8';
-                    res.contentType('text');
+                    if (req.params.format == 'json' || req.params.format == 'geojson'){
+                      res.contentType('text');
+                    }
                     res.sendfile(result);
                   }
                 }
