@@ -45,11 +45,15 @@ var AGOL = function(){
       if (err) {
         callback(err, null);
       } else {
-        var json = JSON.parse( data.body );
-        if (json.error){
-          callback( json.error.message, null );  
-        } else{
-          callback( null, json );
+        try {
+          var json = JSON.parse( data.body );
+          if (json.error){
+            callback( json.error.message, null );  
+          } else{
+            callback( null, json );
+          }
+        } catch (e){
+          callback( 'Problem accessing the request host', null );
         }
       }
     });
@@ -428,6 +432,7 @@ var AGOL = function(){
         GeoJSON.fromEsri( json, function(err, geojson){
           // concat the features so we return the full json
           itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
+          console.log('insert partial', geojson.features.length)
           Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
             cb();
             if (reqCount == reqs.length){
@@ -444,7 +449,7 @@ var AGOL = function(){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      //console.log('get', task.req, i++);
+      console.log('get', task.req, i++);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body);
