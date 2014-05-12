@@ -361,7 +361,7 @@ var Controller = extend({
     var _send = function( err, data ){
       req.params.key = key + ':' + layer;
       Tiles.get( req.params, data[0], function(err, tile){
-        if ( req.params.format == 'png'){
+        if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
         } else {
           res.send( tile );
@@ -380,7 +380,7 @@ var Controller = extend({
     };
 
     var _sendImmediate = function( file ){
-      if ( req.params.format == 'png'){
+      if ( req.params.format == 'png' || req.params.format == 'pbf'){
         res.sendfile( file );
       } else {
         res.sendfile( file );
