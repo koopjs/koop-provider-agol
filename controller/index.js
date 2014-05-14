@@ -364,7 +364,7 @@ var Controller = extend({
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
         } else {
-          res.send( tile );
+          res.json( JSON.parse( fs.readFileSync( tile ) ) );
         }
       });
     }
@@ -383,7 +383,7 @@ var Controller = extend({
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
         res.sendfile( file );
       } else {
-        res.sendfile( file );
+        res.json( JSON.parse( fs.readFileSync( file ) ) );
       }
     }; 
 
