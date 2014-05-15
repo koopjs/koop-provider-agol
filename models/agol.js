@@ -339,18 +339,29 @@ var AGOL = function(){
                 );
                 _page( count, pageRequests, id, itemJson, (options.layer || 0));
               } else {
-                pageRequests = self.buildObjectIDPages(
-                  itemJson.url,
-                  statsJson.features[0].attributes.min,
-                  statsJson.features[0].attributes.max,
-                  maxCount,
-                  options
-                );
-                _page( count, pageRequests, id, itemJson, (options.layer || 0));
+                  pageRequests = self.buildObjectIDPages(
+                    itemJson.url,
+                    statsJson.features[0].attributes.min,
+                    statsJson.features[0].attributes.max,
+                    maxCount,
+                    options
+                  );
+                  _page( count, pageRequests, id, itemJson, (options.layer || 0));
               }
             });
 
           } else {
+            if ( count < 50000 ){
+              self.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
+                pageRequests = self.buildIDPages(
+                  itemJson.url,
+                  ids,
+                  250,
+                  options
+                );
+                _page( count, pageRequests, id, itemJson, (options.layer || 0));
+              });
+            } else { 
             // default to sequential objectID paging
             pageRequests = self.buildObjectIDPages(
                 itemJson.url,
@@ -360,6 +371,7 @@ var AGOL = function(){
                 options
             );
             _page( count, pageRequests, id, itemJson, (options.layer || 0));
+            }
           }
 
         });
@@ -412,6 +424,29 @@ var AGOL = function(){
     return reqs;
   };
 
+   //build object id query based page requests 
+  this.buildIDPages = function( url, ids, maxCount, options ){
+    var reqs = [],
+      pageMax;
+
+    var pages = ids.length / maxCount;
+
+    for (i=1; i < pages+1; i++){
+      pageMax = i * maxCount;
+      var pageIds = ids.splice(i-1, maxCount);
+      if (pageIds.length){
+        where = 'objectId in (' + pageIds.join(',') + ')';
+        pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
+        if ( options.geometry ){
+          pageUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+        }
+        reqs.push({req: pageUrl});
+      }
+    }
+
+    return reqs;
+  };
+
 
   // make requests for feature pages 
   // execute done when we have all features 
@@ -432,7 +467,6 @@ var AGOL = function(){
         GeoJSON.fromEsri( json, function(err, geojson){
           // concat the features so we return the full json
           itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
-          console.log('insert partial', geojson.features.length)
           Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
             cb();
             if (reqCount == reqs.length){
@@ -449,7 +483,7 @@ var AGOL = function(){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      console.log('get', task.req, i++);
+      //console.log('get', task.req, i++);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body);
@@ -470,6 +504,14 @@ var AGOL = function(){
     request.get( url +'/'+ layer + '?f=json', function( err, res ){
       var json = JSON.parse( res.body );
       callback( err, json );
+    });
+  };
+
+  // Gets the feature service object ids for pagination
+  this.getFeatureServiceLayerIds = function( url, layer, callback ){
+    request.get( url +'/'+ layer + '/query?where=1=1&returnIdsOnly=true&f=json', function( err, res ){
+      var json = JSON.parse( res.body );
+      callback( err, json.objectIds );
     });
   };
 
