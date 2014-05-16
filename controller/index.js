@@ -154,7 +154,7 @@ var Controller = extend({
         if ( fs.existsSync( fileName ) && !is_expired ){
           if ( req.query.url_only ){
             // check for Peechee
-            if ( peechee ){
+            if ( peechee && peechee.path ){
               peechee.path( dir, key+'.'+req.params.format, function(e, url){
                 res.json({url:url});
               });
