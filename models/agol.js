@@ -85,9 +85,10 @@ var AGOL = function(){
           }
 
           if ( is_expired ) {
-            console.log()
             Cache.remove('agol', itemId, options, function(err, res){
-              if ( itemJson.type == 'Feature Collection' ){
+              if ( itemJson.type == 'CSV' ){  
+                self.getCSV( host + self.agol_path, itemId, itemJson, options, callback );
+              } else if ( itemJson.type == 'Feature Collection' ){
                 self.getFeatureCollection( host + self.agol_path, itemId, itemJson, options, callback );
               } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
                 self.getFeatureService( itemId, itemJson, hash, options, callback );
@@ -96,7 +97,9 @@ var AGOL = function(){
               }
             });
           } else {
-            if ( itemJson.type == 'Feature Collection' ){
+            if ( itemJson.type == 'CSV' ){  
+              self.getCSV( host + self.agol_path, itemId, itemJson, options, callback );
+            } else if ( itemJson.type == 'Feature Collection' ){
               self.getFeatureCollection( host + self.agol_path, itemId, itemJson, options, callback );
             } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
               self.getFeatureService( itemId, itemJson, hash, options, callback );
@@ -106,6 +109,35 @@ var AGOL = function(){
           }
         });
 
+      }
+    });
+  };
+
+  this.getCSV = function(base_url, id, itemJson, options, callback){
+    Cache.get( 'agol', id, options, function(err, entry ){
+      if ( err ){
+        var url = base_url + '/' + id + '/data?f=json';
+        request.get(url, function(err, data ){
+          if (err) {
+            callback(err, null);
+          } else {
+            var csv = data.body.split(/\n/);
+            console.log(csv.length);
+            GeoJSON.fromCSV( csv, function(err, geojson){
+              Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
+                if ( success ) {
+                  itemJson.data = [geojson];
+                  callback( null, itemJson );
+                } else {
+                  callback( err, null );
+                }
+              });
+            });
+          }
+        });
+      } else {
+        itemJson.data = entry;
+        callback( null, itemJson );
       }
     });
   };
