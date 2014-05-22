@@ -161,7 +161,7 @@ var Controller = extend({
               });
             } else {
               var origUrl = req.originalUrl.split('?');
-              res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace('url_only=true&','')});
+              res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
             }
           } else {
             if (req.params.format == 'json' || req.params.format == 'geojson'){
@@ -190,7 +190,7 @@ var Controller = extend({
                     });  
                   } else {
                     var origUrl = req.originalUrl.split('?');
-                    res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace('url_only=true&','')});
+                    res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
                   }
                 } else {
                   if (err) {
