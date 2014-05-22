@@ -122,7 +122,6 @@ var AGOL = function(){
             callback(err, null);
           } else {
             var csv = data.body.split(/\n/);
-            console.log(csv.length);
             GeoJSON.fromCSV( csv, function(err, geojson){
               Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                 if ( success ) {
@@ -312,8 +311,13 @@ var AGOL = function(){
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
       // sanitize any single quotes in the service description
-      if (serviceInfo && serviceInfo.description){
-        serviceInfo.description = serviceInfo.description.replace(/'/g, '')
+      if (serviceInfo ) {
+        if ( serviceInfo.description ) {
+          serviceInfo.description = serviceInfo.description.replace(/'/g, '');
+        }
+        if ( serviceInfo.definitionExpression ){
+          serviceInfo.definitionExpression = serviceInfo.definitionExpression.replace(/'/g, '');
+        }
       }
 
       // creates the empty table
@@ -462,11 +466,10 @@ var AGOL = function(){
     var reqs = [],
       pageMax;
 
-    var pages = ids.length / maxCount;
+    var pages = (ids.length / maxCount);
 
-    for (i=1; i < pages+1; i++){
-      pageMax = i * maxCount;
-      var pageIds = ids.splice(i-1, maxCount);
+    for (i=0; i < pages+1; i++){
+      var pageIds = ids.splice(0, maxCount);
       if (pageIds.length){
         where = 'objectId in (' + pageIds.join(',') + ')';
         pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
