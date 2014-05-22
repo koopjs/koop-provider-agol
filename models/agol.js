@@ -274,8 +274,10 @@ var AGOL = function(){
               // save the data 
               Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                 if ( success ) {
-                  itemJson.data = [geojson];
-                  callback( null, itemJson );
+                  Cache.get( 'agol', id, options, function(err, entry ){
+                    itemJson.data = entry;
+                    callback( null, itemJson );
+                  });
                 } else {
                   callback( err, null );
                 }
@@ -342,7 +344,7 @@ var AGOL = function(){
         
         Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
 
-          // return, but continue on
+          // return in a processing state, but continue on
           itemJson.data = [{ features:[] }];
           itemJson.koop_status = 'processing';
           itemJson.cache_save = false;

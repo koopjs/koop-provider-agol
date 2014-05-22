@@ -92,6 +92,7 @@ var Controller = extend({
 
 
   findItemData: function(req, res){
+    // closure that actually goes out gets the data
     var _get = function(id, item, key, options, callback){
        agol.find( id, function( err, data ){
         if (err) {
