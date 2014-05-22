@@ -214,7 +214,6 @@ var Controller = extend({
             if (err) {
               res.send( err, 500 );
             } else {
-              console.log('wtf', itemJson.data[0].features.length)
               if ( itemJson.data[0].features.length > 1000){
                 itemJson.data[0].features = itemJson.data[0].features.splice(0,1000);
               }
