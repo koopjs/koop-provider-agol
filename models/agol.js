@@ -208,6 +208,7 @@ var AGOL = function(){
     if (options.geometry){
       idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
     }
+    //console.log('ID URL', idUrl);
 
     // get the id count of the service 
     request.get(idUrl, function(err, serviceIds ){
@@ -217,21 +218,22 @@ var AGOL = function(){
         if (idJson.error){
           callback( idJson.error.message + ': ' + idUrl, null );
         } else {
-          console.log('COUNT', idJson.count, id);
+          console.log('COUNT', idJson.count, idJson.objectIds.length);
+          var count = idJson.count || idJson.objectIds.length;
 
           // WHEN COUNT IS 0 - No Features 
-          if (idJson.count == 0){
+          if (count == 0){
 
             // return empty geojson
             itemJson.data = [{type: 'FeatureCollection', features: []}];
             callback( null, itemJson );
 
           // Count is low 
-          } else if ( idJson.count < 1000 ){
+          } else if ( count < 1000 ){
             self.singlePageFeatureService( id, itemJson, options, callback );
           // We HAVE to page 
-          } else if ( idJson.count >= 1000 ){
-            self.pageFeatureService( id, itemJson, idJson.count, hash, options, callback );
+          } else if ( count >= 1000 ){
+            self.pageFeatureService( id, itemJson, count, hash, options, callback );
           } else {
             callback( 'Unable to count features, make sure the layer you requested exists', null );
           }
