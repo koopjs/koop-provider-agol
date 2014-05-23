@@ -272,6 +272,7 @@ var AGOL = function(){
               geojson.retrieved_at = new Date().getTime(); 
 
               // save the data 
+              //console.log(JSON.stringify(geojson))
               Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                 if ( success ) {
                   Cache.get( 'agol', id, options, function(err, entry ){
@@ -524,10 +525,10 @@ var AGOL = function(){
       //console.log('get', task.req, i++);
       request.get(task.req, function(err, data){
         try {
-          var json = JSON.parse(data.body);
+          var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
           _collect(json, callback);
         } catch(e){
-          console.log('failed to parse json', task.req, data.body, e);
+          console.log('failed to parse json', task.req, e);
         }
       });
     }, 4);
