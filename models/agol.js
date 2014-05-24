@@ -218,8 +218,13 @@ var AGOL = function(){
         if (idJson.error){
           callback( idJson.error.message + ': ' + idUrl, null );
         } else {
-          console.log('COUNT', idJson.count, idJson.objectIds.length);
-          var count = idJson.count || idJson.objectIds.length;
+          //console.log('COUNT', idJson.count, idJson.objectIds.length);
+          var count = idJson.count;
+          if (!count && idJson.objectIds && idJson.objectIds.length ){
+            count = idJson.objectIds.length;
+          }
+
+          console.log('Count', count);
 
           // WHEN COUNT IS 0 - No Features 
           if (count == 0){
