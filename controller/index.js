@@ -124,6 +124,14 @@ var Controller = extend({
     Cache.getInfo(['agol', req.params.item, (req.params.layer || 0)].join(':'), function(err, info){
 
       var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+
+      // check for info on last edit date 
+      // set is_expired to false if it hasnt changed or if its null
+      if ( info && info.retrieved_at && info.info && info.info.editingInfo ) {             
+        if ( !info.info.editingInfo.lastEditDate || ( info.retrieved_at > info.info.editingInfo.     lastEditDate )){
+          is_expired = false;
+        }
+      }
         
       // sort the req.query before we hash so we are consistent 
       var sorted_query = {};

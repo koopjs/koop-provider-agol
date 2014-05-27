@@ -78,8 +78,8 @@ var AGOL = function(){
 
           // check for infon on last edit date 
           // set is_expired to false if it hasnt changed
-          if ( info && info.retrieved_at && info.info && info.info.editingInfo && info.info.editingInfo.lastEditDate ){
-            if ( info.retrieved_at > info.info.editingInfo.lastEditDate ){
+          if ( info && info.retrieved_at && info.info && info.info.editingInfo ) { 
+            if ( !info.info.editingInfo.lastEditDate || ( info.retrieved_at > info.info.editingInfo.lastEditDate )){
               is_expired = false;
             }
           }
@@ -208,7 +208,6 @@ var AGOL = function(){
     if (options.geometry){
       idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
     }
-    //console.log('ID URL', idUrl);
 
     // get the id count of the service 
     request.get(idUrl, function(err, serviceIds ){
@@ -218,7 +217,6 @@ var AGOL = function(){
         if (idJson.error){
           callback( idJson.error.message + ': ' + idUrl, null );
         } else {
-          //console.log('COUNT', idJson.count, idJson.objectIds.length);
           var count = idJson.count;
           if (!count && idJson.objectIds && idJson.objectIds.length ){
             count = idJson.objectIds.length;
@@ -279,7 +277,6 @@ var AGOL = function(){
               geojson.retrieved_at = new Date().getTime(); 
 
               // save the data 
-              //console.log(JSON.stringify(geojson))
               Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                 if ( success ) {
                   Cache.get( 'agol', id, options, function(err, entry ){
@@ -308,7 +305,6 @@ var AGOL = function(){
 
     var _page = function( count, pageRequests, id, itemJson, layerId){
       self.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
-        console.log('done');
         Tasker.taskQueue.push( {
           dir: id + '_' + layerId,
           hash: hash,
@@ -359,7 +355,7 @@ var AGOL = function(){
           itemJson.expires_at = expiration;
           callback(null, itemJson);
 
-          var maxCount = parseInt(serviceInfo.maxRecordCount) || 1000,
+          var maxCount = 1000, //parseInt(serviceInfo.maxRecordCount) || 1000,
             pageRequests;
 
           // build legit offset based page requests 
@@ -529,7 +525,7 @@ var AGOL = function(){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      //console.log('get', task.req, i++);
+      //console.log('get', i++);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
