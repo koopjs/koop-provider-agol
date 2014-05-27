@@ -5,7 +5,7 @@ var should = require('should'),
 global.config = config;
 
 before(function (done) {
-  global['agol'] = require('../models/agol.js');
+  global.agol = require('../models/agol.js');
   done();
 });
 

@@ -225,7 +225,7 @@ var AGOL = function(){
           console.log('Count', count);
 
           // WHEN COUNT IS 0 - No Features 
-          if (count == 0){
+          if (count === 0){
 
             // return empty geojson
             itemJson.data = [{type: 'FeatureCollection', features: []}];
@@ -270,7 +270,7 @@ var AGOL = function(){
             // convert to GeoJSON 
             GeoJSON.fromEsri( json, function(err, geojson){
 
-              geojson.name = itemJson.name;
+              geojson.name = itemJson.name || itemJson.title;
               geojson.updated_at = itemJson.modified;
               geojson.expires_at = new Date().getTime() + self.cacheLife;
               geojson.info = serviceInfo;
@@ -521,11 +521,11 @@ var AGOL = function(){
       }
     };
 
-    var i = 0
+    var i = 0;
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      //console.log('get', i++);
+      console.log('get', i++);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body.replace(/NaN/g, 'null'));

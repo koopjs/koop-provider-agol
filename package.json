@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha test/ -t 20000"
+    "test": "mocha test/ -t 20000",
+    "lint": "node_modules/jshint/bin/jshint **/*.js"
   },
   "dependencies": {
     "koop-server": "*",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "supertest": "~0.11.0",
     "should": "~3.3.1",
-    "yaml": "~0.2.3"
+    "yaml": "~0.2.3",
+    "jshint": "~2.5.1"
   }
 }

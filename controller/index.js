@@ -123,114 +123,122 @@ var Controller = extend({
     // else move on
     Cache.getInfo(['agol', req.params.item, (req.params.layer || 0)].join(':'), function(err, info){
 
-      var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+      if (info && info.status == 'processing'){ 
+        // return immediately if processing
+        console.log('processing still... return 202');
+        res.json( { status: 'processing' }, 202);
+      } else { 
 
-      // check for info on last edit date 
-      // set is_expired to false if it hasnt changed or if its null
-      if ( info && info.retrieved_at && info.info && info.info.editingInfo ) {             
-        if ( !info.info.editingInfo.lastEditDate || ( info.retrieved_at > info.info.editingInfo.     lastEditDate )){
-          is_expired = false;
+        // check if the cache is expired
+        var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+
+        // check for info on last edit date (for hosted services dont expired unless changed) 
+        // set is_expired to false if it hasnt changed or if its null
+        if ( info && info.retrieved_at && info.info && info.info.editingInfo ) {             
+          if ( !info.info.editingInfo.lastEditDate || ( info.retrieved_at > info.info.editingInfo.     lastEditDate )){
+            is_expired = false;
+          }
         }
-      }
-        
-      // sort the req.query before we hash so we are consistent 
-      var sorted_query = {};
-      _(req.query).keys().sort().each(function (key) {
-        if (key != 'url_only'){
-          sorted_query[key] = req.query[key];
-        }
-      });
-      // build the file key as an MD5 hash that's a join on the paams and look for the file 
-      var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-      var key = crypto.createHash('md5').update(toHash).digest('hex');
+          
+        // sort the req.query before we hash so we are consistent 
+        var sorted_query = {};
+        _(req.query).keys().sort().each(function (key) {
+          if (key != 'url_only'){
+            sorted_query[key] = req.query[key];
+          }
+        });
+        // build the file key as an MD5 hash that's a join on the paams and look for the file 
+        var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+        var key = crypto.createHash('md5').update(toHash).digest('hex');
 
-      // check format for exporting data
-      if ( req.params.format ){
+        // check format for exporting data
+        if ( req.params.format ){
 
-        // change geojson to json
-        req.params.format = req.params.format.replace('geojson', 'json');
+          // change geojson to json
+          req.params.format = req.params.format.replace('geojson', 'json');
 
-        // use the item as the file dir so we can organize exports by id
-        var dir = req.params.item + '_' + ( req.params.layer || 0 );
-        
-        var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
-        
-        // if we have a layer then append it to the query params 
-        if ( req.params.layer ) {
-          req.query.layer = req.params.layer;
-        }
+          // use the item as the file dir so we can organize exports by id
+          var dir = req.params.item + '_' + ( req.params.layer || 0 );
+          
+          var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+          
+          // if we have a layer then append it to the query params 
+          if ( req.params.layer ) {
+            req.query.layer = req.params.layer;
+          }
 
-        if ( fs.existsSync( fileName ) && !is_expired ){
-          if ( req.query.url_only ){
-            // check for Peechee
-            if ( peechee && peechee.path ){
-              peechee.path( dir, key+'.'+req.params.format, function(e, url){
-                res.json({url:url});
-              });
+          if ( fs.existsSync( fileName ) && !is_expired ){
+            if ( req.query.url_only ){
+              // check for Peechee
+              if ( peechee && peechee.path ){
+                peechee.path( dir, key+'.'+req.params.format, function(e, url){
+                  res.json({url:url});
+                });
+              } else {
+                var origUrl = req.originalUrl.split('?');
+                res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+              }
             } else {
-              var origUrl = req.originalUrl.split('?');
-              res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+              if (req.params.format == 'json' || req.params.format == 'geojson'){
+                res.contentType('text');
+              }
+              res.sendfile( fileName );
             }
           } else {
-            if (req.params.format == 'json' || req.params.format == 'geojson'){
-              res.contentType('text');
-            }
-            res.sendfile( fileName );
-          }
-        } else {
 
-          // check the koop status table to see if we have a job running 
-            // if we do then return 
-            // else proceed 
-          req.query.format = req.params.format;
-          _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
-            if (err){
-              res.send(err, 500 );
-            } else if ( !itemJson.data[0].features.length ){
-              res.send( 'No features exist for the requested FeatureService layer', 500 );
-            } else {
-              Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], function(err, result){
-                if ( req.query.url_only ){
-                  // check for Peechee
-                  if ( peechee && peechee.path ){
-                    peechee.path( dir, key+'.'+req.params.format, function(e, url){
-                      res.json({url:url});
-                    });  
-                  } else {
-                    var origUrl = req.originalUrl.split('?');
-                    res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                  }
-                } else {
-                  if (err) {
-                    res.send( err, 500 );
-                  } else {
-                    if (req.params.format == 'json' || req.params.format == 'geojson'){
-                      res.contentType('text');
+            // check the koop status table to see if we have a job running 
+              // if we do then return 
+              // else proceed 
+            req.query.format = req.params.format;
+            _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
+              if (err){
+                res.send(err, 500 );
+              } else if ( !itemJson.data[0].features.length ){
+                res.send( 'No features exist for the requested FeatureService layer', 500 );
+              } else {
+                Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], function(err, result){
+                  if ( req.query.url_only ){
+                    // check for Peechee
+                    if ( peechee && peechee.path ){
+                      peechee.path( dir, key+'.'+req.params.format, function(e, url){
+                        res.json({url:url});
+                      });  
+                    } else {
+                      var origUrl = req.originalUrl.split('?');
+                      res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
                     }
-                    res.sendfile(result);
+                  } else {
+                    if (err) {
+                      res.send( err, 500 );
+                    } else {
+                      if (req.params.format == 'json' || req.params.format == 'geojson'){
+                        res.contentType('text');
+                      }
+                      res.sendfile(result);
+                    }
                   }
+                });
+              }
+            });
+          }
+
+        } else {
+          // if we have a layer then append it to the query params 
+          if ( req.params.layer ) {
+            req.query.layer = req.params.layer;
+          }
+          // get the esri json data for the service
+          _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
+              if (err) {
+                res.send( err, 500 );
+              } else {
+                if ( itemJson.data[0].features.length > 1000){
+                  itemJson.data[0].features = itemJson.data[0].features.splice(0,1000);
                 }
-              });
-            }
+                res.send( itemJson );
+              }
           });
         }
-
-      } else {
-        // if we have a layer then append it to the query params 
-        if ( req.params.layer ) {
-          req.query.layer = req.params.layer;
-        }
-        // get the esri json data for the service
-        _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
-            if (err) {
-              res.send( err, 500 );
-            } else {
-              if ( itemJson.data[0].features.length > 1000){
-                itemJson.data[0].features = itemJson.data[0].features.splice(0,1000);
-              }
-              res.send( itemJson );
-            }
-        });
       }
     });
   },
@@ -323,7 +331,7 @@ var Controller = extend({
           });
           // build the file key as an MD5 hash that's a join on the paams and look for the file 
           var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-          var key = crypto.createHash('md5').update(toHash).digest('hex');
+          key = crypto.createHash('md5').update(toHash).digest('hex');
 
           // Get the item 
           agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
@@ -378,7 +386,7 @@ var Controller = extend({
           res.json( JSON.parse( fs.readFileSync( tile ) ) );
         }
       });
-    }
+    };
 
     // build the geometry from z,x,y
     var bounds = merc.bbox( req.params.x, req.params.y, req.params.z );
