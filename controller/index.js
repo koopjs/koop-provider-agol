@@ -161,6 +161,12 @@ var Controller = extend({
           var dir = req.params.item + '_' + ( req.params.layer || 0 );
           
           var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+
+          // if we know the name and its a zip request; check for file via name
+          if (info && req.params.format == 'zip'){
+            var name = info.info.name || info.info.title;
+            fileName = [config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
+          }
           
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {
@@ -196,7 +202,7 @@ var Controller = extend({
               } else if ( !itemJson.data[0].features.length ){
                 res.send( 'No features exist for the requested FeatureService layer', 500 );
               } else {
-                Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], function(err, result){
+                Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
                   if ( req.query.url_only ){
                     // check for Peechee
                     if ( peechee && peechee.path ){

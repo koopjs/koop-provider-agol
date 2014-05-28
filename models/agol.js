@@ -303,6 +303,11 @@ var AGOL = function(){
   this.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
     var self = this;    
 
+    // set the name in options
+    if ( itemJson.name || itemJson.title && !options.name ){
+      options.name = itemJson.name || itemJson.title;
+    }
+
     var _page = function( count, pageRequests, id, itemJson, layerId){
       self.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
         Tasker.taskQueue.push( {
@@ -564,30 +569,6 @@ var AGOL = function(){
     return url+'/'+layer+'/query?f=json&outStatistics='+JSON.stringify(json);
   };
 
-
-  // checks the age of the cache, if its older than 24 hours purges all known data 
-  /*this.checkCache = function(id, data, options, callback){
-    var self = this;
-    var qKey = ['agol', id, (options.layer || 0)].join(':');
-
-    Cache.getInfo( qKey, function(err, info){
-
-      var is_expired = ( new Date().getTime() >= info.expires_at );
-      console.log('is expired?', is_expired, new Date(), info.expires_at);
-
-      if ( is_expired ) { 
-        // get new data 
-        Cache.remove('agol', id, options, function(err, res){
-          self.getItemData( options.host, id, options, function(err, itemJson){
-            callback(err, itemJson);
-          });
-        });
-        
-      } else {
-        callback(err, is_expired);
-      }
-    });
-  };*/
 
 };
   
