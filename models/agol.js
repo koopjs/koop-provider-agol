@@ -342,6 +342,7 @@ var AGOL = function(){
           expires_at: expiration,
           retrieved_at: new Date().getTime(), 
           name: itemJson.name,
+          geomType: self.geomTypes[itemJson.geometryType],
           info: serviceInfo,
           features:[]
         };
@@ -428,6 +429,12 @@ var AGOL = function(){
 
   };
 
+
+  this.geomTypes = {
+    'esriGeometryPolygon':'Polygon',
+    'esriGeometryPoint':'Point',
+    'esriGeometryPolyLine':'LineString'
+  };
 
 
   //build resultOffset based page requests 

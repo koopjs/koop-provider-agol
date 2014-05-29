@@ -59,6 +59,7 @@ describe('AGOL Model', function(){
         var info = {
           updated_at: null,
           name: 'Test Dataset',
+          geomType: 'Polygon',
           features:[]
         };
         var reqs = agol.buildOffsetPages( pages, url, max, options );
