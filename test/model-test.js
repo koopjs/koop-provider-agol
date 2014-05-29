@@ -59,15 +59,17 @@ describe('AGOL Model', function(){
         var info = {
           updated_at: null,
           name: 'Test Dataset',
-          geomType: 'Polygon',
+          geomType: 'MultiPolygon',
           features:[]
         };
         var reqs = agol.buildOffsetPages( pages, url, max, options );
         Cache.remove('agol', id, options, function(){
           Cache.insert( 'agol', id, info, 1, function( err, success ){
             agol.requestQueue( max, reqs, id, {}, 1, function(err, data){
-              data.data[0].features.length.should.equal(3143);
-              done();
+              Cache.get('agol', id, options, function(err, entry){
+                entry[0].features.length.should.equal(3143);
+                done();
+              });
             });
           });
         });
