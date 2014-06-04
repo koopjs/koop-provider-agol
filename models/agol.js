@@ -179,10 +179,13 @@ var AGOL = function(){
         if ( err ){
           // no data in the cache; request new data 
           self.makeFeatureServiceRequest( id, itemJson, hash, options, callback );
- 
         } else if ( entry && entry[0] && entry[0].status == 'processing' ){
           itemJson.data = [{features:[]}];
           itemJson.koop_status = 'processing';
+          callback(null, itemJson);
+        } else if ( entry && entry[0] && entry[0].status == 'too big'){
+          itemJson.data = entry;
+          itemJson.koop_status = 'too big';
           callback(null, itemJson);
         } else {
           itemJson.data = entry;

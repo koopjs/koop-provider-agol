@@ -107,7 +107,7 @@ var Controller = extend({
             if (error) {
               callback( error, null);
             // if we have status return right away
-            } else if ( itemJson.koop_status ) {
+            } else if ( itemJson.koop_status == 'processing'){
               // return w/202  
               res.json( { status: 'processing' }, 202);
             } else {
@@ -173,6 +173,7 @@ var Controller = extend({
             req.query.layer = req.params.layer;
           }
 
+          console.log('FileName?', fileName, fs.existsSync( fileName ));
           if ( fs.existsSync( fileName ) && !is_expired ){
             if ( req.query.url_only ){
               // check for Peechee
@@ -202,28 +203,52 @@ var Controller = extend({
               } else if ( !itemJson.data[0].features.length ){
                 res.send( 'No features exist for the requested FeatureService layer', 500 );
               } else {
-                Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
-                  if ( req.query.url_only ){
-                    // check for Peechee
-                    if ( peechee && peechee.path ){
-                      peechee.path( dir, key+'.'+req.params.format, function(e, url){
-                        res.json({url:url});
-                      });  
-                    } else {
+                // TODO ADD support for TOO BIG 
+                if (itemJson.koop_status && itemJson.koop_status == 'too big'){
+                  // export as a series of small queries/files
+                  var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
+
+                  req.query.name = 'blarg'//itemJson.data[0].info.name || itemJson. data[0].info.title; 
+
+                  Exporter.exportLarge( req.params.format, dir, key, 'agol:' + req.params.item, table, req.query, function(err, result){
+                    if ( req.query.url_only ){
                       var origUrl = req.originalUrl.split('?');
-                      res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                    }
-                  } else {
-                    if (err) {
-                      res.send( err, 500 );
+                      res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/      url_only=true&|url_only=true/,'')});
                     } else {
-                      if (req.params.format == 'json' || req.params.format == 'geojson'){
-                        res.contentType('text');
+                      if (err) {
+                        res.send( err, 500 );
+                      } else {
+                        if (req.params.format == 'json' || req.params.format == 'geojson'){
+                          res.contentType('text');
+                        }
+                        res.sendfile(result);
                       }
-                      res.sendfile(result);
                     }
-                  }
-                });
+                  });
+                } else {
+                  Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
+                    if ( req.query.url_only ){
+                      // check for Peechee
+                      if ( peechee && peechee.path ){
+                        peechee.path( dir, key+'.'+req.params.format, function(e, url){
+                          res.json({url:url});
+                        });  
+                      } else {
+                        var origUrl = req.originalUrl.split('?');
+                        res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+                      }
+                    } else {
+                      if (err) {
+                        res.send( err, 500 );
+                      } else {
+                        if (req.params.format == 'json' || req.params.format == 'geojson'){
+                          res.contentType('text');
+                        }
+                        res.sendfile(result);
+                      }
+                    }
+                  });
+                }
               }
             });
           }
