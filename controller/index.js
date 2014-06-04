@@ -203,12 +203,11 @@ var Controller = extend({
               } else if ( !itemJson.data[0].features.length ){
                 res.send( 'No features exist for the requested FeatureService layer', 500 );
               } else {
-                // TODO ADD support for TOO BIG 
                 if (itemJson.koop_status && itemJson.koop_status == 'too big'){
                   // export as a series of small queries/files
                   var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
 
-                  req.query.name = 'blarg'//itemJson.data[0].info.name || itemJson. data[0].info.title; 
+                  req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson. data[0].info.title : itemJson.name; 
 
                   Exporter.exportLarge( req.params.format, dir, key, 'agol:' + req.params.item, table, req.query, function(err, result){
                     if ( req.query.url_only ){
