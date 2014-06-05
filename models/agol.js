@@ -258,7 +258,9 @@ var AGOL = function(){
       // we can the data in one shot
       var url = itemJson.url + '/' + (options.layer || 0) + '/query?outSR=4326&where=1=1&f=json&outFields=*';
       if (options.geometry){
-        url += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+        url += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+      } else {
+        url += '&geometry=&returnGeometry=true';
       }
       // get the features 
       request.get(url, function(err, data ){
@@ -449,7 +451,9 @@ var AGOL = function(){
       pageUrl += '&resultRecordCount='+max;
 
       if ( options.geometry ){
-        pageUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify( options.geometry );
+        pageUrl += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify( options.geometry );
+      } else {
+        pageUrl += '&geometry=&returnGeometry=true';
       }
       reqs.push({req: pageUrl});
     }
@@ -471,7 +475,9 @@ var AGOL = function(){
       where = 'objectId<=' + pageMax + '+AND+' + 'objectId>=' + ((pageMax-maxCount)+1);
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
       if ( options.geometry ){
-        pageUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+        pageUrl += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+      } else {
+        pageUrl += '&geometry=&returnGeometry=true';
       }
       reqs.push({req: pageUrl});
     }
@@ -492,7 +498,9 @@ var AGOL = function(){
         where = 'objectId in (' + pageIds.join(',') + ')';
         pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
         if ( options.geometry ){
-          pageUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+          pageUrl += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+        } else {
+          pageUrl += '&geometry=&returnGeometry=true';
         }
         reqs.push({req: pageUrl});
       }
@@ -537,7 +545,7 @@ var AGOL = function(){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      console.log('get', i++);
+      console.log('get', i++, task.req);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
