@@ -121,12 +121,18 @@ var Controller = extend({
     // CHECK the time since our last cache entry 
     // if > 24 hours since; clear cache and wipe files 
     // else move on
-    Cache.getInfo(['agol', req.params.item, (req.params.layer || 0)].join(':'), function(err, info){
+    var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
+    Cache.getInfo(table_key, function(err, info){
 
       if (info && info.status == 'processing'){ 
         // return immediately if processing
         console.log('processing still... return 202');
-        res.json( { status: 'processing' }, 202);
+        Cache.getCount(table_key, function(err, count){
+          res.json( { 
+            status: 'processing',
+            count: count
+          }, 202);
+        })
       } else { 
 
         // check if the cache is expired
@@ -173,7 +179,7 @@ var Controller = extend({
             req.query.layer = req.params.layer;
           }
 
-          console.log('FileName?', fileName, fs.existsSync( fileName ));
+          //console.log('FileName?', fileName, fs.existsSync( fileName ));
           if ( fs.existsSync( fileName ) && !is_expired ){
             if ( req.query.url_only ){
               // check for Peechee
@@ -209,8 +215,10 @@ var Controller = extend({
 
                   req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson. data[0].info.title : itemJson.name; 
 
-                  Exporter.exportLarge( req.params.format, dir, key, 'agol:' + req.params.item, table, req.query, function(err, result){
-                    if ( req.query.url_only ){
+                  Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
+                    if (result && result.status && result.status == 'processing'){
+                      res.json( { status: 'processing' }, 202);          
+                    } else if ( req.query.url_only ){
                       var origUrl = req.originalUrl.split('?');
                       res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/      url_only=true&|url_only=true/,'')});
                     } else {

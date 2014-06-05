@@ -315,10 +315,11 @@ var AGOL = function(){
 
     var _page = function( count, pageRequests, id, itemJson, layerId){
       self.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
+        console.log('to the tasker!')
         Tasker.taskQueue.push( {
-          dir: id + '_' + layerId,
+          id: id,
+          type: 'agol', 
           hash: hash,
-          key: ['agol', id].join(":"),
           options: options
         }, function(){});
       });
