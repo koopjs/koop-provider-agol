@@ -307,6 +307,7 @@ var AGOL = function(){
   // handles pagin over the feature service 
   this.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
     var self = this;    
+    var geomType;
 
     // set the name in options
     if ( itemJson.name || itemJson.title && !options.name ){
@@ -315,12 +316,13 @@ var AGOL = function(){
 
     var _page = function( count, pageRequests, id, itemJson, layerId){
       self.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
-        console.log('to the tasker!')
+        options.geomType = geomType;
         Tasker.taskQueue.push( {
           id: id,
           type: 'agol', 
           hash: hash,
-          options: options
+          options: options,
+          geomType: geomType 
         }, function(){});
       });
     };
@@ -335,6 +337,9 @@ var AGOL = function(){
         if ( serviceInfo.definitionExpression ){
           serviceInfo.definitionExpression = serviceInfo.definitionExpression.replace(/'/g, '');
         }
+        // set the geom type 
+        geomType = serviceInfo.geometryType; 
+        
       }
 
       // creates the empty table
@@ -549,7 +554,7 @@ var AGOL = function(){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      console.log('get', i++, task.req);
+      console.log('get', i++);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body.replace(/NaN/g, 'null'));

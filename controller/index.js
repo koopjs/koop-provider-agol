@@ -214,6 +214,8 @@ var Controller = extend({
                   var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
 
                   req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson. data[0].info.title : itemJson.name; 
+                  // set the geometry type so the exporter can do its thing for csv points (add x,y)
+                  req.query.geomType = itemJson.data[0].info.geometryType;
 
                   Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
                     if (result && result.status && result.status == 'processing'){
