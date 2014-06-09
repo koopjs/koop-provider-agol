@@ -537,7 +537,7 @@ var AGOL = function(){
           //itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
           Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
             cb();
-            if (reqCount++ == reqs.length){
+            if (reqCount++ == reqs.length-1){
               // pass back the full array of features
               done(null, itemJson);
             }
