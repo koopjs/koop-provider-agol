@@ -150,7 +150,7 @@ var AGOL = function(){
             callback(err, null);
           } else {
             var json = JSON.parse( data.body ).featureCollection.layers[0].featureSet;
-            GeoJSON.fromEsri( json, function(err, geojson){
+            GeoJSON.fromEsri( [], json, function(err, geojson){
               Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                 if ( success ) {
                   itemJson.data = [geojson];
@@ -273,7 +273,7 @@ var AGOL = function(){
           try {
             var json = {features: JSON.parse( data.body ).features};
             // convert to GeoJSON 
-            GeoJSON.fromEsri( json, function(err, geojson){
+            GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
 
               geojson.name = itemJson.name || itemJson.title;
               geojson.updated_at = itemJson.modified;
@@ -532,7 +532,7 @@ var AGOL = function(){
         done( json.error.details[0], null);
       } else {
         // insert a partial
-        GeoJSON.fromEsri( json, function(err, geojson){
+        GeoJSON.fromEsri( [], json, function(err, geojson){
           // concat the features so we return the full json
           //itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
           Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
