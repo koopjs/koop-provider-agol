@@ -531,16 +531,13 @@ var AGOL = function(){
       if ( json.error ){
         done( json.error.details[0], null);
       } else {
-
-        reqCount++;
-
         // insert a partial
         GeoJSON.fromEsri( json, function(err, geojson){
           // concat the features so we return the full json
           //itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
           Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
             cb();
-            if (reqCount == reqs.length){
+            if (reqCount++ == reqs.length){
               // pass back the full array of features
               done(null, itemJson);
             }
