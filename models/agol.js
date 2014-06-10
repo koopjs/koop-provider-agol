@@ -11,7 +11,6 @@ var AGOL = function(){
   // needs a host, generates an id 
   this.register = function( id, host, callback ){
     var type = 'agol:services';
-    //var id = (new Date()).getTime();
     Cache.db.services.count( type, function(error, count){
       id = id || count++;
       Cache.db.services.register( type, {'id': id, 'host': host},  function( err, success ){
@@ -20,18 +19,27 @@ var AGOL = function(){
     });
   };
 
+  // removes the registered host from the list of hosts
   this.remove = function( id, callback ){
     Cache.db.services.remove( 'agol:services', parseInt(id) || id,  callback);
   }; 
+
 
   // get service by id, no id == return all
   this.find = function( id, callback ){
     Cache.db.services.get( 'agol:services', parseInt(id) || id, callback);
   };
 
+  // Centralized request method 
+  // all ajax requests should use this so it can be tested 
+  this.req = function(url, callback){
+    request.get(url, callback);
+  };
+
+  // base path to use for every host 
   this.agol_path = '/sharing/rest/content/items/';
 
-  // got the service and get the item
+  // drops the item from the cache
   this.dropItem = function( host, itemId, options, callback ){
     Cache.remove('agol', itemId, options, function(err, res){
       callback(err, res);
@@ -41,7 +49,7 @@ var AGOL = function(){
   // got the service and get the item
   this.getItem = function( host, itemId, options, callback ){
     var url = host + this.agol_path + itemId+'?f=json';
-    request.get(url, function(err, data ){
+    this.req(url, function(err, data ){
       if (err) {
         callback(err, null);
       } else {
@@ -86,31 +94,27 @@ var AGOL = function(){
 
           if ( is_expired ) {
             Cache.remove('agol', itemId, options, function(err, res){
-              if ( itemJson.type == 'CSV' ){  
-                self.getCSV( host + self.agol_path, itemId, itemJson, options, callback );
-              } else if ( itemJson.type == 'Feature Collection' ){
-                self.getFeatureCollection( host + self.agol_path, itemId, itemJson, options, callback );
-              } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
-                self.getFeatureService( itemId, itemJson, hash, options, callback );
-              } else {
-                callback('Requested Item must be a Feature Collection', null);
-              }
+              self.getData(itemJson, host, itemId, hash, options, callback);
             });
           } else {
-            if ( itemJson.type == 'CSV' ){  
-              self.getCSV( host + self.agol_path, itemId, itemJson, options, callback );
-            } else if ( itemJson.type == 'Feature Collection' ){
-              self.getFeatureCollection( host + self.agol_path, itemId, itemJson, options, callback );
-            } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
-              self.getFeatureService( itemId, itemJson, hash, options, callback );
-            } else {
-              callback('Requested Item must be a Feature Collection', null);
-            }
+            self.getData(itemJson, host, itemId, hash, options, callback);
           }
         });
 
       }
     });
+  };
+
+  this.getData = function(itemJson, host, itemId, hash, options, callback){
+    if ( itemJson.type == 'CSV' ){
+      this.getCSV( host + this.agol_path, itemId, itemJson, options, callback );
+    } else if ( itemJson.type == 'Feature Collection' ){
+      this.getFeatureCollection( host + this.agol_path, itemId, itemJson, options, callback );
+    } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
+      this.getFeatureService( itemId, itemJson, hash, options, callback );
+    } else {
+      callback('Requested Item must be a Feature Collection', null);
+    }
   };
 
   this.getCSV = function(base_url, id, itemJson, options, callback){
@@ -195,14 +199,21 @@ var AGOL = function(){
     }
   };
 
+  // removes the layer from the end of a url 
+  this.stripLayerOffUrl = function(url){
+    return url.substring(0, url.length - 2);
+  };
 
+
+  // makes a request to the feature service 
+  // checks the count and determines if koop should make one or many requests  
   this.makeFeatureServiceRequest = function( id, itemJson, hash, options, callback ){
     var self = this;
 
     // check the last char on the url
     // protects us from urls registered with layers already in the url 
     if ( parseInt(itemJson.url.charAt( itemJson.url.length-1 )) >= 0 ){
-      itemJson.url = itemJson.url.substring(0, itemJson.url.length - 2);
+      itemJson.url = self.stripLayerOffUrl( itemJson.url );
     }
 
     // get the ids only
@@ -213,8 +224,8 @@ var AGOL = function(){
     }
 
     // get the id count of the service 
-    request.get(idUrl, function(err, serviceIds ){
-      // determine if its greater then 1000 
+    this.req(idUrl, function(err, serviceIds ){
+      // determine if its greater then 1000
       try {
         var idJson = JSON.parse(serviceIds.body);
         if (idJson.error){
@@ -266,7 +277,7 @@ var AGOL = function(){
         url += '&geometry=&returnGeometry=true';
       }
       // get the features 
-      request.get(url, function(err, data ){
+      self.req(url, function(err, data ){
         if (err) {
           callback(err, null);
         } else {
@@ -302,6 +313,18 @@ var AGOL = function(){
   };
 
 
+  this._page = function( count, pageRequests, id, itemJson, layerId){
+    this.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
+      options.geomType = geomType;
+      Tasker.taskQueue.push( {
+        id: id,
+        type: 'agol',
+        hash: hash,
+        options: options,
+        geomType: geomType
+      }, function(){});
+    });
+  };
 
 
   // handles pagin over the feature service 
@@ -313,19 +336,6 @@ var AGOL = function(){
     if ( itemJson.name || itemJson.title && !options.name ){
       options.name = itemJson.name || itemJson.title;
     }
-
-    var _page = function( count, pageRequests, id, itemJson, layerId){
-      self.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
-        options.geomType = geomType;
-        Tasker.taskQueue.push( {
-          id: id,
-          type: 'agol', 
-          hash: hash,
-          options: options,
-          geomType: geomType 
-        }, function(){});
-      });
-    };
 
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
@@ -370,22 +380,20 @@ var AGOL = function(){
           itemJson.koop_status = 'processing';
           itemJson.cache_save = false;
           itemJson.expires_at = expiration;
-          callback(null, itemJson);
 
           var maxCount = 1000, //parseInt(serviceInfo.maxRecordCount) || 1000,
             pageRequests;
 
           // build legit offset based page requests 
           if ( serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
-
             var nPages = Math.ceil(count / maxCount);
             pageRequests = self.buildOffsetPages( nPages, itemJson.url, maxCount, options );
-            _page( count, pageRequests, id, itemJson, (options.layer || 0));
+            self._page( count, pageRequests, id, itemJson, (options.layer || 0));
 
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
             var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField );
-            request.get( statsUrl, function( err, res ){
+            self.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
 
               if ( statsJson.error ){
@@ -397,7 +405,7 @@ var AGOL = function(){
                   maxCount,
                   options
                 );
-                _page( count, pageRequests, id, itemJson, (options.layer || 0));
+                self._page( count, pageRequests, id, itemJson, (options.layer || 0));
               } else {
                   pageRequests = self.buildObjectIDPages(
                     itemJson.url,
@@ -406,7 +414,7 @@ var AGOL = function(){
                     maxCount,
                     options
                   );
-                  _page( count, pageRequests, id, itemJson, (options.layer || 0));
+                  self._page( count, pageRequests, id, itemJson, (options.layer || 0));
               }
             });
 
@@ -419,7 +427,7 @@ var AGOL = function(){
                   250,
                   options
                 );
-                _page( count, pageRequests, id, itemJson, (options.layer || 0));
+                self._page( count, pageRequests, id, itemJson, (options.layer || 0));
               });
             } else { 
             // default to sequential objectID paging
@@ -430,9 +438,10 @@ var AGOL = function(){
                 maxCount,
                 options
             );
-            _page( count, pageRequests, id, itemJson, (options.layer || 0));
+            self._page( count, pageRequests, id, itemJson, (options.layer || 0));
             }
           }
+          callback(null, itemJson);
 
         });
       });
