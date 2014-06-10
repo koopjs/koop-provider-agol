@@ -562,19 +562,19 @@ describe('AGOL Model', function(){
 
     describe('when building pages for requests', function() {
     
-      /*it('should build offset based request pages', function(done){
+      it('should build offset based request pages', function(done){
         var url = 'http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
         var max = 1000;
         var pages = 4;
         var options = {layer:1};
         var reqs = agol.buildOffsetPages( pages, url, max, options);
         reqs.length.should.equal( 4 );
-        reqs[0].req.should.equal( url+'/1/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=0&resultRecordCount=1000' );
-        reqs[1].req.should.equal( url+'/1/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=1000&resultRecordCount=1000' );
+        reqs[0].req.should.equal( url+'/1/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=0&resultRecordCount=1000&geometry=&returnGeometry=true' );
+        reqs[1].req.should.equal( url+'/1/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=1000&resultRecordCount=1000&geometry=&returnGeometry=true' );
         done();
-      });*/
+      });
 
-      /*it('should build where clause based request pages', function(done){
+      it('should build where clause based request pages', function(done){
         var url = 'http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
         var maxCount = 1000;
         var min = 1;
@@ -582,8 +582,8 @@ describe('AGOL Model', function(){
         var options = {layer:1};
         var reqs = agol.buildObjectIDPages( url, min, max, maxCount, options);
         reqs.length.should.equal( 4 );
-        reqs[0].req.should.equal( url + '/1/query?outSR=4326&where=objectId<=1000+AND+objectId>=1&f=json&outFields=*' );
-        reqs[1].req.should.equal( url + '/1/query?outSR=4326&where=objectId<=2000+AND+objectId>=1001&f=json&outFields=*' );
+        reqs[0].req.should.equal( url + '/1/query?outSR=4326&where=objectId<=1000+AND+objectId>=1&f=json&outFields=*&geometry=&returnGeometry=true' );
+        reqs[1].req.should.equal( url + '/1/query?outSR=4326&where=objectId<=2000+AND+objectId>=1001&f=json&outFields=*&geometry=&returnGeometry=true' );
         done();
       });
 
@@ -617,7 +617,7 @@ describe('AGOL Model', function(){
         var statUrl = agol.buildStatsUrl( url, 1, 'OBJECTID');
         statUrl.should.equal('http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer/1/query?f=json&outStatistics=[{"statisticType":"min","onStatisticField":"OBJECTID","outStatisticFieldName":"min"},{"statisticType":"max","onStatisticField":"OBJECTID","outStatisticFieldName":"max"}]');
         done();
-      });*/
+      });
 
     });
 
