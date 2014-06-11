@@ -314,6 +314,7 @@ var AGOL = function(){
 
 
   this._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
+    console.log('page', count, pageRequests);
     this.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
       Tasker.taskQueue.push( {
         id: id,
@@ -391,9 +392,11 @@ var AGOL = function(){
 
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
-            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField );
+            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || 'objectId');
             self.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
+
+              console.log(statsJson);
 
               if ( statsJson.error ){
                 // default to sequential objectID paging
