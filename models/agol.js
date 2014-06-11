@@ -314,8 +314,7 @@ var AGOL = function(){
 
 
   this._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
-    console.log('page', count, pageRequests.length);
-    this.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
+    this.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
       Tasker.taskQueue.push( {
         id: id,
         type: 'agol',
@@ -349,7 +348,7 @@ var AGOL = function(){
         }
         // set the geom type 
         options.geomType = serviceInfo.geometryType; 
-        
+        options.fields = serviceInfo.fields;    
       }
 
       // creates the empty table
@@ -531,7 +530,7 @@ var AGOL = function(){
 
   // make requests for feature pages 
   // execute done when we have all features 
-  this.requestQueue = function(max, reqs, id, itemJson, layerId, done){
+  this.requestQueue = function(max, reqs, id, itemJson, layerId, options, done){
     var reqCount = 0;
     // setup the place to collect all the features
     itemJson.data = [ {features: []} ];
@@ -542,7 +541,7 @@ var AGOL = function(){
         done( json.error.details[0], null);
       } else {
         // insert a partial
-        GeoJSON.fromEsri( [], json, function(err, geojson){
+        GeoJSON.fromEsri( options.fields || [], json, function(err, geojson){
           // concat the features so we return the full json
           //itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
           Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
