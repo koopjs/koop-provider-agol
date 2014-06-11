@@ -484,13 +484,14 @@ var AGOL = function(){
   //build object id query based page requests 
   this.buildObjectIDPages = function( url, min, max, maxCount, options ){
     var reqs = [], 
-      pageMax;
+      pageMax, pageMin;
 
     var pages = ( max == maxCount ) ? max : Math.ceil((max-min) / maxCount);
 
-    for (i=1; i < pages+1; i++){
-      pageMax = (i*maxCount)+min;
-      where = 'objectId<=' + pageMax + '+AND+' + 'objectId>=' + ((pageMax-maxCount)+1);
+    for (i=0; i < pages; i++){
+      pageMax = min + (maxCount*(i+1))-1;
+      pageMin = min + (maxCount*i);
+      where = 'objectId<=' + pageMax + '+AND+' + 'objectId>=' + pageMin;
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
       if ( options.geometry ){
         pageUrl += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
