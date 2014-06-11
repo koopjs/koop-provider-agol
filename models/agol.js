@@ -313,15 +313,14 @@ var AGOL = function(){
   };
 
 
-  this._page = function( count, pageRequests, id, itemJson, layerId){
+  this._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
     this.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
-      options.geomType = geomType;
       Tasker.taskQueue.push( {
         id: id,
         type: 'agol',
         hash: hash,
         options: options,
-        geomType: geomType
+        geomType: options.geomType
       }, function(){});
     });
   };
@@ -348,7 +347,7 @@ var AGOL = function(){
           serviceInfo.definitionExpression = serviceInfo.definitionExpression.replace(/'/g, '');
         }
         // set the geom type 
-        geomType = serviceInfo.geometryType; 
+        options.geomType = serviceInfo.geometryType; 
         
       }
 
@@ -388,7 +387,7 @@ var AGOL = function(){
           if ( serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
             var nPages = Math.ceil(count / maxCount);
             pageRequests = self.buildOffsetPages( nPages, itemJson.url, maxCount, options );
-            self._page( count, pageRequests, id, itemJson, (options.layer || 0));
+            self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
 
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
@@ -405,7 +404,7 @@ var AGOL = function(){
                   maxCount,
                   options
                 );
-                self._page( count, pageRequests, id, itemJson, (options.layer || 0));
+                self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               } else {
                   pageRequests = self.buildObjectIDPages(
                     itemJson.url,
@@ -414,7 +413,7 @@ var AGOL = function(){
                     maxCount,
                     options
                   );
-                  self._page( count, pageRequests, id, itemJson, (options.layer || 0));
+                  self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               }
             });
 
@@ -427,7 +426,7 @@ var AGOL = function(){
                   250,
                   options
                 );
-                self._page( count, pageRequests, id, itemJson, (options.layer || 0));
+                self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               });
             } else { 
             // default to sequential objectID paging
@@ -438,7 +437,7 @@ var AGOL = function(){
                 maxCount,
                 options
             );
-            self._page( count, pageRequests, id, itemJson, (options.layer || 0));
+            self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
             }
           }
           callback(null, itemJson);
