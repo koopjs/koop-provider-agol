@@ -314,7 +314,7 @@ var AGOL = function(){
 
 
   this._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
-    console.log('page', count, pageRequests);
+    console.log('page', count, pageRequests.length);
     this.requestQueue( count, pageRequests, id, itemJson, layerId, function(err,data){
       Tasker.taskQueue.push( {
         id: id,
@@ -396,8 +396,6 @@ var AGOL = function(){
             self.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
 
-              console.log(statsJson);
-
               if ( statsJson.error ){
                 // default to sequential objectID paging
                 pageRequests = self.buildObjectIDPages(
@@ -411,8 +409,8 @@ var AGOL = function(){
               } else {
                   pageRequests = self.buildObjectIDPages(
                     itemJson.url,
-                    statsJson.features[0].attributes.min,
-                    statsJson.features[0].attributes.max,
+                    statsJson.features[0].attributes.min || statsJson.features[0].attributes.MIN,
+                    statsJson.features[0].attributes.max || statsJson.features[0].attributes.MAX,
                     maxCount,
                     options
                   );
@@ -488,10 +486,10 @@ var AGOL = function(){
     var reqs = [], 
       pageMax;
 
-    var pages = ( max == maxCount ) ? max : Math.ceil(max / maxCount);
+    var pages = ( max == maxCount ) ? max : Math.ceil((max-min) / maxCount);
 
     for (i=1; i < pages+1; i++){
-      pageMax = i*maxCount;
+      pageMax = (i*maxCount)+min;
       where = 'objectId<=' + pageMax + '+AND+' + 'objectId>=' + ((pageMax-maxCount)+1);
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
       if ( options.geometry ){
