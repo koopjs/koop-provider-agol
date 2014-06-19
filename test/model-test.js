@@ -602,7 +602,7 @@ describe('AGOL Model', function(){
         var reqs = agol.buildOffsetPages( pages, url, max, options );
         Cache.remove('agol', id, options, function(){
           Cache.insert( 'agol', id, info, 1, function( err, success ){
-            agol.requestQueue( max, reqs, id, {}, 1, function(err, data){
+            agol.requestQueue( max, reqs, id, {}, 1, {}, function(err, data){
               Cache.get('agol', id, options, function(err, entry){
                 entry[0].features.length.should.equal(3143);
                 done();
@@ -615,7 +615,7 @@ describe('AGOL Model', function(){
       it('should build a correct stats url', function(done){
         var url = 'http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
         var statUrl = agol.buildStatsUrl( url, 1, 'OBJECTID');
-        statUrl.should.equal('http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer/1/query?f=json&outStatistics=[{"statisticType":"min","onStatisticField":"OBJECTID","outStatisticFieldName":"min"},{"statisticType":"max","onStatisticField":"OBJECTID","outStatisticFieldName":"max"}]');
+        statUrl.should.equal('http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer/1/query?f=json&outFields=&outStatistics=[{"statisticType":"min","onStatisticField":"OBJECTID","outStatisticFieldName":"min_oid"},{"statisticType":"max","onStatisticField":"OBJECTID","outStatisticFieldName":"max_oid"}]');
         done();
       });
 

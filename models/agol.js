@@ -408,8 +408,8 @@ var AGOL = function(){
               } else {
                   pageRequests = self.buildObjectIDPages(
                     itemJson.url,
-                    statsJson.features[0].attributes.min || statsJson.features[0].attributes.MIN,
-                    statsJson.features[0].attributes.max || statsJson.features[0].attributes.MAX,
+                    statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID,
+                    statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID,
                     maxCount,
                     options
                   );
@@ -594,9 +594,9 @@ var AGOL = function(){
 
   // builds a url for querying the min/max values of the object id 
   this.buildStatsUrl = function( url, layer, field ){
-    var json = [{"statisticType":"min","onStatisticField":field,"outStatisticFieldName":"min"},
-      {"statisticType":"max","onStatisticField":field,"outStatisticFieldName":"max"}];
-    return url+'/'+layer+'/query?f=json&outStatistics='+JSON.stringify(json);
+    var json = [{"statisticType":"min","onStatisticField":field,"outStatisticFieldName":"min_oid"},
+      {"statisticType":"max","onStatisticField":field,"outStatisticFieldName":"max_oid"}];
+    return url+'/'+layer+'/query?f=json&outFields=&outStatistics='+JSON.stringify(json);
   };
 
 
