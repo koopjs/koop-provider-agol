@@ -560,7 +560,7 @@ var AGOL = function(){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      console.log('get', i++);
+      console.log('get', i++, task.req);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
@@ -596,7 +596,7 @@ var AGOL = function(){
   this.buildStatsUrl = function( url, layer, field ){
     var json = [{"statisticType":"min","onStatisticField":field,"outStatisticFieldName":"min_oid"},
       {"statisticType":"max","onStatisticField":field,"outStatisticFieldName":"max_oid"}];
-    return url+'/'+layer+'/query?f=json&outFields=&outStatistics='+JSON.stringify(json);
+    return url+'/'+layer+'/query?f=json&outStatistics='+JSON.stringify(json);
   };
 
 
