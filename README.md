@@ -2,16 +2,24 @@
 ## An ArcGIS online provider to [Koop](https://github.com/Esri/koop) 
 
 
-## Installation
+## Installation for local development 
 1. clone the repo
    ```git clone git@github.com:Esri/koop-agol.git```
 2. enter the koop project directory 
     ```cd koop-agol```
 3. install the node.js dependencies
     ```npm install```
+4. run the tests
+    ```npm test``` 
 
+## Installing within a Koop instance 
 
-  ```npm install https://github.com/chelm/koop-github/tarball/master```
+Koop by default will not intall any providers. Each provider (like this one) must be installed individually. 
+
+Within a Koop instance you can use npm install to install a provider: 
+  ```npm install https://github.com/Esri/koop-agol/tarball/master```
+
+This will install the latest code from the github repo into Koop. When the Koop server is started the provider, and its routes/endpoints, will automatically be booted into Koop. 
 
 ## Resources
 * [Koop](https://github.com/Esri/koop)
