@@ -14,7 +14,7 @@
 
 ## Installing within a Koop instance 
 
-Koop by default will not intall any providers. Each provider (like this one) must be installed individually. 
+Koop by default will not install any providers. Each provider (like this one) must be installed individually. 
 
 Within a Koop instance you can use npm install to install a provider: 
   ```npm install https://github.com/Esri/koop-agol/tarball/master```
