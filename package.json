@@ -19,7 +19,8 @@
     "sphericalmercator": "~1.0.2",
     "lodash": "~2.4.1",
     "ejs": "~1.0.0",
-    "node.extend": "~1.0.10"
+    "node.extend": "~1.0.10",
+    "async": "~0.9.0"
   },
   "author": "Chris Helm",
   "license": "BSD-2-Clause",

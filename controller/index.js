@@ -11,6 +11,8 @@ var request = require('request'),
 // inherit from base controller
 var Controller = extend({
 
+  // Registers a host with the given id 
+  // this inserts a record into the db for an ArcGIS instances ie: id -> hostname :: arcgis -> arcgis.com 
   register: function(req, res){
     if ( !req.body.host ){
       res.send('Must provide a host to register:', 500); 
@@ -25,6 +27,7 @@ var Controller = extend({
     }
   },
 
+  // returns a list of the registered hosts and thier ids
   list: function(req, res){
     agol.find(null, function(err, data){
       if (err) {
@@ -35,6 +38,7 @@ var Controller = extend({
     });
   }, 
 
+  // looks up a host based on a given id 
   find: function(req, res){
     agol.find(req.params.id, function(err, data){
       if (err) {
@@ -45,6 +49,7 @@ var Controller = extend({
     });
   },
 
+  // get the item metadata from the host 
   findItem: function(req, res){
     if (req.params.format){
       Controller.findItemData(req, res);
@@ -90,7 +95,8 @@ var Controller = extend({
     });
   },
 
-
+  // gets the items data 
+  // this means 
   findItemData: function(req, res){
     // closure that actually goes out gets the data
     var _get = function(id, item, key, options, callback){
@@ -283,6 +289,7 @@ var Controller = extend({
     });
   },
 
+  // handles a DELETE to remove a registered host from the DB
   del: function(req, res){
     if ( !req.params.id ){
       res.send( 'Must specify a service id', 500 );
@@ -409,10 +416,13 @@ var Controller = extend({
 
   },
 
+  // renders the preview map view
   preview: function(req, res){
     res.render(__dirname + '/../views/demo', { locals: { host: req.params.id, item: req.params.item } });
   },
 
+  // handled tile requests 
+  // gets a z, x, y and a format 
   tiles: function( req, res ){
     var key,
       layer = req.params.layer || 0;
