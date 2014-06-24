@@ -269,10 +269,10 @@ describe('AGOL Controller', function(){
          request(koop)
           .get('/agol/test/itemid/0.csv')
           .end(function(err, res){
-//            res.should.have.status(200);
-//            Cache.getInfo.called.should.equal(true);
+            res.should.have.status(404);
+            Cache.getInfo.called.should.equal(true);
             Exporter.exportToFormat.called.should.equal(true);
-//            agol.getItemData.called.should.equal(true);
+            agol.getItemData.called.should.equal(true);
             done();
         });
       });
