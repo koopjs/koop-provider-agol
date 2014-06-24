@@ -27,6 +27,21 @@ var Controller = extend({
     }
   },
 
+   // handles a DELETE to remove a registered host from the DB
+  del: function(req, res){
+    if ( !req.params.id ){
+      res.send( 'Must specify a service id', 500 );
+    } else {
+      agol.remove(req.params.id, function(err, data){
+        if (err) {
+          res.send( err, 500);
+        } else {
+          res.json( data );
+        }
+      });
+    }
+  },
+
   // returns a list of the registered hosts and thier ids
   list: function(req, res){
     agol.find(null, function(err, data){
@@ -171,7 +186,8 @@ var Controller = extend({
 
           // use the item as the file dir so we can organize exports by id
           var dir = req.params.item + '_' + ( req.params.layer || 0 );
-          
+         
+          // the file name for the export   
           var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
 
           // if we know the name and its a zip request; check for file via name
@@ -185,7 +201,7 @@ var Controller = extend({
             req.query.layer = req.params.layer;
           }
 
-          //console.log('FileName?', fileName, fs.existsSync( fileName ));
+          // does the data export already exist? 
           if ( fs.existsSync( fileName ) && !is_expired ){
             if ( req.query.url_only ){
               // check for Peechee
@@ -204,7 +220,6 @@ var Controller = extend({
               res.sendfile( fileName );
             }
           } else {
-
             // check the koop status table to see if we have a job running 
               // if we do then return 
               // else proceed 
@@ -289,21 +304,6 @@ var Controller = extend({
     });
   },
 
-  // handles a DELETE to remove a registered host from the DB
-  del: function(req, res){
-    if ( !req.params.id ){
-      res.send( 'Must specify a service id', 500 );
-    } else { 
-      agol.remove(req.params.id, function(err, data){
-        if (err) {
-          res.send( err, 500);
-        } else {
-          res.json( data );
-        }
-      });
-    }
-  }, 
-  
   featureserver: function( req, res ){
     var callback = req.query.callback;
     delete req.query.callback;
