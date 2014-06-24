@@ -461,7 +461,14 @@ var Controller = extend({
       file += key + ':' + layer + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
-    if ( !fs.existsSync( file ) ) {
+    var jsonFile = file.replace(/png|pbf|utf/g, 'json');
+
+    // if the json file alreadty exists, dont hit the db, just send the data
+    if (fs.existsSync(jsonFile) && !fs.existsSync( file ) ){
+      
+      _send( null, fs.readFileSync( jsonFile ) );
+
+    } else if ( !fs.existsSync( file ) ) {
       agol.find(req.params.id, function(err, data){
         if (err) {
           res.send( err, 500);
