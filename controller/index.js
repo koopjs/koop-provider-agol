@@ -466,7 +466,7 @@ var Controller = extend({
     // if the json file alreadty exists, dont hit the db, just send the data
     if (fs.existsSync(jsonFile) && !fs.existsSync( file ) ){
       
-      _send( null, fs.readFileSync( jsonFile ) );
+      _send( null, [JSON.parse(fs.readFileSync( jsonFile ))] );
 
     } else if ( !fs.existsSync( file ) ) {
       agol.find(req.params.id, function(err, data){
