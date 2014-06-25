@@ -11,8 +11,17 @@ global.config = config;
 before(function(done){
   //Controller  = require('../controller/index.js');
   //global.agol  = require('../models/agol.js');
+  sinon.stub(BaseController, '_processFeatureServer', function(req, res, err, data, callback){
+    callback(null, {});
+  });
+
   Cache.db = PostGIS.connect( config.db.postgis.conn );
   try { koop.register(require("../index.js")); } catch(e){ console.log(e); }
+  done();
+});
+
+after(function(done){
+  BaseController._processFeatureServer.restore();
   done();
 });
 
@@ -273,6 +282,192 @@ describe('AGOL Controller', function(){
             Cache.getInfo.called.should.equal(true);
             Exporter.exportToFormat.called.should.equal(true);
             agol.getItemData.called.should.equal(true);
+            done();
+        });
+      });
+    });
+
+    //Exporter.exportLarge
+    describe('getting large feature data w/a format', function() {
+      before(function(done ){
+
+        var itemInfo = require('./fixtures/itemInfo.js');
+
+        sinon.stub(Exporter, 'exportLarge', function(format, dir, key, data, opts, callback){
+          callback(null, 'somefile');
+        });
+
+        sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
+          callback(null, { koop_status: 'too big', data:[{info:'dummy', features:[{}]}]});
+        });
+
+        sinon.stub(agol, 'find', function(id, callback){
+          callback(null, {id: 'test', host:'http://dummy.host.com'});
+        });
+
+        sinon.stub(Cache, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
+        done();
+      });
+
+      after(function(done){
+        agol.getItemData.restore();
+        Cache.getInfo.restore();
+        agol.find.restore();
+        Exporter.exportLarge.restore();
+        done();
+      });
+
+      it('should call Exporter.exportLarge an dreturn 200', function(done){
+         request(koop)
+          .get('/agol/test/itemid/0.csv')
+          .end(function(err, res){
+            res.should.have.status(404);
+            Cache.getInfo.called.should.equal(true);
+            Exporter.exportLarge.called.should.equal(true);
+            agol.getItemData.called.should.equal(true);
+            done();
+        });
+      });
+    });
+
+    //Feature Services
+
+    describe('getting data as a feature service', function() {
+      before(function(done ){
+
+        var itemInfo = require('./fixtures/itemInfo.js');
+
+        sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
+          callback(null, { koop_status: 'too big', data:[{info:'dummy', features:[{}]}]});
+        });
+
+        sinon.stub(agol, 'find', function(id, callback){
+          callback(null, {id: 'test', host:'http://dummy.host.com'});
+        });
+
+        sinon.stub(Cache, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
+        done();
+      });
+
+      after(function(done){
+        agol.getItemData.restore();
+        Cache.getInfo.restore();
+        agol.find.restore();
+        done();
+      });
+
+      it('should call Controller._processFeatureServer and return 200', function(done){
+         request(koop)
+          .get('/agol/test/itemid/FeatureServer')
+          .end(function(err, res){
+            res.should.have.status(200);
+            Cache.getInfo.called.should.equal(true);
+            agol.getItemData.called.should.equal(true);
+            done();
+        });
+      });
+    });
+
+    describe('getting an existing thumbnail', function() {
+      before(function(done ){
+
+        var itemInfo = require('./fixtures/itemInfo.js');
+
+        sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
+          callback(null, { koop_status: 'too big', data:[{info:'dummy', features:[{}]}]});
+        });
+
+        sinon.stub(agol, 'find', function(id, callback){
+          callback(null, {id: 'test', host:'http://dummy.host.com'});
+        });
+
+        sinon.stub(Cache, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
+
+        sinon.stub(GeoJSON, 'fromEsri', function(json, callback){
+          callback(null, {});
+        });
+
+        sinon.stub(Thumbnail, 'exists', function(key, opts){
+          return false;
+        });  
+
+        sinon.stub(Thumbnail, 'generate', function(data, key, opts, callback){
+          callback(null, 'somefile');
+        }); 
+
+        done();
+      });
+
+      after(function(done){
+        agol.getItemData.restore();
+        Cache.getInfo.restore();
+        agol.find.restore();
+        Thumbnail.exists.restore();
+        Thumbnail.generate.restore();
+        GeoJSON.fromEsri.restore();
+        done();
+      });
+
+      it('should call Controller._processFeatureServer and return 200', function(done){
+         request(koop)
+          .get('/agol/test/itemid/Thumbnail/0')
+          .end(function(err, res){
+//            res.should.have.status(200);
+            agol.find.called.should.equal(true);
+            Thumbnail.exists.called.should.equal(true);
+            GeoJSON.fromEsri.called.should.equal(true);
+            Thumbnail.generate.called.should.equal(true);
+            done();
+        });
+      });
+    });
+
+    describe('getting a png tile should return 404 for test', function() {
+      before(function(done ){
+
+        var itemInfo = require('./fixtures/itemInfo.js');
+
+        sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
+          callback(null, { koop_status: 'too big', data:[{info:'dummy', features:[{}]}]});
+        });
+
+        sinon.stub(agol, 'find', function(id, callback){
+          callback(null, {id: 'test', host:'http://dummy.host.com'});
+        });
+
+        sinon.stub(Cache, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
+
+        sinon.stub(Tiles, 'get', function(params, data, callback){
+          callback(null, 'tile.png');
+        });
+        done();
+      });
+
+      after(function(done){
+        agol.getItemData.restore();
+        Cache.getInfo.restore();
+        agol.find.restore();
+        Tiles.get.restore();
+        done();
+      });
+
+      it('should call Controller._processFeatureServer and return 200', function(done){
+         request(koop)
+          .get('/agol/test/itemid/0/tiles/5/5/12.png')
+          .end(function(err, res){
+            res.should.have.status(404);
+            //Cache.getInfo.called.should.equal(true);
+            agol.find.called.should.equal(true);
+            agol.getItemData.called.should.equal(true);
+            Tiles.get.called.should.equal(true);
             done();
         });
       });
