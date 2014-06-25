@@ -11,9 +11,10 @@ global.config = config;
 before(function(done){
   //Controller  = require('../controller/index.js');
   //global.agol  = require('../models/agol.js');
-  sinon.stub(BaseController, '_processFeatureServer', function(req, res, err, data, callback){
-    callback(null, {});
-  });
+  //sinon.stub(BaseController, '_processFeatureServer', function(req, res, err, data, callback){
+  //  console.log('wtf')
+  //  callback(null, {});
+  //});
 
   Cache.db = PostGIS.connect( config.db.postgis.conn );
   try { koop.register(require("../index.js")); } catch(e){ console.log(e); }
@@ -21,7 +22,7 @@ before(function(done){
 });
 
 after(function(done){
-  BaseController._processFeatureServer.restore();
+  //BaseController._processFeatureServer.restore();
   done();
 });
 
@@ -326,46 +327,6 @@ describe('AGOL Controller', function(){
             res.should.have.status(404);
             Cache.getInfo.called.should.equal(true);
             Exporter.exportLarge.called.should.equal(true);
-            agol.getItemData.called.should.equal(true);
-            done();
-        });
-      });
-    });
-
-    //Feature Services
-
-    describe('getting data as a feature service', function() {
-      before(function(done ){
-
-        var itemInfo = require('./fixtures/itemInfo.js');
-
-        sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
-          callback(null, { koop_status: 'too big', data:[{info:'dummy', features:[{}]}]});
-        });
-
-        sinon.stub(agol, 'find', function(id, callback){
-          callback(null, {id: 'test', host:'http://dummy.host.com'});
-        });
-
-        sinon.stub(Cache, 'getInfo', function(key, callback){
-          callback(null, itemInfo);
-        });
-        done();
-      });
-
-      after(function(done){
-        agol.getItemData.restore();
-        Cache.getInfo.restore();
-        agol.find.restore();
-        done();
-      });
-
-      it('should call Controller._processFeatureServer and return 200', function(done){
-         request(koop)
-          .get('/agol/test/itemid/FeatureServer')
-          .end(function(err, res){
-            res.should.have.status(200);
-            Cache.getInfo.called.should.equal(true);
             agol.getItemData.called.should.equal(true);
             done();
         });
