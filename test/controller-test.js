@@ -350,14 +350,6 @@ describe('AGOL Controller', function(){
           callback(null, itemInfo);
         });
 
-        sinon.stub(GeoJSON, 'fromEsri', function(json, callback){
-          callback(null, {});
-        });
-
-        sinon.stub(Thumbnail, 'exists', function(key, opts){
-          return false;
-        });  
-
         sinon.stub(Thumbnail, 'generate', function(data, key, opts, callback){
           callback(null, 'somefile');
         }); 
@@ -369,20 +361,16 @@ describe('AGOL Controller', function(){
         agol.getItemData.restore();
         Cache.getInfo.restore();
         agol.find.restore();
-        Thumbnail.exists.restore();
         Thumbnail.generate.restore();
-        GeoJSON.fromEsri.restore();
         done();
       });
 
-      it('should call Controller._processFeatureServer and return 200', function(done){
+      it('should call Thumbnail generate and return 200', function(done){
          request(koop)
           .get('/agol/test/itemid/Thumbnail/0')
           .end(function(err, res){
 //            res.should.have.status(200);
             agol.find.called.should.equal(true);
-            Thumbnail.exists.called.should.equal(true);
-            GeoJSON.fromEsri.called.should.equal(true);
             Thumbnail.generate.called.should.equal(true);
             done();
         });
