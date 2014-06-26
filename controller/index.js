@@ -354,15 +354,15 @@ var Controller = extend({
 
         // check the image first and return if exists
         var key = ['agol', req.params.id, req.params.item, (req.params.layer || 0)].join(':');
-        var dir = config.data_dir + '/thumbs/';
+        var dir = config.data_dir + 'thumbs';
         req.query.width = parseInt( req.query.width ) || 150;
         req.query.height = parseInt( req.query.height ) || 150;
-        req.query.f_base = dir + key + '/' + req.query.width + '::' + req.query.height;
-        // var png = req.query.f_base+'.png';
+        req.query.f_base = dir + '/' + req.params.item + '/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
+        var png = req.query.f_base+'.png';
 
-        var fileName = Thumbnail.exists(key, req.query); 
-        if ( fileName ){
-          res.sendfile( fileName );
+        //var fileName = .exists(key, req.query); 
+        if ( fs.existsSync(png) ){
+          res.sendfile( png );
         } else {
 
           // if we have a layer then pass it along
@@ -385,9 +385,6 @@ var Controller = extend({
             if (error) {
               res.send( error, 500);
             } else {
-              GeoJSON.fromEsri({features: itemJson.data.features}, function(err, geojson){
-                req.query.cache = false;
-
                 if ( itemJson.extent ){
                   req.query.extent = {
                     xmin: itemJson.extent[0][0],
@@ -398,7 +395,8 @@ var Controller = extend({
                 }
 
                 // generate a thumbnail
-                Thumbnail.generate( geojson, key, req.query, function(err, file){
+                delete itemJson.data[0].info;
+                Thumbnail.generate( itemJson.data[0], req.params.item, req.query, function(err, file){
                   if (err){
                     res.send(err, 500);
                   } else {
@@ -407,7 +405,6 @@ var Controller = extend({
                   }
                 });
                 
-              });
             }
           });
         }
