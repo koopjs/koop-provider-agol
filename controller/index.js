@@ -492,6 +492,9 @@ var Controller = extend({
           var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
           var key = crypto.createHash('md5').update(toHash).digest('hex');
 
+          req.query.simplify = true; 
+          req.query.zoom = req.params.z; 
+
           // Get the item
           agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
             if (error) {
