@@ -88,6 +88,11 @@ module.exports = {
   'get /agol/:id/:item/:layer/tiles/:z/:x/:y.:format': {
     controller: 'agol',
     action: 'tiles'
-  }
+  },
+
+  'get /agol/:id/:item/:layer/tiles/:z/:x/:y': {
+    controller: 'agol',
+    action: 'tiles'
+  },
 
 };

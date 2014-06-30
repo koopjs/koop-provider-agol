@@ -424,6 +424,12 @@ var Controller = extend({
     var key,
       layer = req.params.layer || 0;
 
+    // if no format given default to png 
+    if ( !req.params.format ){
+      req.params.format = 'png';
+    }
+
+    // Get the tile and send the response to the client
     var _send = function( err, data ){
       req.params.key = key + ':' + layer;
       Tiles.get( req.params, data[0], function(err, tile){
