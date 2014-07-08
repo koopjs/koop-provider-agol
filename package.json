@@ -14,7 +14,7 @@
     "koop-server": "https://github.com/Esri/koop-server/tarball/master",
     "config": "~0.4.35",
     "terraformer": "1.0.3",
-    "terraformer-arcgis-parser": "1.0.3",
+    "terraformer-arcgis-parser": "1.0.4",
     "terraformer-wkt-parser": "~1.0.0",
     "sphericalmercator": "~1.0.2",
     "lodash": "~2.4.1",

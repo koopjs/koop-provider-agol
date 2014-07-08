@@ -276,13 +276,14 @@ var AGOL = function(){
       } else {
         url += '&geometry=&returnGeometry=true';
       }
-      // get the features 
+      // get the features
       self.req(url, function(err, data ){
         if (err) {
           callback(err, null);
         } else {
           try {
-            var json = {features: JSON.parse( data.body ).features};
+            // have to replace asterrisks for bad coord values from agol
+            var json = {features: JSON.parse( data.body.replace(/\*+/g,'null') ).features};
             // convert to GeoJSON 
             GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
 
@@ -305,6 +306,7 @@ var AGOL = function(){
               });
             });
           } catch (e){
+            console.log(e);
             callback( 'Unable to parse Feature Service response', null );
           }
         }
@@ -392,6 +394,7 @@ var AGOL = function(){
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
             var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || 'objectId');
+          
             self.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
 
@@ -560,7 +563,7 @@ var AGOL = function(){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      console.log('get', i++);
+      console.log('get', i++, task.req);
       request.get(task.req, function(err, data){
         try {
           var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
