@@ -277,7 +277,6 @@ var AGOL = function(){
         url += '&geometry=&returnGeometry=true';
       }
       // get the features
-      console.log(url) 
       self.req(url, function(err, data ){
         if (err) {
           callback(err, null);
