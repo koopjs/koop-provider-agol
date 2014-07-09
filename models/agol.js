@@ -268,49 +268,53 @@ var AGOL = function(){
     var self = this;
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
-
-      // we can the data in one shot
-      var url = itemJson.url + '/' + (options.layer || 0) + '/query?outSR=4326&where=1=1&f=json&outFields=*';
-      if (options.geometry){
-        url += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+      if ( err ){
+        callback(err, null);
       } else {
-        url += '&geometry=&returnGeometry=true';
-      }
-      // get the features
-      self.req(url, function(err, data ){
-        if (err) {
-          callback(err, null);
+
+        // we can the data in one shot
+        var url = itemJson.url + '/' + (options.layer || 0) + '/query?outSR=4326&where=1=1&f=json&outFields=*';
+        if (options.geometry){
+          url += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
         } else {
-          try {
-            // have to replace asterrisks for bad coord values from agol
-            var json = {features: JSON.parse( data.body.replace(/\*+/g,'null') ).features};
-            // convert to GeoJSON 
-            GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
-
-              geojson.name = itemJson.name || itemJson.title;
-              geojson.updated_at = itemJson.modified;
-              geojson.expires_at = new Date().getTime() + self.cacheLife;
-              geojson.info = serviceInfo;
-              geojson.retrieved_at = new Date().getTime(); 
-
-              // save the data 
-              Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
-                if ( success ) {
-                  Cache.get( 'agol', id, options, function(err, entry ){
-                    itemJson.data = entry;
-                    callback( null, itemJson );
-                  });
-                } else {
-                  callback( err, null );
-                }
-              });
-            });
-          } catch (e){
-            console.log(e);
-            callback( 'Unable to parse Feature Service response', null );
-          }
+          url += '&geometry=&returnGeometry=true';
         }
-      });
+        // get the features
+        self.req(url, function(err, data ){
+          if (err) {
+            callback(err, null);
+          } else {
+            try {
+              // have to replace asterrisks for bad coord values from agol
+              var json = {features: JSON.parse( data.body.replace(/\*+/g,'null') ).features};
+              // convert to GeoJSON 
+              GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
+
+                geojson.name = itemJson.name || itemJson.title;
+                geojson.updated_at = itemJson.modified;
+                geojson.expires_at = new Date().getTime() + self.cacheLife;
+                geojson.info = serviceInfo;
+                geojson.retrieved_at = new Date().getTime(); 
+
+                // save the data 
+                Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
+                  if ( success ) {
+                    Cache.get( 'agol', id, options, function(err, entry ){
+                      itemJson.data = entry;
+                      callback( null, itemJson );
+                    });
+                  } else {
+                    callback( err, null );
+                  }
+                });
+              });
+            } catch (e){
+              console.log(e);
+              callback( 'Unable to parse Feature Service response', null );
+            }
+          }
+        });
+      }
     });
   };
 
@@ -393,10 +397,11 @@ var AGOL = function(){
 
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
-            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || 'objectId');
+            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || self.getObjectIDField(serviceInfo));
           
             self.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
+              console.log(statsUrl)
 
               if ( statsJson.error ){
                 // default to sequential objectID paging
@@ -582,8 +587,12 @@ var AGOL = function(){
   // Gets the feature service info 
   this.getFeatureServiceLayerInfo = function( url, layer, callback ){
     request.get( url +'/'+ layer + '?f=json', function( err, res ){
-      var json = JSON.parse( res.body );
-      callback( err, json );
+      try {
+        var json = JSON.parse( res.body );
+        callback( err, json );
+      } catch (e) {
+        callback( 'failed to parse service info', null );
+      }
     });
   };
 
@@ -600,6 +609,17 @@ var AGOL = function(){
     var json = [{"statisticType":"min","onStatisticField":field,"outStatisticFieldName":"min_oid"},
       {"statisticType":"max","onStatisticField":field,"outStatisticFieldName":"max_oid"}];
     return url+'/'+layer+'/query?f=json&outFields=&outStatistics='+JSON.stringify(json);
+  };
+
+  // find and return the OID field from the list of fields
+  this.getObjectIDField = function(info){
+    var field;
+    info.fields.forEach(function(f,i){
+      if (f.type == 'esriFieldTypeOID'){
+        field = f.name;
+      }
+    });
+    return field;
   };
 
 
