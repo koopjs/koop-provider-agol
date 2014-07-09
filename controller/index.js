@@ -358,7 +358,7 @@ var Controller = extend({
 
         // check the image first and return if exists
         var key = ['agol', req.params.id, req.params.item, (req.params.layer || 0)].join(':');
-        var dir = config.data_dir + 'thumbs';
+        var dir = config.data_dir + '/thumbs';
         req.query.width = parseInt( req.query.width ) || 150;
         req.query.height = parseInt( req.query.height ) || 150;
         req.query.f_base = dir + '/' + req.params.item + '/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
