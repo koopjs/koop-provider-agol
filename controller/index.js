@@ -181,108 +181,113 @@ var Controller = extend({
         // check format for exporting data
         if ( req.params.format ){
 
-          // change geojson to json
-          req.params.format = req.params.format.replace('geojson', 'json');
-
-          // use the item as the file dir so we can organize exports by id
-          var dir = req.params.item + '_' + ( req.params.layer || 0 );
-         
-          // the file name for the export   
-          var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
-
-          // if we know the name and its a zip request; check for file via name
-          if (info && req.params.format == 'zip'){
-            var name = info.info.name || info.info.title;
-            fileName = [config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
-          }
-          
-          // if we have a layer then append it to the query params 
-          if ( req.params.layer ) {
-            req.query.layer = req.params.layer;
-          }
-
-          // does the data export already exist? 
-          if ( fs.existsSync( fileName ) && !is_expired ){
-            if ( req.query.url_only ){
-              // check for Peechee
-              if ( peechee && peechee.path ){
-                peechee.path( dir, key+'.'+req.params.format, function(e, url){
-                  res.json({url:url});
-                });
-              } else {
-                var origUrl = req.originalUrl.split('?');
-                res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-              }
-            } else {
-              if (req.params.format == 'json' || req.params.format == 'geojson'){
-                res.contentType('text');
-              }
-              res.sendfile( fileName );
-            }
+          // redirect to thumbnail for png access
+          if (req.params.format == 'png'){
+            Controller.thumbnail(req, res);
           } else {
-            // check the koop status table to see if we have a job running 
-              // if we do then return 
-              // else proceed 
-            req.query.format = req.params.format;
-            _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
-              if (err){
-                res.send(err, 500 );
-              } else if ( !itemJson.data[0].features.length ){
-                res.send( 'No features exist for the requested FeatureService layer', 500 );
-              } else {
-                if (itemJson.koop_status && itemJson.koop_status == 'too big'){
-                  // export as a series of small queries/files
-                  var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
 
-                  req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson. data[0].info.title : itemJson.name; 
-                  // set the geometry type so the exporter can do its thing for csv points (add x,y)
-                  req.query.geomType = itemJson.data[0].info.geometryType;
+            // change geojson to json
+            req.params.format = req.params.format.replace('geojson', 'json');
 
-                  Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
-                    if (result && result.status && result.status == 'processing'){
-                      res.json( { status: 'processing' }, 202);          
-                    } else if ( req.query.url_only ){
-                      var origUrl = req.originalUrl.split('?');
-                      res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/      url_only=true&|url_only=true/,'')});
-                    } else {
-                      if (err) {
-                        res.send( err, 500 );
-                      } else {
-                        if (req.params.format == 'json' || req.params.format == 'geojson'){
-                          res.contentType('text');
-                        }
-                        res.sendfile(result);
-                      }
-                    }
+            // use the item as the file dir so we can organize exports by id
+            var dir = req.params.item + '_' + ( req.params.layer || 0 );
+         
+            // the file name for the export   
+            var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+
+            // if we know the name and its a zip request; check for file via name
+            if (info && req.params.format == 'zip'){
+              var name = info.info.name || info.info.title;
+              fileName = [config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
+            }
+            
+            // if we have a layer then append it to the query params 
+            if ( req.params.layer ) {
+              req.query.layer = req.params.layer;
+            }
+
+            // does the data export already exist? 
+            if ( fs.existsSync( fileName ) && !is_expired ){
+              if ( req.query.url_only ){
+                // check for Peechee
+                if ( peechee && peechee.path ){
+                  peechee.path( dir, key+'.'+req.params.format, function(e, url){
+                    res.json({url:url});
                   });
                 } else {
-                  Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
-                    if ( req.query.url_only ){
-                      // check for Peechee
-                      if ( peechee && peechee.path ){
-                        peechee.path( dir, key+'.'+req.params.format, function(e, url){
-                          res.json({url:url});
-                        });  
-                      } else {
-                        var origUrl = req.originalUrl.split('?');
-                        res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                      }
-                    } else {
-                      if (err) {
-                        res.send( err, 500 );
-                      } else {
-                        if (req.params.format == 'json' || req.params.format == 'geojson'){
-                          res.contentType('text');
-                        }
-                        res.sendfile(result);
-                      }
-                    }
-                  });
+                  var origUrl = req.originalUrl.split('?');
+                  res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
                 }
+              } else {
+                if (req.params.format == 'json' || req.params.format == 'geojson'){
+                  res.contentType('text');
+                }
+                res.sendfile( fileName );
               }
-            });
-          }
+            } else {
+              // check the koop status table to see if we have a job running 
+                // if we do then return 
+                // else proceed 
+              req.query.format = req.params.format;
+              _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
+                if (err){
+                  res.send(err, 500 );
+                } else if ( !itemJson.data[0].features.length ){
+                  res.send( 'No features exist for the requested FeatureService layer', 500 );
+                } else {
+                  if (itemJson.koop_status && itemJson.koop_status == 'too big'){
+                    // export as a series of small queries/files
+                    var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
 
+                    req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson. data[0].info.title : itemJson.name; 
+                    // set the geometry type so the exporter can do its thing for csv points (add x,y)
+                    req.query.geomType = itemJson.data[0].info.geometryType;
+
+                    Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
+                      if (result && result.status && result.status == 'processing'){
+                        res.json( { status: 'processing' }, 202);          
+                      } else if ( req.query.url_only ){
+                        var origUrl = req.originalUrl.split('?');
+                        res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/      url_only=true&|url_only=true/,'')});
+                      } else {
+                        if (err) {
+                          res.send( err, 500 );
+                        } else {
+                          if (req.params.format == 'json' || req.params.format == 'geojson'){
+                            res.contentType('text');
+                          }
+                          res.sendfile(result);
+                        }
+                      }
+                    });
+                  } else {
+                    Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
+                      if ( req.query.url_only ){
+                        // check for Peechee
+                        if ( peechee && peechee.path ){
+                          peechee.path( dir, key+'.'+req.params.format, function(e, url){
+                            res.json({url:url});
+                          });  
+                        } else {
+                          var origUrl = req.originalUrl.split('?');
+                          res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+                        }
+                      } else {
+                        if (err) {
+                          res.send( err, 500 );
+                        } else {
+                          if (req.params.format == 'json' || req.params.format == 'geojson'){
+                            res.contentType('text');
+                          }
+                          res.sendfile(result);
+                        }
+                      }
+                    });
+                  }
+                }
+              });
+            }
+          }
         } else {
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {
@@ -346,7 +351,6 @@ var Controller = extend({
   },
 
   thumbnail: function(req, res){
-
      agol.find(req.params.id, function(err, data){
       if (err) {
         res.send( err, 500);

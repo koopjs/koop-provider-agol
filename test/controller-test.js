@@ -422,5 +422,47 @@ describe('AGOL Controller', function(){
       });
     });
 
+    describe('getting a thumbnail from .png', function() {
+      before(function(done ){
+
+        var itemInfo = require('./fixtures/itemInfo.js');
+
+        sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
+          callback(null, { koop_status: 'too big', data:[{info:'dummy', features:[{}]}]});
+        });
+
+        sinon.stub(agol, 'find', function(id, callback){
+          callback(null, {id: 'test', host:'http://dummy.host.com'});
+        });
+
+        sinon.stub(Cache, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
+
+        sinon.stub(Thumbnail, 'generate', function(data, key, opts, callback){
+          callback(null, 'somefile');
+        });
+
+        done();
+      });
+
+      after(function(done){
+        agol.getItemData.restore();
+        Cache.getInfo.restore();
+        agol.find.restore();
+        Thumbnail.generate.restore();
+        done();
+      });
+
+      it('should call Thumbnail generate and return 200', function(done){
+         request(koop)
+          .get('/agol/test/itemid/0.png')
+          .end(function(err, res){
+            agol.find.called.should.equal(true);
+            Thumbnail.generate.called.should.equal(true);
+            done();
+        });
+      });
+    });
 });
 
