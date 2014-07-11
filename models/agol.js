@@ -356,6 +356,8 @@ var AGOL = function(){
         options.geomType = serviceInfo.geometryType; 
         options.fields = serviceInfo.fields;    
       }
+          
+      options.objectIdField = self.getObjectIDField(serviceInfo);
 
       // creates the empty table
       Cache.remove('agol', id, {layer: (options.layer || 0)}, function(){
@@ -388,6 +390,7 @@ var AGOL = function(){
 
           var maxCount = 1000, //parseInt(serviceInfo.maxRecordCount) || 1000,
             pageRequests;
+          
 
           // build legit offset based page requests 
           if ( serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
@@ -397,11 +400,11 @@ var AGOL = function(){
 
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
-            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || self.getObjectIDField(serviceInfo));
+            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdFeild );
           
             self.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
-              console.log(statsUrl)
+              //console.log(statsUrl, statsJson);
 
               if ( statsJson.error ){
                 // default to sequential objectID paging
@@ -493,12 +496,14 @@ var AGOL = function(){
     var reqs = [], 
       pageMax, pageMin;
 
+    var objId = options.objectIdField || 'objectId';
+
     var pages = ( max == maxCount ) ? max : Math.ceil((max-min) / maxCount);
 
     for (i=0; i < pages; i++){
       pageMax = min + (maxCount*(i+1))-1;
       pageMin = min + (maxCount*i);
-      where = 'objectId<=' + pageMax + '+AND+' + 'objectId>=' + pageMin;
+      where = objId+'<=' + pageMax + '+AND+' + objId+'>=' + pageMin;
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
       if ( options.geometry ){
         pageUrl += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
@@ -515,13 +520,15 @@ var AGOL = function(){
   this.buildIDPages = function( url, ids, maxCount, options ){
     var reqs = [],
       pageMax;
+    
+    var objId = options.objectIdField || 'objectId';
 
     var pages = (ids.length / maxCount);
 
     for (i=0; i < pages+1; i++){
       var pageIds = ids.splice(0, maxCount);
       if (pageIds.length){
-        where = 'objectId in (' + pageIds.join(',') + ')';
+        where = objId+' in (' + pageIds.join(',') + ')';
         pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
         if ( options.geometry ){
           pageUrl += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
@@ -571,7 +578,7 @@ var AGOL = function(){
       console.log('get', i++, task.req);
       request.get(task.req, function(err, data){
         try {
-          var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
+          var json = JSON.parse(data.body.replace(/OwnerPLY\./g,'').replace(/NaN/g, 'null'));
           _collect(json, callback);
         } catch(e){
           console.log('failed to parse json', task.req, e);
