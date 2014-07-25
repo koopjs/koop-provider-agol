@@ -425,6 +425,9 @@ var Controller = extend({
   // handled tile requests 
   // gets a z, x, y and a format 
   tiles: function( req, res ){
+    var callback = req.query.callback;
+    delete req.query.callback;
+
     var key,
       layer = req.params.layer || 0;
 
@@ -440,7 +443,11 @@ var Controller = extend({
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
         } else {
-          res.json( JSON.parse( fs.readFileSync( tile ) ) );
+          if ( callback ){
+            res.send( callback + '(' + JSON.stringify( JSON.parse( fs.readFileSync( tile ) ) ) + ')' );
+          } else {
+            res.json( JSON.parse( fs.readFileSync( tile ) ) );
+          }
         }
       });
     };
@@ -459,7 +466,11 @@ var Controller = extend({
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
         res.sendfile( file );
       } else {
-        res.json( JSON.parse( fs.readFileSync( file ) ) );
+        if ( callback ){
+          res.send( callback + '(' + JSON.stringify( JSON.parse( fs.readFileSync( file ) ) ) + ')' );
+        } else {
+          res.json( JSON.parse( fs.readFileSync( file ) ) );
+        }
       }
     }; 
 

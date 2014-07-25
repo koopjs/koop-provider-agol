@@ -578,6 +578,10 @@ var AGOL = function(){
       console.log('get', i++, task.req);
       request.get(task.req, function(err, data){
         try {
+          // so sometimes server returns these crazy asterisks in the coords
+          // I do a regex to replace them in both the case that I've found them
+          data.body = data.body.replace(/\*+/g,'null');
+          data.body = data.body.replace(/\.null/g, '')
           var json = JSON.parse(data.body.replace(/OwnerPLY\./g,'').replace(/NaN/g, 'null'));
           _collect(json, callback);
         } catch(e){
