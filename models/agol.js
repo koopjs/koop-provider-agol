@@ -1,4 +1,5 @@
 var request = require('request'),
+  csv = require('csv'),
   async = require('async');
 
 var AGOL = function(){
@@ -125,15 +126,17 @@ var AGOL = function(){
           if (err) {
             callback(err, null);
           } else {
-            var csv = data.body.split(/\n/);
-            GeoJSON.fromCSV( csv, function(err, geojson){
-              Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
-                if ( success ) {
-                  itemJson.data = [geojson];
-                  callback( null, itemJson );
-                } else {
-                  callback( err, null );
-                }
+            csv.parse( data.body, function(err, csv_data){
+              console.log(csv_data);
+              GeoJSON.fromCSV( csv_data, function(err, geojson){
+                Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
+                  if ( success ) {
+                    itemJson.data = [geojson];
+                    callback( null, itemJson );
+                  } else {
+                    callback( err, null );
+                  }
+                });
               });
             });
           }
@@ -583,12 +586,15 @@ var AGOL = function(){
           data.body = data.body.replace(/\*+/g,'null');
           data.body = data.body.replace(/\.null/g, '')
           var json = JSON.parse(data.body.replace(/OwnerPLY\./g,'').replace(/NaN/g, 'null'));
-          _collect(json, callback);
+         // setTimeout(function(){
+            _collect(json, callback);
+         // },1000);
         } catch(e){
+          console.log(data.body);
           console.log('failed to parse json', task.req, e);
         }
       });
-    }, 4);
+    }, ( itemJson.url.split('http://')[1].match(/^service/) ) ? 16 : 4);
 
     // add all the page urls to the queue 
     q.push(reqs, function(err){ if (err) console.log(err); });
