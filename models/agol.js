@@ -123,7 +123,7 @@ var AGOL = function(){
     Cache.get( 'agol', id, options, function(err, entry ){
       if ( err ){
         var url = base_url + '/' + id + '/data?f=json';
-        request.get(url, function(err, data ){
+        self.req(url, function(err, data ){
           if (err) {
             callback(err, null);
           } else {
