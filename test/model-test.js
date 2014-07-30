@@ -621,5 +621,77 @@ describe('AGOL Model', function(){
 
     });
 
+    describe('when getting a csv item', function() {
+
+      before(function(done ){
+        var itemInfo = require('./fixtures/itemInfo.js');
+        itemInfo.type = 'CSV';
+        sinon.stub(agol, 'getItem', function(host, itemId, options, callback){
+          itemJson.type = 'CSV';
+          callback(null, itemJson);
+        });
+        sinon.stub(agol, 'getCSV', function( base_url, id, itemJson, options, callback ){
+          callback(null, itemInfo);
+        });
+        sinon.stub(Cache, 'getInfo', function(key, callback){
+          itemInfo.expires_at = new Date().getTime() + 60000;
+          callback(null, itemInfo);
+        });
+        done();
+      });
+
+      after(function(done){
+        Cache.getInfo.restore();
+        agol.getItem.restore();
+        agol.getCSV.restore();
+        done();
+      });
+
+      it('should call getCSV', function(done){
+        agol.getItemData('host', 'itemid1', 'dummyhash', {}, function(){
+          Cache.getInfo.called.should.equal(true);
+          agol.getItem.called.should.equal(true);
+          agol.getCSV.called.should.equal(true);
+          done();
+        });
+      });
+    });
+
+    describe('when calling getCSV', function() {
+
+      before(function(done ){
+        sinon.stub(agol, 'req', function( base_url, callback ){
+          callback(null, {body: '"id","lat","lon"\n"1","40.1","-105.5"'});
+        });
+        sinon.stub(Cache, 'get', function(type, id, options, callback){
+          callback('Error', null);
+        });
+        sinon.stub(Cache, 'insert', function(type, id, data, options, callback){
+          callback(null, true);
+        });
+         sinon.stub(GeoJSON, 'fromCSV', function( data, callback){
+          callback(null, {});
+        });
+        done();
+      });
+
+      after(function(done){
+        Cache.get.restore();
+        Cache.insert.restore();
+        agol.req.restore();
+        GeoJSON.fromCSV.restore();
+        done();
+      });
+
+      it('should call cache.get and cache.insert, and should return GeoJSON', function(done){
+        agol.getCSV('base-url', 'itemid1', {}, {}, function(err, data){
+          Cache.get.called.should.equal(true);
+          agol.req.called.should.equal(true);
+          Cache.insert.called.should.equal(true);
+          done();
+        });
+      });
+    });
+
 });
 
