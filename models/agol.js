@@ -134,7 +134,7 @@ var AGOL = function(){
                  geojson.updated_at = itemJson.modified;
                  geojson.expires_at = new Date().getTime() + self.cacheLife;
                  geojson.retrieved_at = new Date().getTime();
-                 //geojson.info = itemJson;
+                 geojson.info = {name:itemJson.name};
 
                  Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                   if ( success ) {

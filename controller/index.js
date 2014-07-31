@@ -261,6 +261,7 @@ var Controller = extend({
                       }
                     });
                   } else {
+                    console.log(itemJson.name)
                     Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
                       if ( req.query.url_only ){
                         // check for Peechee
