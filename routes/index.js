@@ -24,6 +24,11 @@ module.exports = {
     action: 'findItemData'
   },
 
+  'get /agol/:id/:item/FeatureServer': {
+    controller: 'agol',
+    action: 'featureserver'
+  },
+
   'get /agol/:id/:item/:layer': {
     controller: 'agol',
     action: 'findItemData'
@@ -55,11 +60,6 @@ module.exports = {
   },
 
   'get /agol/:id/:item/FeatureServer/:layer': {
-    controller: 'agol',
-    action: 'featureserver'
-  },
-
-  'get /agol/:id/:item/FeatureServer': {
     controller: 'agol',
     action: 'featureserver'
   },
