@@ -336,13 +336,8 @@ var Controller = extend({
           if (error) {
             res.send( error, 500);
           } else {
-            //GeoJSON.fromEsri( {features: itemJson.data.features}, function(err, geojson){
-            //  if ( !geojson.length ) {
-            //    geojson = [geojson];
-            //  }
-              // pass to the shared logic for FeatureService routing
-              Controller._processFeatureServer( req, res, err, itemJson.data, callback);
-            //});
+            // pass to the shared logic for FeatureService routing
+            Controller._processFeatureServer( req, res, err, itemJson.data, callback);
           }
         });
       }
