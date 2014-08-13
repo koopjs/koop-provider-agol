@@ -410,11 +410,11 @@ var AGOL = function(){
 
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
-            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdFeild );
+            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
           
             self.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
-              //console.log(statsUrl, statsJson);
+              console.log(statsUrl, statsJson);
 
               if ( statsJson.error ){
                 // default to sequential objectID paging
@@ -630,6 +630,7 @@ var AGOL = function(){
 
   // builds a url for querying the min/max values of the object id 
   this.buildStatsUrl = function( url, layer, field ){
+    console.log('WTF ', field);
     var json = [{"statisticType":"min","onStatisticField":field,"outStatisticFieldName":"min_oid"},
       {"statisticType":"max","onStatisticField":field,"outStatisticFieldName":"max_oid"}];
     return url+'/'+layer+'/query?f=json&outFields=&outStatistics='+JSON.stringify(json);
