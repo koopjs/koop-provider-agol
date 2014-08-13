@@ -296,7 +296,9 @@ var AGOL = function(){
           } else {
             try {
               // have to replace asterrisks for bad coord values from agol
-              var json = {features: JSON.parse( data.body.replace(/\*+/g,'null') ).features};
+              data.body = data.body.replace(/\*+/g,'null');
+              data.body = data.body.replace(/\.null/g, '')
+              var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
               GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
 
@@ -319,7 +321,7 @@ var AGOL = function(){
                 });
               });
             } catch (e){
-              console.log(e);
+              console.log(e, url);
               callback( 'Unable to parse Feature Service response', null );
             }
           }
