@@ -630,7 +630,6 @@ var AGOL = function(){
 
   // builds a url for querying the min/max values of the object id 
   this.buildStatsUrl = function( url, layer, field ){
-    console.log('WTF ', field);
     var json = [{"statisticType":"min","onStatisticField":field,"outStatisticFieldName":"min_oid"},
       {"statisticType":"max","onStatisticField":field,"outStatisticFieldName":"max_oid"}];
     return url+'/'+layer+'/query?f=json&outFields=&outStatistics='+JSON.stringify(json);
