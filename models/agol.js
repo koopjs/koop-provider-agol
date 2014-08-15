@@ -6,7 +6,6 @@ var request = require('request'),
 var AGOL = function( koop ){
 
   var GeoJSON = koop.GeoJSON,
-    Tasker = koop.Tasker,
     Cache = koop.Cache;
 
   // how to long to persist the cache of data 
@@ -433,7 +432,7 @@ var AGOL = function( koop ){
 
   this._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
     this.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
-      Tasker.taskQueue.push( {
+      koop.exporter.taskQueue.push( {
         id: id,
         type: 'agol',
         hash: hash,

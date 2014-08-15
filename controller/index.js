@@ -12,8 +12,6 @@ var request = require('request'),
 // inherit from base controller
 var Controller = function( koop ){
 
-  this._processFeatureServer = koop.BaseController._processFeatureServer;
-
   // must include the Model and pass it the cache 
   var agol = new require('../models/agol.js')( koop );
 
@@ -407,7 +405,7 @@ var Controller = function( koop ){
             }
           } else {
             // pass to the shared logic for FeatureService routing
-            self._processFeatureServer( req, res, err, itemJson.data, callback);
+            koop.Controller._processFeatureServer( req, res, err, itemJson.data, callback);
           }
         });
       }
@@ -465,7 +463,7 @@ var Controller = function( koop ){
 
                 // generate a thumbnail
                 delete itemJson.data[0].info;
-                Thumbnail.generate( itemJson.data[0], req.params.item, req.query, function(err, file){
+                koop.Thumbnail.generate( itemJson.data[0], req.params.item, req.query, function(err, file){
                   if (err){
                     res.send(err, 500);
                   } else {
@@ -504,7 +502,7 @@ var Controller = function( koop ){
     // Get the tile and send the response to the client
     var _send = function( err, data ){
       req.params.key = req.params.item + ':' + layer;
-      Tiles.get( req.params, data[0], function(err, tile){
+      koop.Tiles.get( req.params, data[0], function(err, tile){
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
         } else {
