@@ -1,4 +1,7 @@
 # Default config
+
 db:
   postgis:
     conn: "postgres://localhost/koopdev"
+
+data_dir: "/usr/local/koop/"

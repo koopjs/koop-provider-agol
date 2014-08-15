@@ -13,7 +13,7 @@ var request = require('request'),
 var Controller = function( koop ){
 
   // must include the Model and pass it the cache 
-  var agol = new require('../models/agol.js')( koop );
+  this.agol = agol = new require('../models/agol.js')( koop );
 
   // Registers a host with the given id 
   // this inserts a record into the db for an ArcGIS instances ie: id -> hostname :: arcgis -> arcgis.com 
@@ -157,12 +157,12 @@ var Controller = function( koop ){
     // if > 24 hours since; clear cache and wipe files 
     // else move on
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
-    koop.Cache.getInfo(table_key, function(err, info){
+    agol.getInfo(table_key, function(err, info){
 
       if (info && info.status == 'processing'){ 
         // return immediately if processing
         console.log('processing still... return 202');
-        koop.Cache.getCount(table_key, function(err, count){
+        agol.getCount(table_key, function(err, count){
           res.json( { 
             status: 'processing',
             count: count
@@ -187,7 +187,9 @@ var Controller = function( koop ){
 
           // redirect to thumbnail for png access
           if (req.params.format == 'png'){
-            self.thumbnail(req, res);
+            //self.thumbnail(req, res);
+            
+            
           } else {
 
             // change geojson to json
@@ -271,7 +273,8 @@ var Controller = function( koop ){
                     req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name; 
                     // set the geometry type so the exporter can do its thing for csv points (add x,y)
                     req.query.geomType = itemJson.data[0].info.geometryType;
-                    Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
+
+                    agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
                       if (result && result.status && result.status == 'processing'){
                         res.json( { status: 'processing', count: 0 }, 202);          
                       } else if ( req.query.url_only ){
@@ -290,17 +293,10 @@ var Controller = function( koop ){
                     });
                   } else {
                     var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name;
-                    Exporter.exportToFormat( req.params.format, dir, key, {type:'FeatureCollection', features: itemJson.data[0].features}, { name: name }, function(err, result){
+                    agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
                       if ( req.query.url_only ){
-                        // check for Peechee
-                        if ( peechee && peechee.path ){
-                          peechee.path( dir, key+'.'+req.params.format, function(e, url){
-                            res.json({url:url});
-                          });  
-                        } else {
-                          var origUrl = req.originalUrl.split('?');
-                          res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                        }
+                        var origUrl = req.originalUrl.split('?');
+                        res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
                       } else {
                         if (err) {
                           res.send( err, 500 );
@@ -331,7 +327,7 @@ var Controller = function( koop ){
                   res.send( err, 500);
                 }
               } else {
-                if ( itemJson.data[0].features.length > 1000){
+                if ( itemJson && itemJson.data && itemJson.data[0].features.length > 1000){
                   itemJson.data[0].features = itemJson.data[0].features.splice(0,1000);
                 }
                 res.send( itemJson );
@@ -452,7 +448,7 @@ var Controller = function( koop ){
             if (error) {
               res.send( error, 500);
             } else {
-                if ( itemJson.extent ){
+                if ( itemJson.extent && itemJson.extent.length ){
                   req.query.extent = {
                     xmin: itemJson.extent[0][0],
                     ymin: itemJson.extent[0][1],
@@ -463,7 +459,7 @@ var Controller = function( koop ){
 
                 // generate a thumbnail
                 delete itemJson.data[0].info;
-                koop.Thumbnail.generate( itemJson.data[0], req.params.item, req.query, function(err, file){
+                agol.generateThumbnail( itemJson.data[0], req.params.item, req.query, function(err, file){
                   if (err){
                     res.send(err, 500);
                   } else {
@@ -502,7 +498,7 @@ var Controller = function( koop ){
     // Get the tile and send the response to the client
     var _send = function( err, data ){
       req.params.key = req.params.item + ':' + layer;
-      koop.Tiles.get( req.params, data[0], function(err, tile){
+      agol.getTile( req.params, data[0], function(err, tile){
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
         } else {

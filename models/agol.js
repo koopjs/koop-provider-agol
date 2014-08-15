@@ -1,10 +1,10 @@
 var request = require('request'),
   csv = require('csv'),
-  GeoJSON = require('koop-server').GeoJSON,
   async = require('async');
 
 var AGOL = function( koop ){
 
+  // for convience we store them here as vars
   var GeoJSON = koop.GeoJSON,
     Cache = koop.Cache;
 
@@ -75,6 +75,14 @@ var AGOL = function( koop ){
     });
   };
 
+  this.getCount = function( key, callback){
+    Cache.getInfo( key, callback );
+  };
+
+  // wraps Cache.getInfo to make testing possible w/o the cache
+  this.getInfo = function(key, callback){
+    Cache.getInfo( key, callback);
+  };
 
   // got the service and get the item
   this.getItemData = function( host, itemId, hash, options, callback ){
@@ -89,7 +97,7 @@ var AGOL = function( koop ){
 
         var qKey = ['agol', itemId, (options.layer || 0)].join(':');
 
-        Cache.getInfo( qKey, function(err, info){
+        self.getInfo( qKey, function(err, info){
 
           var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
           // check for infon on last edit date 
@@ -755,6 +763,24 @@ var AGOL = function( koop ){
     });
     return field;
   };
+
+  // wrap the exportToFormat for testing ease
+  this.exportToFormat = function(format, dir, key, data, info, callback){
+    koop.exporter.exportToFormat(format, dir, key, data, info, callback);
+  };
+
+  // wraps for testing ease
+  this.exportLarge = function(format, id, key, type, callback){
+    koop.exporter.exportLarge(format, id, key, type, callback);
+  };
+
+  this.generateThumbnail = function(data, id, options, callback){
+    koop.Thumbnail.generate( data, id, options, callback );
+  };
+
+  this.getTile = function(params, data, callback){
+    koop.Tiles.get( params, data, callback);
+  }
 
   return this;
 };
