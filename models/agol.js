@@ -1,8 +1,13 @@
 var request = require('request'),
   csv = require('csv'),
+  GeoJSON = require('koop-server').GeoJSON,
   async = require('async');
 
-var AGOL = function(){
+var AGOL = function( koop ){
+
+  var GeoJSON = koop.GeoJSON,
+    Tasker = koop.Tasker,
+    Cache = koop.Cache;
 
   // how to long to persist the cache of data 
   // after which data will be dropped and re-fetched
@@ -12,9 +17,9 @@ var AGOL = function(){
   // needs a host, generates an id 
   this.register = function( id, host, callback ){
     var type = 'agol:services';
-    Cache.db.services.count( type, function(error, count){
+    Cache.db.serviceCount( type, function(error, count){
       id = id || count++;
-      Cache.db.services.register( type, {'id': id, 'host': host},  function( err, success ){
+      Cache.db.serviceRegister( type, {'id': id, 'host': host},  function( err, success ){
         callback( err, id );
       });
     });
@@ -22,13 +27,13 @@ var AGOL = function(){
 
   // removes the registered host from the list of hosts
   this.remove = function( id, callback ){
-    Cache.db.services.remove( 'agol:services', parseInt(id) || id,  callback);
+    Cache.db.serviceRemove( 'agol:services', parseInt(id) || id,  callback);
   }; 
 
 
   // get service by id, no id == return all
   this.find = function( id, callback ){
-    Cache.db.services.get( 'agol:services', parseInt(id) || id, callback);
+    Cache.db.serviceGet( 'agol:services', parseInt(id) || id, callback);
   };
 
   // Centralized request method 
@@ -752,9 +757,8 @@ var AGOL = function(){
     return field;
   };
 
-
+  return this;
 };
   
 
-module.exports = new AGOL();
-  
+module.exports = AGOL;

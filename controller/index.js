@@ -6,14 +6,20 @@ var request = require('request'),
   merc = new sm({size:256}),
   crypto = require('crypto'),
   _ = require('lodash'),
-  fs = require('fs');
+  fs = require('fs'),
+  util = require("util");
 
 // inherit from base controller
-var Controller = extend({
+var Controller = function( koop ){
+
+  this._processFeatureServer = koop.BaseController._processFeatureServer;
+
+  // must include the Model and pass it the cache 
+  var agol = new require('../models/agol.js')( koop );
 
   // Registers a host with the given id 
   // this inserts a record into the db for an ArcGIS instances ie: id -> hostname :: arcgis -> arcgis.com 
-  register: function(req, res){
+  this.register = function(req, res){
     if ( !req.body.host ){
       res.send('Must provide a host to register:', 500); 
     } else { 
@@ -25,10 +31,11 @@ var Controller = extend({
         }
       });
     }
-  },
+  };
 
-   // handles a DELETE to remove a registered host from the DB
-  del: function(req, res){
+
+  // handles a DELETE to remove a registered host from the DB
+  this.del = function(req, res){
     if ( !req.params.id ){
       res.send( 'Must specify a service id', 500 );
     } else {
@@ -40,10 +47,11 @@ var Controller = extend({
         }
       });
     }
-  },
+  };
+
 
   // returns a list of the registered hosts and thier ids
-  list: function(req, res){
+  this.list = function(req, res){
     agol.find(null, function(err, data){
       if (err) {
         res.send( err, 500);
@@ -51,10 +59,10 @@ var Controller = extend({
         res.json( data );
       }
     });
-  }, 
+  };
 
   // looks up a host based on a given id 
-  find: function(req, res){
+  this.find = function(req, res){
     agol.find(req.params.id, function(err, data){
       if (err) {
         res.send( err, 500);
@@ -62,12 +70,12 @@ var Controller = extend({
         res.json( data );
       }
     });
-  },
+  };
 
   // get the item metadata from the host 
-  findItem: function(req, res){
+  this.findItem = function(req, res){
     if (req.params.format){
-      Controller.findItemData(req, res);
+      this.findItemData(req, res);
     } else {
       agol.find(req.params.id, function(err, data){
         if (err) {
@@ -85,10 +93,10 @@ var Controller = extend({
         }
       });
     }
-  },
+  };
 
   // drops the cache for an item
-  dropItem: function(req, res){
+  this.dropItem = function(req, res){
     // if we have a layer then append it to the query params 
     if ( req.params.layer ) {
       req.query.layer = req.params.layer;
@@ -108,11 +116,12 @@ var Controller = extend({
         });
       }
     });
-  },
+  };
 
   // gets the items data 
   // this means 
-  findItemData: function(req, res){
+  this.findItemData = function(req, res){
+    var self = this;
     // closure that actually goes out gets the data
     var _get = function(id, item, key, options, callback){
        agol.find( id, function( err, data ){
@@ -150,56 +159,17 @@ var Controller = extend({
     // if > 24 hours since; clear cache and wipe files 
     // else move on
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
-    Cache.getInfo(table_key, function(err, info){
+    koop.Cache.getInfo(table_key, function(err, info){
 
-      // sort the req.query before we hash so we are consistent 
-      var sorted_query = {};
-      _(req.query).keys().sort().each(function (key) {
-        if (key != 'url_only'){
-          sorted_query[key] = req.query[key];
-        }
-      });
-      // build the file key as an MD5 hash that's a join on the paams and look for the file 
-      var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-      var key = crypto.createHash('md5').update(toHash).digest('hex');
-
-      var _returnProcessing = function( generating ){
-          console.log('processing still... return 202');
-          Cache.getCount(table_key, {}, function(err, count){
-            var response = {
-              status: 'processing',
-              count: count
-            };
-            if ( generating ){
-              response.generating = generating;
-            }
-            res.json( response, 202 );
-          });
-      };
-
-      if (info && info.status == 'processing'){
-        if ( req.params.format ) {
-
-          // this logic should be wrapped into a Function since its copied from below
-          req.params.format = req.params.format.replace('geojson', 'json');
-          var dir = req.params.item + '_' + ( req.params.layer || 0 );
-          var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
-          if (info && req.params.format == 'zip'){
-            var name = info.info.name || info.info.title;
-            fileName = [config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
-          }
-          // if we have a layer then append it to the query params 
-          if ( req.params.layer ) {
-            req.query.layer = req.params.layer;
-          }
-          if ( fs.existsSync( fileName ) ){
-            Controller.returnFile(req, res, dir, key, fileName);
-          } else {
-            _returnProcessing( info.generating );
-          }
-        } else {
-          _returnProcessing( info.generating );
-        }
+      if (info && info.status == 'processing'){ 
+        // return immediately if processing
+        console.log('processing still... return 202');
+        koop.Cache.getCount(table_key, function(err, count){
+          res.json( { 
+            status: 'processing',
+            count: count
+          }, 202);
+        })
       } else { 
 
         // check if the cache is expired
@@ -219,7 +189,7 @@ var Controller = extend({
 
           // redirect to thumbnail for png access
           if (req.params.format == 'png'){
-            Controller.thumbnail(req, res);
+            self.thumbnail(req, res);
           } else {
 
             // change geojson to json
@@ -227,11 +197,12 @@ var Controller = extend({
             // use the item as the file dir so we can organize exports by id
             var dir = req.params.item + '_' + ( req.params.layer || 0 );
             // the file name for the export   
-            var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+            var fileName = [koop.config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+
             // if we know the name and its a zip request; check for file via name
             if (info && req.params.format == 'zip'){
               var name = info.info.name || info.info.title;
-              fileName = [config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
+              fileName = [koop.config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
             }
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
@@ -371,9 +342,9 @@ var Controller = extend({
         }
       }
     });
-  },
+  };
 
-  returnFile: function( req, res, dir, key, fileName ){
+  this.returnFile = function( req, res, dir, key, fileName ){
     setTimeout(function () {
       // block the process until the file has a size greater than 5 byts
       // this is a hack for times when the request gets files that are still writing to disk
@@ -394,7 +365,8 @@ var Controller = extend({
     }, 0);
   },
 
-  featureserver: function( req, res ){
+  this.featureserver = function( req, res ){
+    var self = this;
     var callback = req.query.callback;
     delete req.query.callback;
 
@@ -435,15 +407,15 @@ var Controller = extend({
             }
           } else {
             // pass to the shared logic for FeatureService routing
-            Controller._processFeatureServer( req, res, err, itemJson.data, callback);
+            self._processFeatureServer( req, res, err, itemJson.data, callback);
           }
         });
       }
     });
      
-  },
+  };
 
-  thumbnail: function(req, res){
+  this.thumbnail = function(req, res){
      agol.find(req.params.id, function(err, data){
       if (err) {
         res.send( err, 500);
@@ -451,7 +423,7 @@ var Controller = extend({
 
         // check the image first and return if exists
         var key = ['agol', req.params.id, req.params.item, (req.params.layer || 0)].join(':');
-        var dir = config.data_dir + '/thumbs';
+        var dir = koop.config.data_dir + '/thumbs';
         req.query.width = parseInt( req.query.width ) || 150;
         req.query.height = parseInt( req.query.height ) || 150;
         req.query.f_base = dir + '/' + req.params.item + '/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
@@ -508,16 +480,16 @@ var Controller = extend({
       }
     });
 
-  },
+  };
 
   // renders the preview map view
-  preview: function(req, res){
+  this.preview = function(req, res){
     res.render(__dirname + '/../views/demo', { locals: { host: req.params.id, item: req.params.item } });
-  },
+  };
 
   // handled tile requests 
   // gets a z, x, y and a format 
-  tiles: function( req, res ){
+  this.tiles = function( req, res ){
     var callback = req.query.callback;
     delete req.query.callback;
 
@@ -568,8 +540,9 @@ var Controller = extend({
       }
     }; 
 
-    var file = config.data_dir + 'tiles/';
-      file += req.params.item + ':' + layer + '/' + req.params.format;
+    key = ['agol', req.params.id, req.params.item].join(':');
+    var file = koop.config.data_dir + 'tiles/';
+      file += key + ':' + layer + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
     var jsonFile = file.replace(/png|pbf|utf/g, 'json');
@@ -708,8 +681,10 @@ var Controller = extend({
       res.sendfile( file );
     }
 
-  }
+  };
 
-}, BaseController);
+  return this;
+
+};
 
 module.exports = Controller;
