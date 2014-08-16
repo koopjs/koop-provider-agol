@@ -1,123 +1,23 @@
 module.exports = {
-  'post /agol/register': {
-    controller: 'agol',
-    action: 'register'
-  },
-
-  'get /agol': {
-    controller: 'agol',
-    action: 'list'
-  },
-
-  'get /agol/:id': {
-    controller: 'agol',
-    action: 'find'
-  },
- 
-  'get /agol/:id/:item.:format': {
-    controller: 'agol',
-    action: 'findItemData'
-  },
-
-  'get /agol/:id/:item/:layer.:format': {
-    controller: 'agol',
-    action: 'findItemData'
-  },
-
-  'get /agol/:id/:item/FeatureServer': {
-    controller: 'agol',
-    action: 'featureserver'
-  },
-
-  'post /agol/:id/:item/FeatureServer': {
-    controller: 'agol',
-    action: 'featureserver'
-  },
-
-  'get /agol/:id/:item/:layer': {
-    controller: 'agol',
-    action: 'findItemData'
-  },
- 
-  'get /agol/:id/:item': {
-    controller: 'agol',
-    action: 'findItem'
-  },
-
-  'get /agol/:id/:item/:layer/drop': {
-    controller: 'agol',
-    action: 'dropItem'
-  },
-
-  'get /agol/:id/:item/data/:layer': {
-    controller: 'agol',
-    action: 'findItemData'
-  },
-
-  'get /agol/:id/:item/data': {
-    controller: 'agol',
-    action: 'findItemData'
-  },
-
-  'get /agol/:id/:item/FeatureServer/:layer/:method': {
-    controller: 'agol',
-    action: 'featureserver'
-  },
-
-  'post /agol/:id/:item/FeatureServer/:layer/:method': {
-    controller: 'agol',
-    action: 'featureserver'
-  },
-
-  'get /agol/:id/:item/FeatureServer/:layer': {
-    controller: 'agol',
-    action: 'featureserver'
-  },
-
-  'post /agol/:id/:item/FeatureServer/:layer': {
-    controller: 'agol',
-    action: 'featureserver'
-  },
-
-  'get /agol/:id/:item/thumbnail': {
-    controller: 'agol',
-    action: 'thumbnail'
-  },
-
-  'get /agol/:id/:item/thumbnail/:layer': {
-    controller: 'agol',
-    action: 'thumbnail'
-  },
-  
-  'delete /agol/:id': {
-    controller: 'agol',
-    action: 'del'
-  },
-
-  
-  'get /agol/:id/:item/preview': {
-    controller: 'agol',
-    action: 'preview'
-  },
-
-  'get /agol/:id/:item/:layer/tiles/:z/:x/:y.:format': {
-    controller: 'agol',
-    action: 'tiles'
-  },
-
-  'get /agol/:id/:item/:layer/tiles/:z/:x/:y': {
-    controller: 'agol',
-    action: 'tiles'
-  },
-
-  'get /agol/:id/:item/tiles/:z/:x/:y.:format': {
-    controller: 'agol',
-    action: 'servicetiles'
-  },
-
-  'get /agol/:id/:item/tiles/:z/:x/:y': {
-    controller: 'agol',
-    action: 'servicetiles'
-  },
-
+                               'post /agol/register': 'register',
+                                         'get /agol': 'list',
+                                     'get /agol/:id': 'find',
+                       'get /agol/:id/:item.:format': 'findItemData',
+                'get /agol/:id/:item/:layer.:format': 'findItemData',
+                 'get /agol/:id/:item/FeatureServer': 'featureserver',
+                        'get /agol/:id/:item/:layer': 'findItemData',
+                               'get /agol/:id/:item': 'findItem',
+                   'get /agol/:id/:item/:layer/drop': 'dropItem',
+                   'get /agol/:id/:item/data/:layer': 'findItemData',
+                          'get /agol/:id/:item/data': 'findItemData',
+  'get /agol/:id/:item/FeatureServer/:layer/:method': 'featureserver',
+          'get /agol/:id/:item/FeatureServer/:layer': 'featureserver',
+                     'get /agol/:id/:item/thumbnail': 'thumbnail',
+              'get /agol/:id/:item/thumbnail/:layer': 'thumbnail',
+                                  'delete /agol/:id': 'del',
+                       'get /agol/:id/:item/preview': 'preview',
+ 'get /agol/:id/:item/:layer/tiles/:z/:x/:y.:format': 'tiles',
+         'get /agol/:id/:item/:layer/tiles/:z/:x/:y': 'tiles',
+        'get /agol/:id/:item/tiles/:z/:x/:y.:format': 'servicetiles',
+                'get /agol/:id/:item/tiles/:z/:x/:y': 'servicetiles'
 };

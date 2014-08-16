@@ -8,8 +8,6 @@ var itemJson = require('./fixtures/itemJson.js');
 
 before(function(done){
   controller = require('../controller/index.js')( koop );
-
-  //koop.Cache.db = koop.PostGIS.connect( config.db.postgis.conn );
   try { koop.register(require("../index.js")); } catch(e){ console.log(e); }
   done();
 });
@@ -22,23 +20,23 @@ describe('AGOL Controller', function(){
 
     describe('add / get / remove hosts', function() {
       before(function(done ){
-        sinon.stub(controller.agol, 'register', function(id, host, callback){
+        sinon.stub(agol, 'register', function(id, host, callback){
           callback(null, 'test');
         });
 
-        sinon.stub(controller.agol, 'find', function(id, callback){
+        sinon.stub(agol, 'find', function(id, callback){
           callback(null, []);
         });
-        sinon.stub(controller.agol, 'remove', function(id, callback){
+        sinon.stub(agol, 'remove', function(id, callback){
           callback(null, {});
         });
         done();
       });
 
       after(function(done){
-        controller.agol.register.restore();
-        controller.agol.find.restore();
-        controller.agol.remove.restore();
+        agol.register.restore();
+        agol.find.restore();
+        agol.remove.restore();
         done();
       });
 

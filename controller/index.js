@@ -12,7 +12,8 @@ var request = require('request'),
 // inherit from base controller
 var Controller = function( koop ){
 
-  // must include the Model and pass it the cache 
+  // must include the Model and pass it the Koop instance 
+  // This is crucial for DB access 
   this.agol = agol = new require('../models/agol.js')( koop );
 
   // Registers a host with the given id 
@@ -197,12 +198,12 @@ var Controller = function( koop ){
             // use the item as the file dir so we can organize exports by id
             var dir = req.params.item + '_' + ( req.params.layer || 0 );
             // the file name for the export   
-            var fileName = [koop.config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+            var fileName = [koop.Cache.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
 
             // if we know the name and its a zip request; check for file via name
             if (info && req.params.format == 'zip'){
               var name = info.info.name || info.info.title;
-              fileName = [koop.config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
+              fileName = [koop.Cache.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
             }
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
@@ -417,7 +418,7 @@ var Controller = function( koop ){
 
         // check the image first and return if exists
         var key = ['agol', req.params.id, req.params.item, (req.params.layer || 0)].join(':');
-        var dir = koop.config.data_dir + '/thumbs';
+        var dir = koop.Cache.data_dir + '/thumbs';
         req.query.width = parseInt( req.query.width ) || 150;
         req.query.height = parseInt( req.query.height ) || 150;
         req.query.f_base = dir + '/' + req.params.item + '/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
@@ -535,7 +536,7 @@ var Controller = function( koop ){
     }; 
 
     key = ['agol', req.params.id, req.params.item].join(':');
-    var file = koop.config.data_dir + 'tiles/';
+    var file = koop.Cache.data_dir + 'tiles/';
       file += key + ':' + layer + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
