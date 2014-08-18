@@ -496,7 +496,7 @@ var Controller = function( agol ){
     // Get the tile and send the response to the client
     var _send = function( err, data ){
       req.params.key = req.params.item + ':' + layer;
-      agol.getTile( req.params, data[0], function(err, tile){
+      agol.tileGet( req.params, data[0], function(err, tile){
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
         } else {

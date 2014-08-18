@@ -286,6 +286,7 @@ describe('AGOL Controller', function(){
 
         var itemInfo = require('./fixtures/itemInfo.js');
 
+        console.log(agol.exportLarge);
         sinon.stub(agol, 'exportLarge', function(format, dir, key, data, opts, callback){
           callback(null, 'aFakeLargeFile');
         });
@@ -387,7 +388,7 @@ describe('AGOL Controller', function(){
           callback(null, itemInfo);
         });
 
-        sinon.stub(agol, 'getTile', function(params, data, callback){
+        sinon.stub(agol, 'tileGet', function(params, data, callback){
           callback(null, 'aFakeTile');
         });
         done();
@@ -397,7 +398,7 @@ describe('AGOL Controller', function(){
         agol.getItemData.restore();
         agol.getInfo.restore();
         agol.find.restore();
-        agol.getTile.restore();
+        agol.tileGet.restore();
         done();
       });
 
