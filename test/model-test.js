@@ -2,7 +2,7 @@ var should = require('should'),
   sinon = require('sinon'),
   config = require('config'),
   fs = require('fs');
-  koop = require('koop-server/lib');//(config);
+  koop = require('koop-server/lib');
 
 var itemJson = require('./fixtures/itemJson.js');
 var largeCSV = fs.readFileSync('./test/fixtures/largeCSV.csv').toString();
@@ -24,11 +24,7 @@ describe('AGOL Model', function(){
 
     describe('get / remove items', function() {
       before(function(done ){
-<<<<<<< HEAD
-        sinon.stub(Cache, 'removeAll', function(host, itemid, opts, callback){
-=======
         sinon.stub(koop.Cache, 'remove', function(host, itemid, opts, callback){
->>>>>>> tests passing
           callback();
         });
 
@@ -39,11 +35,7 @@ describe('AGOL Model', function(){
       });
 
       after(function(done){
-<<<<<<< HEAD
-        Cache.removeAll.restore();
-=======
         koop.Cache.remove.restore();
->>>>>>> tests passing
         agol.req.restore();
         done();
       });
@@ -54,11 +46,7 @@ describe('AGOL Model', function(){
 
       it('should call cache db remove on dropItem', function(done){
         agol.dropItem('host', 'itemid1', {}, function(){
-<<<<<<< HEAD
-          Cache.removeAll.called.should.equal(true);
-=======
           koop.Cache.remove.called.should.equal(true);
->>>>>>> tests passing
           done();
         });
       });
@@ -412,26 +400,15 @@ describe('AGOL Model', function(){
         sinon.stub(koop.Cache, 'insert', function( type, id, geojson, layer, callback ){
           callback(null, true);
         });
-<<<<<<< HEAD
-        //sinon.stub(Cache, 'get', function( type, id, geojson, layer, callback ){
-        //  callback(null, []);
-        //});
-=======
         sinon.stub(koop.Cache, 'get', function( type, id, geojson, layer, callback ){
           callback(null, []);
         });
->>>>>>> tests passing
         done();
       });
 
       after(function(done){
-<<<<<<< HEAD
-        //Cache.get.restore();
-        Cache.insert.restore();
-=======
         koop.Cache.get.restore();
         koop.Cache.insert.restore();
->>>>>>> tests passing
         agol.req.restore();
         agol.getFeatureServiceLayerInfo.restore();
         done();
@@ -440,13 +417,7 @@ describe('AGOL Model', function(){
       it('should call Cache.insert', function(done){
         agol.singlePageFeatureService('itemid', itemJson, {}, function(err, json){
           agol.getFeatureServiceLayerInfo.called.should.equal(true);
-<<<<<<< HEAD
-          Cache.insert.called.should.equal(true);
-          //Cache.get.called.should.equal(true);
-=======
           koop.Cache.insert.called.should.equal(true);
-          //koop.Cache.get.called.should.equal(true);
->>>>>>> tests passing
           done();
         });
       });
@@ -638,12 +609,7 @@ describe('AGOL Model', function(){
         koop.Cache.remove('agol', id, options, function(){
           koop.Cache.insert( 'agol', id, info, 1, function( err, success ){
             agol.requestQueue( max, reqs, id, {}, 1, {}, function(err, data){
-<<<<<<< HEAD
-              Cache.get('agol', id, options, function(err, entry){
-                console.log('WTF',err, id, options)
-=======
               koop.Cache.get('agol', id, options, function(err, entry){
->>>>>>> tests passing
                 entry[0].features.length.should.equal(3143);
                 done();
               });
@@ -709,28 +675,19 @@ describe('AGOL Model', function(){
         sinon.stub(koop.Cache, 'insert', function(type, id, data, options, callback){
           callback(null, true);
         });
-<<<<<<< HEAD
-        sinon.stub(Cache, 'insertPartial', function(type, id, data, options, callback){
+        sinon.stub(koop.Cache, 'insertPartial', function(type, id, data, options, callback){
           callback(null, true);
         });
-         sinon.stub(GeoJSON, 'fromCSV', function( data, callback){
-=======
          sinon.stub(koop.GeoJSON, 'fromCSV', function( data, callback){
->>>>>>> tests passing
           callback(null, {});
         });
         done();
       });
 
       after(function(done){
-<<<<<<< HEAD
-        Cache.get.restore();
-        Cache.insert.restore();
-        Cache.insertPartial.restore();
-=======
         koop.Cache.get.restore();
         koop.Cache.insert.restore();
->>>>>>> tests passing
+        koop.Cache.insertPartial.restore();
         agol.req.restore();
         koop.GeoJSON.fromCSV.restore();
         done();
@@ -738,8 +695,7 @@ describe('AGOL Model', function(){
 
       it('should call cache.get and cache.insert, and should return GeoJSON', function(done){
         agol.getCSV('base-url', 'itemid1', {}, {}, function(err, data){
-<<<<<<< HEAD
-          Cache.get.called.should.equal(true);
+          koop.Cache.get.called.should.equal(true);
           //agol.req.called.should.equal(true);
           //Cache.insert.called.should.equal(true);
           //Cache.insertPartial.called.should.equal(true);

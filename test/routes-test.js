@@ -1,20 +1,22 @@
 var should = require('should'),
   request = require('supertest'),
   config = require('config'),
-  koop = require('koop-server')(config);
+  koop = require('koop-server')(config),
+  kooplib = require('koop-server/lib');
 
-before(function (done) {
-    //Cache.db = PostGIS.connect( config.db.postgis.conn );
-    controller = require('../controller/index.js')( koop );
-    try { koop.register(require("../index.js")); } catch(e){ console.log(e); }
-    done();
-});
+before(function(done){
+  var provider = require('../index.js');
+  agol = new provider.model( kooplib );
+  controller = new provider.controller( agol );
+  koop._bindRoutes( provider.routes, controller ); 
+  done();
+});       
 
 describe('FeatureService Proxy Provider', function(){
 
      before(function(done){
       request(koop)
-          .post('/agol/register')
+          .post('/agol')
           .set('Content-Type', 'application/json')
           .send({
             'host': 'http://arcgis.com',
@@ -39,7 +41,7 @@ describe('FeatureService Proxy Provider', function(){
     describe('/agol routes', function() {
       it('register should return 500 when POSTing w/o a host', function(done) {
         request(koop)
-          .post('/agol/register')
+          .post('/agol')
           .set('Content-Type', 'application/json')
           .send({
             'id': 'tester2'
