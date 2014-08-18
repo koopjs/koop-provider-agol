@@ -3,8 +3,6 @@ var should = require('should'),
   config = require('config'),
   koop = require('koop-server')(config);
 
-global.config = config;
-
 before(function (done) {
     //Cache.db = PostGIS.connect( config.db.postgis.conn );
     controller = require('../controller/index.js')( koop );

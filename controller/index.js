@@ -6,15 +6,10 @@ var request = require('request'),
   merc = new sm({size:256}),
   crypto = require('crypto'),
   _ = require('lodash'),
-  fs = require('fs'),
-  util = require("util");
+  fs = require('fs');
 
 // inherit from base controller
-var Controller = function( koop ){
-
-  // must include the Model and pass it the Koop instance 
-  // This is crucial for DB access 
-  this.agol = agol = new require('../models/agol.js')( koop );
+var Controller = function( koop, agol ){
 
   // Registers a host with the given id 
   // this inserts a record into the db for an ArcGIS instances ie: id -> hostname :: arcgis -> arcgis.com 

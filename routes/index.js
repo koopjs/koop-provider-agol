@@ -1,5 +1,5 @@
 module.exports = {
-                               'post /agol/register': 'register',
+                               'post /agol': 'register',
                                          'get /agol': 'list',
                                      'get /agol/:id': 'find',
                        'get /agol/:id/:item.:format': 'findItemData',
