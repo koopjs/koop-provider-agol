@@ -6,10 +6,11 @@ var request = require('request'),
   merc = new sm({size:256}),
   crypto = require('crypto'),
   _ = require('lodash'),
+  BaseController = require('koop-server/lib/Controller.js'),
   fs = require('fs');
 
 // inherit from base controller
-var Controller = function( koop, agol ){
+var Controller = function( agol ){
 
   // Registers a host with the given id 
   // this inserts a record into the db for an ArcGIS instances ie: id -> hostname :: arcgis -> arcgis.com 
@@ -147,7 +148,7 @@ var Controller = function( koop, agol ){
           });
         }
       });  
-    }; 
+    };
 
     // CHECK the time since our last cache entry 
     // if > 24 hours since; clear cache and wipe files 
@@ -193,12 +194,12 @@ var Controller = function( koop, agol ){
             // use the item as the file dir so we can organize exports by id
             var dir = req.params.item + '_' + ( req.params.layer || 0 );
             // the file name for the export   
-            var fileName = [koop.Cache.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+            var fileName = [agol.cacheDir() + 'files', dir, key + '.' + req.params.format].join('/');
 
             // if we know the name and its a zip request; check for file via name
             if (info && req.params.format == 'zip'){
               var name = info.info.name || info.info.title;
-              fileName = [koop.Cache.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
+              fileName = [agol.cacheDir() + 'files', dir, key, name + '.' + req.params.format].join('/');
             }
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
@@ -353,7 +354,7 @@ var Controller = function( koop, agol ){
       res.sendfile( fileName );
     }
     }, 0);
-  },
+  };
 
   this.featureserver = function( req, res ){
     var self = this;
@@ -397,13 +398,14 @@ var Controller = function( koop, agol ){
             }
           } else {
             // pass to the shared logic for FeatureService routing
-            koop.Controller._processFeatureServer( req, res, err, itemJson.data, callback);
+            BaseController._processFeatureServer( req, res, err, itemJson.data, callback);
           }
         });
       }
     });
      
   };
+
 
   this.thumbnail = function(req, res){
      agol.find(req.params.id, function(err, data){
@@ -413,7 +415,7 @@ var Controller = function( koop, agol ){
 
         // check the image first and return if exists
         var key = ['agol', req.params.id, req.params.item, (req.params.layer || 0)].join(':');
-        var dir = koop.Cache.data_dir + '/thumbs';
+        var dir = agol.cacheDir() + '/thumbs';
         req.query.width = parseInt( req.query.width ) || 150;
         req.query.height = parseInt( req.query.height ) || 150;
         req.query.f_base = dir + '/' + req.params.item + '/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
@@ -531,7 +533,7 @@ var Controller = function( koop, agol ){
     }; 
 
     key = ['agol', req.params.id, req.params.item].join(':');
-    var file = koop.Cache.data_dir + 'tiles/';
+    var file = agol.cacheDir + 'tiles/';
       file += key + ':' + layer + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 

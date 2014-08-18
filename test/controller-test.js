@@ -3,12 +3,15 @@ var should = require('should'),
   config = require('config'),
   request = require('supertest'),
   koop = require('koop-server')(config);
+  kooplib = require('koop-server/lib');
 
 var itemJson = require('./fixtures/itemJson.js');
 
 before(function(done){
-  controller = require('../controller/index.js')( koop );
-  try { koop.register(require("../index.js")); } catch(e){ console.log(e); }
+  var provider = require('../index.js');
+  agol = new provider.model( kooplib );
+  controller = new provider.controller( agol );
+  koop._bindRoutes( provider.routes, controller ); 
   done();
 });
 
@@ -42,7 +45,7 @@ describe('AGOL Controller', function(){
 
       it('should call register and fail', function(done){
          request(koop)
-          .post('/agol/register')
+          .post('/agol')
           .set('Content-Type', 'application/json')
           .send({
             'id': 'tester'
@@ -56,7 +59,7 @@ describe('AGOL Controller', function(){
 
       it('when passing in a host and id ', function(done){
         request(koop)
-          .post('/agol/register')
+          .post('/agol')
           .set('Content-Type', 'application/json')
           .send({
             'id': 'tester',
@@ -188,8 +191,8 @@ describe('AGOL Controller', function(){
          request(koop)
           .get('/agol/test/itemid/0')
           .end(function(err, res){
-            //res.should.have.status(202);
-            //agol.getInfo.called.should.equal(true);
+            res.should.have.status(202);
+            agol.getInfo.called.should.equal(true);
             done();
         });
       });
@@ -269,8 +272,8 @@ describe('AGOL Controller', function(){
           .get('/agol/test/itemid/0.csv')
           .end(function(err, res){
             res.should.have.status(404);
-            //agol.getInfo.called.should.equal(true);
-            //agol.exportToFormat.called.should.equal(true);
+            agol.getInfo.called.should.equal(true);
+            agol.exportToFormat.called.should.equal(true);
             agol.getItemData.called.should.equal(true);
             done();
         });
@@ -314,8 +317,8 @@ describe('AGOL Controller', function(){
           .get('/agol/test/itemid/0.csv')
           .end(function(err, res){
             res.should.have.status(404);
-            //agol.getInfo.called.should.equal(true);
-            //agol.exportLarge.called.should.equal(true);
+            agol.getInfo.called.should.equal(true);
+            agol.exportLarge.called.should.equal(true);
             agol.getItemData.called.should.equal(true);
             done();
         });
@@ -360,7 +363,7 @@ describe('AGOL Controller', function(){
           .end(function(err, res){
             res.should.have.status(404);
             agol.find.called.should.equal(true);
-            //Thumbnail.generate.called.should.equal(true);
+            agol.generateThumbnail.called.should.equal(true);
             done();
         });
       });
@@ -403,8 +406,8 @@ describe('AGOL Controller', function(){
           .get('/agol/test/itemid/0/tiles/5/5/12.png')
           .end(function(err, res){
             res.should.have.status(404);
-            //agol.find.called.should.equal(true);
-            //agol.getItemData.called.should.equal(true);
+            agol.find.called.should.equal(true);
+            agol.getItemData.called.should.equal(true);
             done();
         });
       });

@@ -8,6 +8,10 @@ var AGOL = function( koop ){
   var GeoJSON = koop.GeoJSON,
     Cache = koop.Cache;
 
+  this.cacheDir = function(){
+    return Cache.data_dir;
+  };
+
   // how to long to persist the cache of data 
   // after which data will be dropped and re-fetched
   this.cacheLife = (24*60*60*1000);  
