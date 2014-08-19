@@ -76,7 +76,7 @@ var AGOL = function( koop ){
   };
 
   agol.getCount = function( key, callback){
-    koop.Cache.getInfo( key, callback );
+    koop.Cache.getCount( key, callback );
   };
 
   // wraps Cache.getInfo to make testing possible w/o the cache
