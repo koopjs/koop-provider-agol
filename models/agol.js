@@ -588,21 +588,30 @@ var AGOL = function(){
     var q = async.queue(function (task, callback) {
       // make a request for a page 
       console.log('get', i++, task.req);
-      request.get(task.req, function(err, data){
+      request.get(task.req, function(err, data, response){
         try {
           // so sometimes server returns these crazy asterisks in the coords
           // I do a regex to replace them in both the case that I've found them
           data.body = data.body.replace(/\*+/g,'null');
           data.body = data.body.replace(/\.null/g, '')
           var json = JSON.parse(data.body.replace(/OwnerPLY\./g,'').replace(/NaN/g, 'null'));
-         // setTimeout(function(){
-            _collect(json, callback);
-         // },1000);
+          _collect(json, callback);
         } catch(e){
-          console.log(data.body);
-          console.log('failed to parse json', task.req, e);
+          // TODO use a centralized logger for all logs
+          console.log('\tRequesting page', task.req, err);
+          if ( task.retry && task.retry < 3 ){
+            task.retry++;
+            q.push(task, function(err){ if (err) console.log(err); });
+          } else if (task.retry && task.retry == 3 ){ 
+            _collect( { error: { details: ['failed to parse json after 3 requests'] } }, callback);
+            console.log('failed to parse json', task.req, e, err);
+          } else {
+            task.retry = 1;
+            q.push(task, function(err){ if (err) console.log(err); });
+          }
         }
       });
+    // If service is hosted send concurrent 16 requests; else 4 
     }, ( itemJson && itemJson.url && itemJson.url.split('http://')[1].match(/^service/) ) ? 16 : 4);
 
     // add all the page urls to the queue 
