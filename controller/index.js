@@ -158,7 +158,7 @@ var Controller = function( agol ){
 
       if (info && info.status == 'processing'){ 
         // return immediately if processing
-        console.log('processing still... return 202');
+        agol.log('info', 'processing still... return 202');
         agol.getCount(table_key, function(err, count){
           res.json( { 
             status: 'processing',
@@ -261,7 +261,8 @@ var Controller = function( agol ){
                     res.send( err, 500);
                   }
                 } else if ( !itemJson.data[0].features.length ){
-                  res.send( 'No features exist for the requested FeatureService layer', 400 );
+                  agol.log('error', req.url +' No features in data');
+                  res.send( 'No features exist for the requested FeatureService layer', 500 );
                 } else {
                   if (itemJson.koop_status && itemJson.koop_status == 'too big'){
                     // export as a series of small queries/files
@@ -476,6 +477,7 @@ var Controller = function( agol ){
 
   // renders the preview map view
   this.preview = function(req, res){
+    agol.log('info', "Render preview " + JSON.stringify( req.params ) );
     res.render(__dirname + '/../views/demo', { locals: { host: req.params.id, item: req.params.item } });
   };
 
