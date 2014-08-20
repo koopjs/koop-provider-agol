@@ -694,7 +694,7 @@ var AGOL = function( koop ){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      console.log('get', i++, task.req);
+      koop.log('info', 'get page %d %s', i++, task.req);
       request.get(task.req, function(err, data, response){
         try {
           // so sometimes server returns these crazy asterisks in the coords
@@ -705,13 +705,13 @@ var AGOL = function( koop ){
           _collect(json, callback);
         } catch(e){
           // TODO use a centralized logger for all logs
-          console.log('\tRequesting page', task.req, err);
+          koop.log('Requesting page %s %s', task.req, err);
           if ( task.retry && task.retry < 3 ){
             task.retry++;
             q.push(task, function(err){ if (err) console.log(err); });
           } else if (task.retry && task.retry == 3 ){ 
             _collect( { error: { details: ['failed to parse json after 3 requests'] } }, callback);
-            console.log('failed to parse json', task.req, e, err);
+            koop.log('error', 'failed to parse json %s %s', task.req, err);
           } else {
             task.retry = 1;
             q.push(task, function(err){ if (err) console.log(err); });
