@@ -158,7 +158,7 @@ var Controller = function( agol ){
 
       if (info && info.status == 'processing'){ 
         // return immediately if processing
-        agol.log('info', 'processing still... return 202');
+        agol.log('info', 'processing still... return 202 %s', req.url);
         agol.getCount(table_key, function(err, count){
           res.json( { 
             status: 'processing',
