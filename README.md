@@ -1,6 +1,16 @@
 # koop-agol
+
 ## An ArcGIS online provider to [Koop](https://github.com/Esri/koop) 
 
+To install in an existing Koop deploy and register ArcGIS Online:
+
+```bash
+cd koop
+npm install https://github.com/chelm/koop-agol/tarball/master
+node server.js
+
+curl -i -X POST -d "id=arcgis" -d "host=https://www.arcgis.com" "http://localhost:1337/agol/register"
+```
 
 ## Installation for local development 
 1. clone the repo
