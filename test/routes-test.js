@@ -136,7 +136,7 @@ describe('FeatureService Proxy Provider', function(){
           request(koop)
             .get('/agol/arcgis/000429f808ba404bb6b67e192170a5d7/data.csv')
             .end(function(err, res){
-              res.should.have.status(500);
+              res.should.have.status(400);
               done();
           });
       });

@@ -18,7 +18,7 @@ describe('AGOL Model', function(){
 
     describe('get / remove items', function() {
       before(function(done ){
-        sinon.stub(Cache, 'remove', function(host, itemid, opts, callback){
+        sinon.stub(Cache, 'removeAll', function(host, itemid, opts, callback){
           callback();
         });
 
@@ -29,7 +29,7 @@ describe('AGOL Model', function(){
       });
 
       after(function(done){
-        Cache.remove.restore();
+        Cache.removeAll.restore();
         agol.req.restore();
         done();
       });
@@ -40,7 +40,7 @@ describe('AGOL Model', function(){
 
       it('should call cache db remove on dropItem', function(done){
         agol.dropItem('host', 'itemid1', {}, function(){
-          Cache.remove.called.should.equal(true);
+          Cache.removeAll.called.should.equal(true);
           done();
         });
       });
