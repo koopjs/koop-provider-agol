@@ -208,6 +208,14 @@ var Controller = extend({
 
             // does the data export already exist? 
             if ( fs.existsSync( fileName ) && !is_expired ){
+              setTimeout(function () {
+                // block the process until the file has a size greater than 5 byts
+                // this is a hack for times when the request gets files that are still writing to disk
+                if ( !fs.statSync( fileName ).size > 5 ) { 
+                  setTimeout(arguments.callee, 25);
+                  return;
+                }
+
               if ( req.query.url_only ){
                 // check for Peechee
                 if ( peechee && peechee.path ){
@@ -224,6 +232,44 @@ var Controller = extend({
                 }
                 res.sendfile( fileName );
               }
+              }, 0);
+            // ELSE the data exist but the cache is expired...
+            // return the file, but make sure we kick off a new request to re-populate the cache 
+            } else if (fs.existsSync( fileName ) && is_expired) {
+              if ( req.query.url_only ){
+                var origUrl = req.originalUrl.split('?');
+                res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+              } else {
+                if (req.params.format == 'json' || req.params.format == 'geojson'){
+                  res.contentType('text');
+                }
+                res.sendfile( fileName );
+                agol.find( req.params.id, function( err, data ){
+                    if ( !parseInt(req.query.layer) ){
+                      req.query.layer = 0;
+                    }
+
+                    agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
+                     
+                      req.query.ignore_cache = true;
+ 
+                      if (itemJson.koop_status && itemJson.koop_status == 'too big'){
+                        // export as a series of small queries/files
+                        var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
+                        req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson. data[0].info.title : itemJson.name;
+                        // set the geometry type so the exporter can do its thing for csv points (add x,y)
+                        req.query.geomType = itemJson.data[0].info.geometryType;
+                        Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
+                          console.log('Done creating large file for', key);
+                        });
+                      } else {
+                        Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
+                          console.log('Done creating file for', key);
+                        });
+                      }
+                    });
+                });
+              }
             } else {
               // check the koop status table to see if we have a job running 
                 // if we do then return 
@@ -233,13 +279,13 @@ var Controller = extend({
                 if (err){
                   res.send(err, 500 );
                 } else if ( !itemJson.data[0].features.length ){
-                  res.send( 'No features exist for the requested FeatureService layer', 500 );
+                  res.send( 'No features exist for the requested FeatureService layer', 400 );
                 } else {
                   if (itemJson.koop_status && itemJson.koop_status == 'too big'){
                     // export as a series of small queries/files
                     var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
 
-                    req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson. data[0].info.title : itemJson.name; 
+                    req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name; 
                     // set the geometry type so the exporter can do its thing for csv points (add x,y)
                     req.query.geomType = itemJson.data[0].info.geometryType;
 

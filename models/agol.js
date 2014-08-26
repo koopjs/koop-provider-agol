@@ -42,7 +42,7 @@ var AGOL = function(){
 
   // drops the item from the cache
   this.dropItem = function( host, itemId, options, callback ){
-    Cache.remove('agol', itemId, options, function(err, res){
+    Cache.removeAll('agol', itemId, options, function(err, res){
       callback(err, res);
     });
   };
@@ -194,7 +194,12 @@ var AGOL = function(){
           // no data in the cache; request new data 
           self.makeFeatureServiceRequest( id, itemJson, hash, options, callback );
         } else if ( entry && entry[0] && entry[0].status == 'processing' ){
-          itemJson.data = [{features:[]}];
+          itemJson.data = [{
+            features:[],
+            name: itemJson.name,
+            geomType: self.geomTypes[itemJson.geometryType],
+            info: serviceInfo
+          }];
           itemJson.koop_status = 'processing';
           callback(null, itemJson);
         } else if ( entry && entry[0] && entry[0].status == 'too big'){
