@@ -241,10 +241,10 @@ var AGOL = function(){
 
 
     // get the id count of the service 
-    this.req(idUrl, function(err, res, body ){
+    this.req(idUrl, function(err, data ){
       // determine if its greater then 1000
       try {
-        var idJson = JSON.parse(body);
+        var idJson = JSON.parse(data.body);
         if (idJson.error){
           callback( idJson.error.message + ': ' + idUrl, null );
         } else {
