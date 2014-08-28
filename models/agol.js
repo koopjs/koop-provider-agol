@@ -42,7 +42,7 @@ var AGOL = function(){
 
   // drops the item from the cache
   this.dropItem = function( host, itemId, options, callback ){
-    Cache.remove('agol', itemId, options, function(err, res){
+    Cache.removeAll('agol', itemId, options, function(err, res){
       callback(err, res);
     });
   };
@@ -194,7 +194,12 @@ var AGOL = function(){
           // no data in the cache; request new data 
           self.makeFeatureServiceRequest( id, itemJson, hash, options, callback );
         } else if ( entry && entry[0] && entry[0].status == 'processing' ){
-          itemJson.data = [{features:[]}];
+          itemJson.data = [{
+            features:[],
+            name: itemJson.name,
+            geomType: self.geomTypes[itemJson.geometryType],
+            info: itemJson.info
+          }];
           itemJson.koop_status = 'processing';
           callback(null, itemJson);
         } else if ( entry && entry[0] && entry[0].status == 'too big'){
@@ -226,6 +231,7 @@ var AGOL = function(){
       itemJson.url = self.stripLayerOffUrl( itemJson.url );
     }
 
+
     // get the ids only
     var idUrl = itemJson.url + '/' + (options.layer || 0) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
 
@@ -233,11 +239,12 @@ var AGOL = function(){
       idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
     }
 
+
     // get the id count of the service 
-    this.req(idUrl, function(err, serviceIds ){
+    this.req(idUrl, function(err, data ){
       // determine if its greater then 1000
       try {
-        var idJson = JSON.parse(serviceIds.body);
+        var idJson = JSON.parse(data.body);
         if (idJson.error){
           callback( idJson.error.message + ': ' + idUrl, null );
         } else {

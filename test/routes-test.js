@@ -71,7 +71,7 @@ describe('FeatureService Proxy Provider', function(){
 
       it('should register and return 200 when accessing an item', function(done) {
           request(koop)
-            .get('/agol/arcgis/9f44b197ff9444559c46cb2994dd618d')
+            .get('/agol/arcgis/af2d2aefeec745408e085da855c738f8')
             .end(function(err, res){
               res.should.have.status(200);
               done();
@@ -80,7 +80,7 @@ describe('FeatureService Proxy Provider', function(){
 
       it('should return 200 when accessing item data', function(done) {
           request(koop)
-            .get('/agol/arcgis/9f44b197ff9444559c46cb2994dd618d/data')
+            .get('/agol/arcgis/af2d2aefeec745408e085da855c738f8/data')
             .end(function(err, res){
               res.should.have.status(200);
               done();
@@ -89,7 +89,7 @@ describe('FeatureService Proxy Provider', function(){
 
       it('should return 200 when accessing item as a featureservice', function(done) {
          request(koop)
-            .get('/agol/arcgis/9f44b197ff9444559c46cb2994dd618d/FeatureServer')
+            .get('/agol/arcgis/af2d2aefeec745408e085da855c738f8/FeatureServer')
             .end(function(err, res){
               res.should.have.status(200);
               done();
@@ -98,7 +98,7 @@ describe('FeatureService Proxy Provider', function(){
 
       it('should return 200 when accessing item as a featureservice layer', function(done) {
         request(koop)
-            .get('/agol/arcgis/9f44b197ff9444559c46cb2994dd618d/FeatureServer/0/query')
+            .get('/agol/arcgis/af2d2aefeec745408e085da855c738f8/FeatureServer/0/query')
             .end(function(err, res){
               res.should.have.status(200);
               done();
@@ -107,7 +107,7 @@ describe('FeatureService Proxy Provider', function(){
 
       it('should return 200 when accessing item as a featureservice query', function(done) {
         request(koop)
-            .get('/agol/arcgis/9f44b197ff9444559c46cb2994dd618d/FeatureServer/0/query')
+            .get('/agol/arcgis/af2d2aefeec745408e085da855c738f8/FeatureServer/0/query')
             .end(function(err, res){
               res.should.have.status(200);
               done();
@@ -136,7 +136,7 @@ describe('FeatureService Proxy Provider', function(){
           request(koop)
             .get('/agol/arcgis/000429f808ba404bb6b67e192170a5d7/data.csv')
             .end(function(err, res){
-              res.should.have.status(500);
+              res.should.have.status(400);
               done();
           });
       });
@@ -150,14 +150,14 @@ describe('FeatureService Proxy Provider', function(){
           }); 
       });
 
-      it('should return 200 when a when accessing a feature service w/more than 1000', function(done) {
+      /*it('should return 200 when a when accessing a feature service w/more than 1000', function(done) {
           request(koop)
             .get('/agol/arcgis/5eb31a7a8a594396965d9965465321c9/1')
             .end(function(err, res){
               res.should.have.status(200);
               done();
           });
-      });
+      });*/
 
 /*      it('should return 404 when a when accessing a map service that doesnt exist', function(done) {
           request(koop)
