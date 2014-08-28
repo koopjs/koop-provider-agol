@@ -83,7 +83,7 @@ var AGOL = function(){
 
         Cache.getInfo( qKey, function(err, info){
 
-          var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+          var is_expired = info ? ( Date().now() >= info.expires_at ) : false;
 
           // check for infon on last edit date 
           // set is_expired to false if it hasnt changed
@@ -132,8 +132,8 @@ var AGOL = function(){
                  // store metadata with the data 
                  geojson.name = itemJson.name || itemJson.title;
                  geojson.updated_at = itemJson.modified;
-                 geojson.expires_at = new Date().getTime() + self.cacheLife;
-                 geojson.retrieved_at = new Date().getTime();
+                 geojson.expires_at = Date.now() + self.cacheLife;
+                 geojson.retrieved_at = Date.now();
                  geojson.info = {name:itemJson.name};
 
                  Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
@@ -311,9 +311,9 @@ var AGOL = function(){
 
                 geojson.name = itemJson.name || itemJson.title;
                 geojson.updated_at = itemJson.modified;
-                geojson.expires_at = new Date().getTime() + self.cacheLife;
+                geojson.expires_at = Date.now() + self.cacheLife;
                 geojson.info = serviceInfo;
-                geojson.retrieved_at = new Date().getTime(); 
+                geojson.retrieved_at = Date.now(); 
 
                 // save the data 
                 Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
@@ -381,13 +381,13 @@ var AGOL = function(){
       // creates the empty table
       Cache.remove('agol', id, {layer: (options.layer || 0)}, function(){
 
-        var expiration = new Date().getTime() + self.cacheLife;
+        var expiration = Date.now() + self.cacheLife;
 
         var info = {
           status: 'processing',
           updated_at: itemJson.modified,
           expires_at: expiration,
-          retrieved_at: new Date().getTime(), 
+          retrieved_at: Date.now(), 
           name: itemJson.name,
           geomType: self.geomTypes[itemJson.geometryType],
           info: serviceInfo,
