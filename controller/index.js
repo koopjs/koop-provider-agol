@@ -166,7 +166,7 @@ var Controller = extend({
             is_expired = false;
           }
         }
-          
+
         // sort the req.query before we hash so we are consistent 
         var sorted_query = {};
         _(req.query).keys().sort().each(function (key) {

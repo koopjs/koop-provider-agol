@@ -34,7 +34,10 @@ var AGOL = function(){
   // Centralized request method 
   // all ajax requests should use this so it can be tested 
   this.req = function(url, callback){
-    request.get(url, callback);
+    request({
+        url: url, 
+        headers: { 'User-Agent': 'esri-koop' }
+      }, callback);
   };
 
   // base path to use for every host 
@@ -83,7 +86,7 @@ var AGOL = function(){
 
         Cache.getInfo( qKey, function(err, info){
 
-          var is_expired = info ? ( Date().now() >= info.expires_at ) : false;
+          var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
 
           // check for infon on last edit date 
           // set is_expired to false if it hasnt changed
