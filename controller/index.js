@@ -145,15 +145,50 @@ var Controller = extend({
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
     Cache.getInfo(table_key, function(err, info){
 
-      if (info && info.status == 'processing'){ 
-        // return immediately if processing
-        console.log('processing still... return 202');
-        Cache.getCount(table_key, function(err, count){
-          res.json( { 
-            status: 'processing',
-            count: count
-          }, 202);
-        })
+      // sort the req.query before we hash so we are consistent 
+      var sorted_query = {};
+      _(req.query).keys().sort().each(function (key) {
+        if (key != 'url_only'){
+          sorted_query[key] = req.query[key];
+        }
+      });
+      // build the file key as an MD5 hash that's a join on the paams and look for the file 
+      var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+      var key = crypto.createHash('md5').update(toHash).digest('hex');
+
+      var _returnProcessing = function(){
+          console.log('processing still... return 202');
+          Cache.getCount(table_key, function(err, count){
+            res.json( {
+              status: 'processing',
+              count: count
+            }, 202);
+          });
+      };
+
+      if (info && info.status == 'processing'){
+        if ( req.params.format ) {
+
+          // this logic should be wrapped into a Function since its copied from below
+          req.params.format = req.params.format.replace('geojson', 'json');
+          var dir = req.params.item + '_' + ( req.params.layer || 0 );
+          var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+          if (info && req.params.format == 'zip'){
+            var name = info.info.name || info.info.title;
+            fileName = [config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
+          }
+          // if we have a layer then append it to the query params 
+          if ( req.params.layer ) {
+            req.query.layer = req.params.layer;
+          }
+          if ( fs.existsSync( fileName ) ){
+            Controller.returnFile(req, res, dir, key, fileName);
+          } else {
+            _returnProcessing();
+          }
+        } else {
+          _returnProcessing();
+        }
       } else { 
 
         // check if the cache is expired
@@ -167,16 +202,6 @@ var Controller = extend({
           }
         }
 
-        // sort the req.query before we hash so we are consistent 
-        var sorted_query = {};
-        _(req.query).keys().sort().each(function (key) {
-          if (key != 'url_only'){
-            sorted_query[key] = req.query[key];
-          }
-        });
-        // build the file key as an MD5 hash that's a join on the paams and look for the file 
-        var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-        var key = crypto.createHash('md5').update(toHash).digest('hex');
 
         // check format for exporting data
         if ( req.params.format ){
@@ -188,19 +213,15 @@ var Controller = extend({
 
             // change geojson to json
             req.params.format = req.params.format.replace('geojson', 'json');
-
             // use the item as the file dir so we can organize exports by id
             var dir = req.params.item + '_' + ( req.params.layer || 0 );
-         
             // the file name for the export   
             var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
-
             // if we know the name and its a zip request; check for file via name
             if (info && req.params.format == 'zip'){
               var name = info.info.name || info.info.title;
               fileName = [config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
             }
-            
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
               req.query.layer = req.params.layer;
@@ -208,31 +229,9 @@ var Controller = extend({
 
             // does the data export already exist? 
             if ( fs.existsSync( fileName ) && !is_expired ){
-              setTimeout(function () {
-                // block the process until the file has a size greater than 5 byts
-                // this is a hack for times when the request gets files that are still writing to disk
-                if ( !fs.statSync( fileName ).size > 5 ) { 
-                  setTimeout(arguments.callee, 25);
-                  return;
-                }
+              // return it.
+              Controller.returnFile(req, res, dir, key, fileName);
 
-              if ( req.query.url_only ){
-                // check for Peechee
-                if ( peechee && peechee.path ){
-                  peechee.path( dir, key+'.'+req.params.format, function(e, url){
-                    res.json({url:url});
-                  });
-                } else {
-                  var origUrl = req.originalUrl.split('?');
-                  res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                }
-              } else {
-                if (req.params.format == 'json' || req.params.format == 'geojson'){
-                  res.contentType('text');
-                }
-                res.sendfile( fileName );
-              }
-              }, 0);
             // ELSE the data exist but the cache is expired...
             // return the file, but make sure we kick off a new request to re-populate the cache 
             } else if (fs.existsSync( fileName ) && is_expired) {
@@ -353,6 +352,27 @@ var Controller = extend({
         }
       }
     });
+  },
+
+  returnFile: function( req, res, dir, key, fileName ){
+    setTimeout(function () {
+      // block the process until the file has a size greater than 5 byts
+      // this is a hack for times when the request gets files that are still writing to disk
+      if ( !fs.statSync( fileName ).size > 5 ) {
+        setTimeout(arguments.callee, 25);
+        return;
+      }
+
+    if ( req.query.url_only ){
+      var origUrl = req.originalUrl.split('?');
+      res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/                            url_only=true&|url_only=true/,'')});
+    } else {
+      if (req.params.format == 'json' || req.params.format == 'geojson'){
+        res.contentType('text');
+      }
+      res.sendfile( fileName );
+    }
+    }, 0);
   },
 
   featureserver: function( req, res ){
