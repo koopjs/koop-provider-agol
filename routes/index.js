@@ -95,4 +95,14 @@ module.exports = {
     action: 'tiles'
   },
 
+  'get /agol/:id/:item/tiles/:z/:x/:y.:format': {
+    controller: 'agol',
+    action: 'servicetiles'
+  },
+
+  'get /agol/:id/:item/tiles/:z/:x/:y': {
+    controller: 'agol',
+    action: 'servicetiles'
+  },
+
 };

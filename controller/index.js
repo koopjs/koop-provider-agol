@@ -566,13 +566,13 @@ var Controller = extend({
           });
           // build the file key as an MD5 hash that's a join on the paams and look for the file 
           var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-          var key = crypto.createHash('md5').update(toHash).digest('hex');
+          var hash = crypto.createHash('md5').update(toHash).digest('hex');
 
-          req.query.simplify = true; 
-          req.query.zoom = req.params.z; 
+          var factor = .5;
+          req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
 
           // Get the item
-          agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
+          agol.getItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
             if (error) {
               res.send( error, 500);
             } else {
@@ -584,6 +584,117 @@ var Controller = extend({
     } else {
       _sendImmediate(file);
     }
+  },
+
+  // logic for handling service level, multi-layer tiles 
+  servicetiles: function(req, res){
+
+    if ( !req.params.format){
+      req.params.format = 'json';
+    }
+
+    // save the callback to append to the response when ready
+    var callback = req.query.callback;
+    delete req.query.callback;
+
+    var key,
+      layer = req.params.layer || 0;
+
+    // if no format given default to png 
+    if ( !req.params.format ){
+      req.params.format = 'png';
+    }
+
+    // build the geometry from z,x,y
+    var bounds = merc.bbox( req.params.x, req.params.y, req.params.z );
+    req.query.geometry = {
+        xmin: bounds[0],
+        ymin: bounds[1],
+        xmax: bounds[2],
+        ymax: bounds[3],
+        spatialReference: { wkid: 4326 }
+    };
+
+    var _sendImmediate = function( file ){
+      if ( req.params.format == 'png' || req.params.format == 'pbf'){
+        res.sendfile( file );
+      } else {
+        if ( callback ){
+          res.send( callback + '(' + JSON.stringify( JSON.parse( fs.readFileSync( file ) ) ) + ')' );
+        } else {
+          res.json( JSON.parse( fs.readFileSync( file ) ) );
+        }
+      }
+    };
+
+    // Get the tile and send the response to the client
+    var _send = function( err, data ){
+      req.params.key = key + ':' + layer;
+      Tiles.get( req.params, data[0], function(err, tile){
+        if ( req.params.format == 'png' || req.params.format == 'pbf'){
+          res.sendfile( tile );
+        } else {
+          if ( callback ){
+            res.send( callback + '(' + JSON.stringify( JSON.parse( fs.readFileSync( tile ) ) ) + ')' );
+          } else {
+            res.json( JSON.parse( fs.readFileSync( tile ) ) );
+          }
+        }
+      });
+    };
+
+    // file key tells is a combo key for standardizing look ups in the fs.system 
+    var key = ['agol', req.params.id, req.params.item].join(':');
+    // build the names of the files 
+    // Note that the layer id would be present in service level tiles 
+    var file = config.data_dir + 'tiles/';
+      file += key + '/' + req.params.format;
+      file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
+
+    var jsonFile = file.replace(/png|pbf|utf/g, 'json');
+
+    // if the json file alreadty exists, dont hit the db, just send the data
+    if (fs.existsSync(jsonFile) && !fs.existsSync( file ) ){
+      // ready to send back
+      _send( null, [JSON.parse(fs.readFileSync( jsonFile ))] );
+    } else if ( !fs.existsSync( file ) ) {
+
+      agol.find(req.params.id, function(err, data){
+        if (err) {
+          res.send( err, 500);
+        } else {
+
+          // sort the req.query before we hash so we are consistent 
+          var sorted_query = {};
+          _(req.query).keys().sort().each(function (key) {
+            if (key != 'url_only'){
+              sorted_query[key] = req.query[key];
+            }
+          });
+          // build the file key as an MD5 hash that's a join on the paams and look for the file 
+          var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+          var hash = crypto.createHash('md5').update(toHash).digest('hex');
+
+          req.query.simplify = true;
+          req.query.zoom = req.params.z;
+
+          // Get the item
+          agol.getAllItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
+            if (error) {
+              res.send( error, 500);
+            } else {
+              console.log('GOT ITEM DATA', itemJson);
+              res.json(itemJson);
+              // send the data for the tile to Tiles 
+              // data should be an array of geojson objects
+              //_send(error, itemJson.data);
+            }
+          });
+        }
+      });
+
+    }
+
   }
 
 }, BaseController);
