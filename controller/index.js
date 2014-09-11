@@ -158,7 +158,7 @@ var Controller = extend({
 
       var _returnProcessing = function(){
           console.log('processing still... return 202');
-          Cache.getCount(table_key, function(err, count){
+          Cache.getCount(table_key, {}, function(err, count){
             res.json( {
               status: 'processing',
               count: count
