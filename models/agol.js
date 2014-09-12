@@ -109,6 +109,61 @@ var AGOL = function(){
     });
   };
 
+  this.getAllItemData = function( host, itemId, hash, options, callback ){
+    var self = this;
+    var reqCount = 0;
+    var nlayers, serviceInfo, serviceUrl;
+    var _collect = function(layerInfo, cb){
+      serviceInfo.layerInfo.push(layerInfo);
+      if ( reqCount++ == nlayers){
+        callback();
+      }
+      cb();
+    };
+
+    var q = async.queue(function(task, cb){
+      request.get(url, function(err, res){
+        var lyrInfo = JSON.parse(res.body);
+        _collect();
+      });
+    },4);
+
+    var qKey = ['agol', itemId].join(':');
+    Cache.getInfo( qKey, function(err, info){
+      // if we have it send that back
+      if (!err && info){
+        callback(null, info);
+      } else {
+        // collect all layers info
+        nlayers = info.layers.length-1;
+        self.req( itemJson.url + '?f=json', function( err, data ){
+          serviceInfo = JSON.parse(data.body);
+        
+        });
+      }
+
+    });
+      // else collect the info for each layer
+      // save it in the DB
+
+    // get the item info
+    // 
+    /*this.getItem(host, itemId, options, function( err, itemJson ){
+      if ( err ){
+        callback(err, null);
+      } else {
+        var qKey = ['agol', itemId].join(':');
+
+        self.req( itemJson.url + '?f=json', function( err, data ){
+              //self.getData(itemJson, host, itemId, hash, options, callback);
+              callback(null, JSON.parse(data.body) );
+            });
+          }
+        });
+      }
+    });*/
+  };
+
   this.getData = function(itemJson, host, itemId, hash, options, callback){
     if ( itemJson.type == 'CSV' ){
       this.getCSV( host + this.agol_path, itemId, itemJson, options, callback );
@@ -312,6 +367,8 @@ var AGOL = function(){
               // convert to GeoJSON 
               GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
 
+                console.log('GeoJSon', geojson.features.length);
+          
                 geojson.name = itemJson.name || itemJson.title;
                 geojson.updated_at = itemJson.modified;
                 geojson.expires_at = Date.now() + self.cacheLife;
