@@ -16,6 +16,7 @@ before(function(done){
   koop.Thumbnail.data_dir = data_dir;
   // Need the exporter to have access to the cache so we pass it Koop
   koop.exporter = new koop.Exporter( koop.Cache );
+  koop.log = new koop.Logger({});
   agol = new require('../models/agol.js')( koop );
   done();
 });

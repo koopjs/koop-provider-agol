@@ -65,7 +65,7 @@ var AGOL = function( koop ){
           var json = JSON.parse( data.body );
           if (json.error){
             callback( json.error.message, null );  
-          } else{
+          } else {
             callback( null, json );
           }
         } catch (e){
@@ -343,7 +343,7 @@ var AGOL = function( koop ){
     //}
 
     // get the id count of the service 
-    agol.req(idUrl, function(err, serviceIds ){
+    agol.req(idUrl, function(err, data ){
       // determine if its greater then 1000
       try {
         var idJson = JSON.parse(serviceIds;
@@ -665,6 +665,7 @@ var AGOL = function( koop ){
   // make requests for feature pages 
   // execute done when we have all features 
   agol.requestQueue = function(max, reqs, id, itemJson, layerId, options, done){
+    console.log(itemJson)
     var reqCount = 0;
     // setup the place to collect all the features
     itemJson.data = [ {features: []} ];
