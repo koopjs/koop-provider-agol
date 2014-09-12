@@ -679,7 +679,7 @@ var AGOL = function(){
         }
       });
     // If service is hosted send concurrent 16 requests; else 4 
-    }, ( itemJson && itemJson.url && itemJson.url.split('http://')[1].match(/^service/) ) ? 16 : 4);
+    }, ( itemJson && itemJson.url && itemJson.url.split('//')[1].match(/^service/) ) ? 16 : 4);
 
     // add all the page urls to the queue 
     q.push(reqs, function(err){ if (err) console.log(err); });
