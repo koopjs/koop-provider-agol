@@ -590,7 +590,7 @@ var Controller = extend({
   servicetiles: function(req, res){
 
     if ( !req.params.format){
-      req.params.format = 'json';
+      req.params.format = 'png';
     }
 
     // save the callback to append to the response when ready
@@ -615,51 +615,29 @@ var Controller = extend({
         spatialReference: { wkid: 4326 }
     };
 
-    var _sendImmediate = function( file ){
-      if ( req.params.format == 'png' || req.params.format == 'pbf'){
-        res.sendfile( file );
-      } else {
-        if ( callback ){
-          res.send( callback + '(' + JSON.stringify( JSON.parse( fs.readFileSync( file ) ) ) + ')' );
-        } else {
-          res.json( JSON.parse( fs.readFileSync( file ) ) );
-        }
-      }
-    };
-
     // Get the tile and send the response to the client
-    var _send = function( err, data ){
-      req.params.key = key + ':' + layer;
-      Tiles.get( req.params, data[0], function(err, tile){
-        if ( req.params.format == 'png' || req.params.format == 'pbf'){
-          res.sendfile( tile );
-        } else {
-          if ( callback ){
-            res.send( callback + '(' + JSON.stringify( JSON.parse( fs.readFileSync( tile ) ) ) + ')' );
-          } else {
-            res.json( JSON.parse( fs.readFileSync( tile ) ) );
-          }
+    var _send = function( err, info ){
+      req.params.key = key;
+      req.params.type = 'agol';
+      Tiles.getServiceTile( req.params, info, function(err, tile){
+        if ( err ){
+          res.send( err, 401 );
+          return;
         }
+        res.sendfile( tile );
       });
     };
 
     // file key tells is a combo key for standardizing look ups in the fs.system 
-    var key = ['agol', req.params.id, req.params.item].join(':');
+    var key = [req.params.item,'all'].join(':');
     // build the names of the files 
     // Note that the layer id would be present in service level tiles 
     var file = config.data_dir + 'tiles/';
       file += key + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
-    var jsonFile = file.replace(/png|pbf|utf/g, 'json');
-
-    // if the json file alreadty exists, dont hit the db, just send the data
-    if (fs.existsSync(jsonFile) && !fs.existsSync( file ) ){
-      // ready to send back
-      _send( null, [JSON.parse(fs.readFileSync( jsonFile ))] );
-    } else if ( !fs.existsSync( file ) ) {
-
-      agol.find(req.params.id, function(err, data){
+    if ( !fs.existsSync(file)){
+      agol.find( req.params.id, function( err, data ){
         if (err) {
           res.send( err, 500);
         } else {
@@ -671,28 +649,23 @@ var Controller = extend({
               sorted_query[key] = req.query[key];
             }
           });
-          // build the file key as an MD5 hash that's a join on the paams and look for the file 
-          var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-          var hash = crypto.createHash('md5').update(toHash).digest('hex');
-
           req.query.simplify = true;
           req.query.zoom = req.params.z;
 
           // Get the item
-          agol.getAllItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
+          agol.getServiceLayerData( data.host, req.params.item, null, req.query, function(error, itemJson){
             if (error) {
               res.send( error, 500);
             } else {
-              console.log('GOT ITEM DATA', itemJson);
-              res.json(itemJson);
               // send the data for the tile to Tiles 
-              // data should be an array of geojson objects
-              //_send(error, itemJson.data);
+              _send(error, itemJson);
             }
           });
         }
       });
 
+    } else {
+      res.sendfile( file );
     }
 
   }
