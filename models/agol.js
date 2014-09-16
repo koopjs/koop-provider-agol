@@ -360,8 +360,6 @@ var AGOL = function(){
               // convert to GeoJSON 
               GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
 
-                console.log('GeoJSon', geojson.features.length);
-          
                 geojson.name = itemJson.name || itemJson.title;
                 geojson.updated_at = itemJson.modified;
                 geojson.expires_at = Date.now() + self.cacheLife;
@@ -371,10 +369,8 @@ var AGOL = function(){
                 // save the data 
                 Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                   if ( success ) {
-                    Cache.get( 'agol', id, options, function(err, entry ){
-                      itemJson.data = entry;
-                      callback( null, itemJson );
-                    });
+                    itemJson.data = [geojson];
+                    callback( null, itemJson );
                   } else {
                     callback( err, null );
                   }
