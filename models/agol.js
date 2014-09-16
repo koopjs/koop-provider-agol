@@ -116,14 +116,20 @@ var AGOL = function(){
 
     var _collect = function(layerInfo, cb){
       serviceInfo.layerInfo.push(layerInfo);
+      serviceInfo.geometryType = 'esriGeometryPoint';
       if ( reqCount++ == nlayers){
-        Cache.insert( 'agol', itemId, { features: [], info: serviceInfo }, 'all', function( err, success){
-          if ( success ) {
-            callback(null, serviceInfo);
-          } else {
-            callback( err, null );
+        Cache.insert( 'agol', itemId, { 
+          features: [], 
+          info: serviceInfo }, 
+          'all', 
+          function( err, success){
+            if ( success ) {
+              callback(null, serviceInfo);
+            } else {
+              callback( err, null );
+            }
           }
-        });
+        );
       }
       cb();
     };
