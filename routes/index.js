@@ -29,6 +29,11 @@ module.exports = {
     action: 'featureserver'
   },
 
+  'post /agol/:id/:item/FeatureServer': {
+    controller: 'agol',
+    action: 'featureserver'
+  },
+
   'get /agol/:id/:item/:layer': {
     controller: 'agol',
     action: 'findItemData'
@@ -59,7 +64,17 @@ module.exports = {
     action: 'featureserver'
   },
 
+  'post /agol/:id/:item/FeatureServer/:layer/:method': {
+    controller: 'agol',
+    action: 'featureserver'
+  },
+
   'get /agol/:id/:item/FeatureServer/:layer': {
+    controller: 'agol',
+    action: 'featureserver'
+  },
+
+  'post /agol/:id/:item/FeatureServer/:layer': {
     controller: 'agol',
     action: 'featureserver'
   },
