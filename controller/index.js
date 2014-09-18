@@ -379,6 +379,12 @@ var Controller = extend({
     var callback = req.query.callback;
     delete req.query.callback;
 
+    // support POST requests; map body vals to the query 
+    // (then all same as GET)
+    for (var k in req.body){
+      req.query[k] = req.body[k];
+    }
+
     if (!req.params.layer){
       req.query.layer = 0;
     }
