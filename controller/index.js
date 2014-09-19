@@ -129,8 +129,14 @@ var Controller = extend({
               callback( error, null);
             // if we have status return right away
             } else if ( itemJson.koop_status == 'processing'){
-              // return w/202  
-              res.json( { status: 'processing' }, 202);
+              // return w/202 
+              var response = {
+                status: 'processing'
+              }; 
+              if ( itemJson.generating ){
+                response.generating = itemJson.generating;
+              }
+              res.json( response, 202);
             } else {
               callback( null, itemJson );
             }
@@ -156,13 +162,17 @@ var Controller = extend({
       var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
       var key = crypto.createHash('md5').update(toHash).digest('hex');
 
-      var _returnProcessing = function(){
+      var _returnProcessing = function( generating ){
           console.log('processing still... return 202');
           Cache.getCount(table_key, {}, function(err, count){
-            res.json( {
+            var response = {
               status: 'processing',
               count: count
-            }, 202);
+            };
+            if ( generating ){
+              response.generating = generating;
+            }
+            res.json( response, 202 );
           });
       };
 
@@ -184,10 +194,10 @@ var Controller = extend({
           if ( fs.existsSync( fileName ) ){
             Controller.returnFile(req, res, dir, key, fileName);
           } else {
-            _returnProcessing();
+            _returnProcessing( info.generating );
           }
         } else {
-          _returnProcessing();
+          _returnProcessing( info.generating );
         }
       } else { 
 
@@ -306,7 +316,7 @@ var Controller = extend({
                       }
                     });
                   } else {
-                    Exporter.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
+                    Exporter.exportToFormat( req.params.format, dir, key, {type:'FeatureCollection', features: itemJson.data[0].features}, {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
                       if ( req.query.url_only ){
                         // check for Peechee
                         if ( peechee && peechee.path ){
