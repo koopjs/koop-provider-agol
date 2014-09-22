@@ -414,6 +414,7 @@ var Controller = extend({
         var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
         var key = crypto.createHash('md5').update(toHash).digest('hex');
         // Get the item 
+        req.query.skipLimit = true;
         agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
           if (error) {
             res.send( error, 500);

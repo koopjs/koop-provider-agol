@@ -95,7 +95,6 @@ var AGOL = function(){
               is_expired = false;
             }
           }
-
           if ( is_expired ) {
             Cache.remove('agol', itemId, options, function(err, res){
               self.getData(itemJson, host, itemId, hash, options, callback);
@@ -259,7 +258,7 @@ var AGOL = function(){
           }];
           itemJson.koop_status = 'processing';
           callback(null, itemJson);
-        } else if ( entry && entry[0] && entry[0].status == 'too big'){
+        } else if ( ( entry && entry[0] && entry[0].status == 'too big') || !options.skipLimit ){
           itemJson.data = entry;
           itemJson.koop_status = 'too big';
           callback(null, itemJson);
