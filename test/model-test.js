@@ -671,6 +671,9 @@ describe('AGOL Model', function(){
         sinon.stub(Cache, 'insert', function(type, id, data, options, callback){
           callback(null, true);
         });
+        sinon.stub(Cache, 'insertPartial', function(type, id, data, options, callback){
+          callback(null, true);
+        });
          sinon.stub(GeoJSON, 'fromCSV', function( data, callback){
           callback(null, {});
         });
@@ -680,6 +683,7 @@ describe('AGOL Model', function(){
       after(function(done){
         Cache.get.restore();
         Cache.insert.restore();
+        Cache.insertPartial.restore();
         agol.req.restore();
         GeoJSON.fromCSV.restore();
         done();
@@ -690,6 +694,7 @@ describe('AGOL Model', function(){
           Cache.get.called.should.equal(true);
           agol.req.called.should.equal(true);
           Cache.insert.called.should.equal(true);
+          Cache.insertPartial.called.should.equal(true);
           done();
         });
       });
