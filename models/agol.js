@@ -185,20 +185,24 @@ var AGOL = function(){
           } else {
             csv.parse( data.body, function(err, csv_data){
               GeoJSON.fromCSV( csv_data, function(err, geojson){
-                 // store metadata with the data 
-                 geojson.name = itemJson.name || itemJson.title;
-                 geojson.updated_at = itemJson.modified;
-                 geojson.expires_at = Date.now() + self.cacheLife;
-                 geojson.retrieved_at = Date.now();
-                 geojson.info = {name:itemJson.name};
-
-                 Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
-                  if ( success ) {
-                    itemJson.data = [geojson];
-                    callback( null, itemJson );
-                  } else {
-                    callback( err, null );
-                  }
+                // store metadata with the data
+                var json = {};
+                json.name = itemJson.name || itemJson.title;
+                json.updated_at = itemJson.modified;
+                json.expires_at = Date.now() + self.cacheLife;
+                json.retrieved_at = Date.now();
+                json.info = {name:itemJson.name};
+                json.features = [];
+                
+                Cache.insert( 'agol', id, json, (options.layer || 0), function( err, success){
+                  Cache.insertPartial( 'agol', id, geojson, (options.layer || 0), function( err, success){
+                    if ( success ) {
+                      itemJson.data = [geojson];
+                      callback( null, itemJson );
+                    } else {
+                      callback( err, null );
+                    }
+                  });
                 });
               });
             });
