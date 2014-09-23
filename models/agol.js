@@ -196,7 +196,7 @@ var AGOL = function(){
                   json.info = {name:itemJson.name};
                   json.features = [];
                   
-                  Cache.remove('agol', id, options, function(err, res){
+                  Cache.removeAll('agol', id, options, function(err, res){
                     Cache.insert( 'agol', id, json, (options.layer || 0), function( err, success){
                       Cache.insertPartial( 'agol', id, geojson, (options.layer || 0), function( err, success){
                         if ( success ) {
