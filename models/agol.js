@@ -87,7 +87,6 @@ var AGOL = function(){
         Cache.getInfo( qKey, function(err, info){
 
           var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
-
           // check for infon on last edit date 
           // set is_expired to false if it hasnt changed
           if ( info && info.retrieved_at && info.info && info.info.editingInfo ) { 
@@ -176,42 +175,48 @@ var AGOL = function(){
 
   this.getCSV = function(base_url, id, itemJson, options, callback){
     var self = this;
-    Cache.get( 'agol', id, options, function(err, entry ){
-      if ( err ){
-        var url = base_url + '/' + id + '/data?f=json';
-        self.req(url, function(err, data ){
-          if (err) {
-            callback(err, null);
-          } else {
-            csv.parse( data.body, function(err, csv_data){
-              GeoJSON.fromCSV( csv_data, function(err, geojson){
-                // store metadata with the data
-                var json = {};
-                json.name = itemJson.name || itemJson.title;
-                json.updated_at = itemJson.modified;
-                json.expires_at = Date.now() + self.cacheLife;
-                json.retrieved_at = Date.now();
-                json.info = {name:itemJson.name};
-                json.features = [];
-                
-                Cache.insert( 'agol', id, json, (options.layer || 0), function( err, success){
-                  Cache.insertPartial( 'agol', id, geojson, (options.layer || 0), function( err, success){
-                    if ( success ) {
-                      itemJson.data = [geojson];
-                      callback( null, itemJson );
-                    } else {
-                      callback( err, null );
-                    }
+    var qKey = ['agol', id, (options.layer || 0)].join(':');
+
+    Cache.getInfo( qKey, function(err, info){
+      Cache.get( 'agol', id, options, function(err, entry ){
+        if ( err || (info && info.retrieved_at < itemJson.modified)){
+          var url = base_url + '/' + id + '/data?f=json';
+          self.req(url, function(err, data ){
+            if (err) {
+              callback(err, null);
+            } else {
+              csv.parse( data.body, function(err, csv_data){
+                GeoJSON.fromCSV( csv_data, function(err, geojson){
+                  // store metadata with the data
+                  var json = {};
+                  json.name = itemJson.name || itemJson.title;
+                  json.updated_at = itemJson.modified;
+                  json.expires_at = Date.now() + self.cacheLife;
+                  json.retrieved_at = Date.now();
+                  json.info = {name:itemJson.name};
+                  json.features = [];
+                  
+                  Cache.remove('agol', id, options, function(err, res){
+                    Cache.insert( 'agol', id, json, (options.layer || 0), function( err, success){
+                      Cache.insertPartial( 'agol', id, geojson, (options.layer || 0), function( err, success){
+                        if ( success ) {
+                          itemJson.data = [geojson];
+                          callback( null, itemJson );
+                        } else {
+                          callback( err, null );
+                        }
+                      });
+                    });
                   });
                 });
               });
-            });
-          }
-        });
-      } else {
-        itemJson.data = entry;
-        callback( null, itemJson );
-      }
+            }
+          });
+        } else {
+          itemJson.data = entry;
+          callback( null, itemJson );
+        }
+      });
     });
   };
 
