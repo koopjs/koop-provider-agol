@@ -286,7 +286,11 @@ var Controller = extend({
               req.query.format = req.params.format;
               _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
                 if (err){
-                  res.send(err, 500 );
+                  if ( err.code && err.error ){
+                    res.send( err.error, err.code );
+                  } else {
+                    res.send( err, 500);
+                  }
                 } else if ( !itemJson.data[0].features.length ){
                   res.send( 'No features exist for the requested FeatureService layer', 400 );
                 } else {
@@ -351,7 +355,11 @@ var Controller = extend({
           // get the esri json data for the service
           _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
               if (err) {
-                res.send( err, 500 );
+                if ( err.code && err.error ){
+                  res.send( err.error, err.code );
+                } else {
+                  res.send( err, 500);
+                }
               } else {
                 if ( itemJson.data[0].features.length > 1000){
                   itemJson.data[0].features = itemJson.data[0].features.splice(0,1000);
@@ -417,7 +425,11 @@ var Controller = extend({
         req.query.skipLimit = true;
         agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
           if (error) {
-            res.send( error, 500);
+            if (error.code && error.error){
+              res.send( error.error, error.code);
+            } else {
+              res.send( error, 500);
+            }
           } else {
             // pass to the shared logic for FeatureService routing
             Controller._processFeatureServer( req, res, err, itemJson.data, callback);

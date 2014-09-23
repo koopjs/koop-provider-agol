@@ -215,16 +215,22 @@ var AGOL = function(){
     var self = this, task = {};
     var qKey = ['agol', id, (options.layer || 0)].join(':');
 
+    var maxSize = 5000000;
+
     Cache.getInfo( qKey, function(err, info){
       Cache.get( 'agol', id, options, function(err, entry ){
         if ( err || (info && info.retrieved_at < itemJson.modified)){
-          task.url = base_url + '/' + id + '/data?f=json';
-          task.itemJson = itemJson;
-          task.id = id;
-          task.options = options;
-          task.expires_at = Date.now() + self.cacheLife;
-          task.callback = callback;
-          self.csvQueue.push(task, function(){});
+          if ( itemJson.size < maxSize ) {
+            task.url = base_url + '/' + id + '/data?f=json';
+            task.itemJson = itemJson;
+            task.id = id;
+            task.options = options;
+            task.expires_at = Date.now() + self.cacheLife;
+            task.callback = callback;
+            self.csvQueue.push(task, function(){});
+          } else {
+            callback({ code: 413, error: 'The requested CSV exceeds the allowable size of ' + maxSize + ' bytes' }, null );
+          }
         } else {
           itemJson.data = entry;
           callback( null, itemJson );
