@@ -173,45 +173,58 @@ var AGOL = function(){
     }
   };
 
+  // this queue is used to control the flow of the csv inserts 
+  // if we get many requests for a new CSV they insert multiple times
+  // here we handle removing the data cache before we insert
+  this.csvQueue = async.queue(function(task, cb){
+    request.get(task.url, function(err, data ){
+      if (err) {
+        task.callback(err, null);
+      } else {
+        csv.parse( data.body, function(err, csv_data){
+          GeoJSON.fromCSV( csv_data, function(err, geojson){
+            // store metadata with the data
+            var json = {};
+            json.name = task.itemJson.name || task.itemJson.title;
+            json.updated_at = task.itemJson.modified;
+            json.expires_at = task.expires_at;
+            json.retrieved_at = Date.now();
+            json.info = { name: task.itemJson.name };
+            json.features = [];
+
+            Cache.removeAll('agol', task.id, task.options, function(err, res){
+              Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
+                Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
+                  if ( success ) {
+                    task.itemJson.data = [geojson];
+                    task.callback( null, task.itemJson );
+                  } else {
+                    task.callback( err, null );
+                  }
+                  cb();
+                });
+              });
+            });
+          });
+        });
+      }
+    });
+  },1);
+
   this.getCSV = function(base_url, id, itemJson, options, callback){
-    var self = this;
+    var self = this, task = {};
     var qKey = ['agol', id, (options.layer || 0)].join(':');
 
     Cache.getInfo( qKey, function(err, info){
       Cache.get( 'agol', id, options, function(err, entry ){
         if ( err || (info && info.retrieved_at < itemJson.modified)){
-          var url = base_url + '/' + id + '/data?f=json';
-          self.req(url, function(err, data ){
-            if (err) {
-              callback(err, null);
-            } else {
-              csv.parse( data.body, function(err, csv_data){
-                GeoJSON.fromCSV( csv_data, function(err, geojson){
-                  // store metadata with the data
-                  var json = {};
-                  json.name = itemJson.name || itemJson.title;
-                  json.updated_at = itemJson.modified;
-                  json.expires_at = Date.now() + self.cacheLife;
-                  json.retrieved_at = Date.now();
-                  json.info = {name:itemJson.name};
-                  json.features = [];
-                  
-                  Cache.removeAll('agol', id, options, function(err, res){
-                    Cache.insert( 'agol', id, json, (options.layer || 0), function( err, success){
-                      Cache.insertPartial( 'agol', id, geojson, (options.layer || 0), function( err, success){
-                        if ( success ) {
-                          itemJson.data = [geojson];
-                          callback( null, itemJson );
-                        } else {
-                          callback( err, null );
-                        }
-                      });
-                    });
-                  });
-                });
-              });
-            }
-          });
+          task.url = base_url + '/' + id + '/data?f=json';
+          task.itemJson = itemJson;
+          task.id = id;
+          task.options = options;
+          task.expires_at = Date.now() + self.cacheLife;
+          task.callback = callback;
+          self.csvQueue.push(task, function(){});
         } else {
           itemJson.data = entry;
           callback( null, itemJson );
