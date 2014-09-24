@@ -422,8 +422,9 @@ var Controller = extend({
         var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
         var key = crypto.createHash('md5').update(toHash).digest('hex');
         // Get the item 
-        // enforce the 100 feature limit for feature service requests
-        req.query.limit = 1000;
+
+        // set a really high limit so large datasets can be turned into feature services 
+        req.query.limit = 1000000000;
         agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
           if (error) {
             if (error.code && error.error){
