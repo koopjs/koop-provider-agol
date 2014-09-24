@@ -302,13 +302,12 @@ var Controller = extend({
                     req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name; 
                     // set the geometry type so the exporter can do its thing for csv points (add x,y)
                     req.query.geomType = itemJson.data[0].info.geometryType;
-
                     Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
                       if (result && result.status && result.status == 'processing'){
                         res.json( { status: 'processing', count: 0 }, 202);          
                       } else if ( req.query.url_only ){
                         var origUrl = req.originalUrl.split('?');
-                        res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/      url_only=true&|url_only=true/,'')});
+                        res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
                       } else {
                         if (err) {
                           res.send( err, 500 );
@@ -321,6 +320,7 @@ var Controller = extend({
                       }
                     });
                   } else {
+                    console.log('EXPORTING TO FORMAT', dir, key, itemJson.data[0].features.length);
                     Exporter.exportToFormat( req.params.format, dir, key, {type:'FeatureCollection', features: itemJson.data[0].features}, {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
                       if ( req.query.url_only ){
                         // check for Peechee

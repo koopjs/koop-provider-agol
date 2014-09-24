@@ -286,7 +286,7 @@ var AGOL = function(){
           }];
           itemJson.koop_status = 'processing';
           callback(null, itemJson);
-        } else if ( ( entry && entry[0] && entry[0].status == 'too big') || !options.skipLimit ){
+        } else if ( entry && entry[0] && entry[0].status == 'too big' ){
           itemJson.data = entry;
           itemJson.koop_status = 'too big';
           callback(null, itemJson);
@@ -317,12 +317,11 @@ var AGOL = function(){
 
 
     // get the ids only
-    var idUrl = itemJson.url + '/' + (options.layer || 0) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
+    var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
 
-    if (options.geometry){
-      idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
-    }
-
+    //if (options.geometry){
+      //idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+    //}
 
     // get the id count of the service 
     this.req(idUrl, function(err, data ){
@@ -375,11 +374,11 @@ var AGOL = function(){
 
         // we can the data in one shot
         var url = itemJson.url + '/' + (options.layer || 0) + '/query?outSR=4326&where=1=1&f=json&outFields=*';
-        if (options.geometry){
-          url += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
-        } else {
+        //if (options.geometry){
+        //  url += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+        //} else {
           url += '&geometry=&returnGeometry=true';
-        }
+        //}
         // get the features
         self.req(url, function(err, data ){
           if (err) {
