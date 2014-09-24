@@ -232,8 +232,14 @@ var AGOL = function(){
             callback({ code: 413, error: 'The requested CSV exceeds the allowable size of ' + maxSize + ' bytes' }, null );
           }
         } else {
-          itemJson.data = entry;
-          callback( null, itemJson );
+          if ( entry && entry[0] && entry[0].status == 'too big' ){
+            itemJson.data = entry;
+            itemJson.koop_status = 'too big';
+            callback(null, itemJson);
+          } else {
+            itemJson.data = entry;
+            callback( null, itemJson );
+          }
         }
       });
     });

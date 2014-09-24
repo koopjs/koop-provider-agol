@@ -408,7 +408,7 @@ describe('AGOL Controller', function(){
         done();
       });
 
-      it('should call Controller._processFeatureServer and return 200', function(done){
+      it('should call Tiles helper and return 200', function(done){
          request(koop)
           .get('/agol/test/itemid/0/tiles/5/5/12.png')
           .end(function(err, res){
@@ -460,6 +460,45 @@ describe('AGOL Controller', function(){
           .end(function(err, res){
             agol.find.called.should.equal(true);
             Thumbnail.generate.called.should.equal(true);
+            done();
+        });
+      });
+    });
+
+    describe('when accessing an item as a feature service', function() {
+      before(function( done ){
+
+        var itemInfo = require('./fixtures/itemInfo.js');
+
+        sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
+          callback(null,  { data:[ { info:'dummy', features:[{properties:{test:1}, geometry:null}] } ] });
+        });
+
+        sinon.stub(agol, 'find', function(id, callback){
+          callback(null, { id: 'test', host: 'http://dummy.host.com' } );
+        });
+
+        sinon.stub(Cache, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
+
+        done();
+      });
+
+      after(function(done){
+        agol.getItemData.restore();
+        Cache.getInfo.restore();
+        agol.find.restore();
+        done();
+      });
+
+      it('should call Controller._processFeaturer with skipLimit true', function(done){
+         request(koop)
+          .get('/agol/test/itemid/FeatureServer/0')
+          .end(function(err, res){
+            should.not.exist(err);
+            agol.find.called.should.equal(true);
+            agol.getItemData.called.should.equal(true);
             done();
         });
       });
