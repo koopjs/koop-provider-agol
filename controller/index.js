@@ -320,7 +320,8 @@ var Controller = extend({
                       }
                     });
                   } else {
-                    Exporter.exportToFormat( req.params.format, dir, key, {type:'FeatureCollection', features: itemJson.data[0].features}, {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
+                    var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name;
+                    Exporter.exportToFormat( req.params.format, dir, key, {type:'FeatureCollection', features: itemJson.data[0].features}, { name: name }, function(err, result){
                       if ( req.query.url_only ){
                         // check for Peechee
                         if ( peechee && peechee.path ){
