@@ -1,9 +1,11 @@
 var should = require('should'),
   sinon = require('sinon'),
   config = require('config'),
+  fs = require('fs');
   koopserver = require('koop-server')(config);
 
 var itemJson = require('./fixtures/itemJson.js');
+var largeCSV = fs.readFileSync('./test/fixtures/largeCSV.csv').toString();
 
 global.config = config;
 
@@ -699,6 +701,35 @@ describe('AGOL Model', function(){
         });
       });
     });
+
+    describe('when calling getCSV with large data', function() {
+
+      before(function(done ){
+        sinon.stub(agol, 'req', function( base_url, callback ){
+          callback(null, {body: largeCSV});
+        });
+        sinon.stub(Cache, 'get', function(type, id, options, callback){
+          callback(null, [{status: 'too big'}]);
+        });
+        done();
+      });
+
+      after(function(done){
+        Cache.get.restore();
+        agol.req.restore();
+        done();
+      });
+
+      
+      it('should call cache.get and cache.insert, and should return GeoJSON', function(done){
+        agol.getCSV('base-url', 'itemid1', {}, {}, function(err, data){
+          data.koop_status.should.equal('too big');
+          Cache.get.called.should.equal(true);
+          done();
+        });
+      });
+    });
+
 
 });
 

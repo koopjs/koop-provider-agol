@@ -320,7 +320,6 @@ var Controller = extend({
                       }
                     });
                   } else {
-                    console.log('EXPORTING TO FORMAT', dir, key, itemJson.data[0].features.length);
                     Exporter.exportToFormat( req.params.format, dir, key, {type:'FeatureCollection', features: itemJson.data[0].features}, {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
                       if ( req.query.url_only ){
                         // check for Peechee
@@ -384,7 +383,7 @@ var Controller = extend({
 
     if ( req.query.url_only ){
       var origUrl = req.originalUrl.split('?');
-      res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/                            url_only=true&|url_only=true/,'')});
+      res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
     } else {
       if (req.params.format == 'json' || req.params.format == 'geojson'){
         res.contentType('text');
@@ -423,7 +422,8 @@ var Controller = extend({
         var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
         var key = crypto.createHash('md5').update(toHash).digest('hex');
         // Get the item 
-        req.query.skipLimit = true;
+        // enforce the 100 feature limit for feature service requests
+        req.query.limit = 1000;
         agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
           if (error) {
             if (error.code && error.error){
