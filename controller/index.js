@@ -131,7 +131,8 @@ var Controller = extend({
             } else if ( itemJson.koop_status == 'processing'){
               // return w/202 
               var response = {
-                status: 'processing'
+                status: 'processing',
+                count: 0
               }; 
               if ( itemJson.generating ){
                 response.generating = itemJson.generating;
@@ -304,7 +305,7 @@ var Controller = extend({
 
                     Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
                       if (result && result.status && result.status == 'processing'){
-                        res.json( { status: 'processing' }, 202);          
+                        res.json( { status: 'processing', count: 0 }, 202);          
                       } else if ( req.query.url_only ){
                         var origUrl = req.originalUrl.split('?');
                         res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/      url_only=true&|url_only=true/,'')});
