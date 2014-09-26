@@ -71,6 +71,7 @@ var AGOL = function(){
     });
   };
 
+
   // got the service and get the item
   this.getItemData = function( host, itemId, hash, options, callback ){
     var self = this;
@@ -169,7 +170,7 @@ var AGOL = function(){
     } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
       this.getFeatureService( itemId, itemJson, hash, options, callback );
     } else {
-      callback('Requested Item must be a Feature Collection', null);
+      callback('item must be a Feature Collection, Feature Service, or CSV', itemJson);
     }
   };
 

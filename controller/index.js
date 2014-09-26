@@ -567,9 +567,8 @@ var Controller = extend({
       }
     }; 
 
-    key = ['agol', req.params.id, req.params.item].join(':');
     var file = config.data_dir + 'tiles/';
-      file += key + ':' + layer + '/' + req.params.format;
+      file += req.params.item + ':' + layer + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
     var jsonFile = file.replace(/png|pbf|utf/g, 'json');
@@ -603,10 +602,17 @@ var Controller = extend({
           var factor = .5;
           req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
 
+
           // Get the item
           agol.getItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
             if (error) {
-              res.send( error, 500);
+              if ( itemJson && itemJson.type == 'Image Service' && req.params.format == 'png' ){
+                Tiles.getImageServiceTile( req.params, function(err, newFile){
+                  _sendImmediate( newFile );
+                });
+              } else {
+                res.send( error, 500);
+              }
             } else {
               _send(error, itemJson.data);
             }
