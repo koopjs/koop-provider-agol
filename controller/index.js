@@ -208,7 +208,7 @@ var Controller = extend({
         // check for info on last edit date (for hosted services dont expired unless changed) 
         // set is_expired to false if it hasnt changed or if its null
         if ( info && info.retrieved_at && info.info && info.info.editingInfo ) {             
-          if ( !info.info.editingInfo.lastEditDate || ( info.retrieved_at > info.info.editingInfo.     lastEditDate )){
+          if ( !info.info.editingInfo.lastEditDate || ( info.retrieved_at < info.info.editingInfo.lastEditDate )){
             is_expired = false;
           }
         }
