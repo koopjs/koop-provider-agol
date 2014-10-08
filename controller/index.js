@@ -9,6 +9,7 @@ var request = require('request'),
   BaseController = require('koop-server/lib/BaseController.js'),
   fs = require('fs');
 
+console.log(BaseController);
 // inherit from base controller
 var Controller = function( agol ){
 

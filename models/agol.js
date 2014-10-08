@@ -43,6 +43,7 @@ var AGOL = function( koop ){
         url: url, 
         headers: { 'User-Agent': 'esri-koop' }
       }, callback);
+  };
 
   // base path to use for every host 
   agol.agol_path = '/sharing/rest/content/items/';
@@ -75,8 +76,8 @@ var AGOL = function( koop ){
     });
   };
 
-  agol.getCount = function( key, callback){
-    koop.Cache.getCount( key, callback );
+  agol.getCount = function( key, options, callback){
+    koop.Cache.getCount( key, options, callback );
   };
 
   // wraps Cache.getInfo to make testing possible w/o the cache
@@ -195,7 +196,7 @@ var AGOL = function( koop ){
         task.callback(err, null);
       } else {
         csv.parse( data.body, function(err, csv_data){
-          GeoJSON.fromCSV( csv_data, function(err, geojson){
+          koop.GeoJSON.fromCSV( csv_data, function(err, geojson){
             // store metadata with the data
             var json = {};
             json.name = task.itemJson.name || task.itemJson.title;
@@ -205,9 +206,9 @@ var AGOL = function( koop ){
             json.info = { name: task.itemJson.name };
             json.features = [];
 
-            Cache.removeAll('agol', task.id, task.options, function(err, res){
-              Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
-                Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
+            koop.Cache.removeAll('agol', task.id, task.options, function(err, res){
+              koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
+                koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
                   if ( success ) {
                     task.itemJson.data = [geojson];
                     task.callback( null, task.itemJson );
@@ -230,8 +231,8 @@ var AGOL = function( koop ){
 
     var maxSize = 5000000;
 
-    Cache.getInfo( qKey, function(err, info){
-      Cache.get( 'agol', id, options, function(err, entry ){
+    koop.Cache.getInfo( qKey, function(err, info){
+      koop.Cache.get( 'agol', id, options, function(err, entry ){
         if ( err || (info && info.retrieved_at < itemJson.modified)){
           if ( itemJson.size < maxSize ) {
             task.url = base_url + '/' + id + '/data?f=json';
@@ -346,7 +347,7 @@ var AGOL = function( koop ){
     agol.req(idUrl, function(err, data ){
       // determine if its greater then 1000
       try {
-        var idJson = JSON.parse(serviceIds;
+        var idJson = JSON.parse( data.body );
         if (idJson.error){
           callback( idJson.error.message + ': ' + idUrl, null );
         } else {
@@ -765,8 +766,8 @@ var AGOL = function( koop ){
     return field;
   };
 
-
   return agol;
+
 };
   
 
