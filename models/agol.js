@@ -1,65 +1,61 @@
 var request = require('request'),
   csv = require('csv'),
+  BaseModel = require('koop-server/lib/BaseModel.js'),
   async = require('async');
 
 var AGOL = function( koop ){
 
-  // for convience we store them here as vars
-  var GeoJSON = koop.GeoJSON,
-    Cache = koop.Cache;
+  var agol = {};
+  agol.__proto__ = BaseModel( koop );
 
-  this.cacheDir = function(){
-    return Cache.data_dir;
-  };
 
   // how to long to persist the cache of data 
   // after which data will be dropped and re-fetched
-  this.cacheLife = (24*60*60*1000);  
+  agol.cacheLife = (24*60*60*1000);  
 
   // adds a service to the Cache.db
   // needs a host, generates an id 
-  this.register = function( id, host, callback ){
+  agol.register = function( id, host, callback ){
     var type = 'agol:services';
-    Cache.db.serviceCount( type, function(error, count){
+    koop.Cache.db.serviceCount( type, function(error, count){
       id = id || count++;
-      Cache.db.serviceRegister( type, {'id': id, 'host': host},  function( err, success ){
+      koop.Cache.db.serviceRegister( type, {'id': id, 'host': host},  function( err, success ){
         callback( err, id );
       });
     });
   };
 
   // removes the registered host from the list of hosts
-  this.remove = function( id, callback ){
-    Cache.db.serviceRemove( 'agol:services', parseInt(id) || id,  callback);
+  agol.remove = function( id, callback ){
+    koop.Cache.db.serviceRemove( 'agol:services', parseInt(id) || id,  callback);
   }; 
 
 
   // get service by id, no id == return all
-  this.find = function( id, callback ){
-    Cache.db.serviceGet( 'agol:services', parseInt(id) || id, callback);
+  agol.find = function( id, callback ){
+    koop.Cache.db.serviceGet( 'agol:services', parseInt(id) || id, callback);
   };
 
   // Centralized request method 
   // all ajax requests should use this so it can be tested 
-  this.req = function(url, callback){
+  agol.req = function(url, callback){
     request({
         url: url, 
         headers: { 'User-Agent': 'esri-koop' }
       }, callback);
-  };
 
   // base path to use for every host 
-  this.agol_path = '/sharing/rest/content/items/';
+  agol.agol_path = '/sharing/rest/content/items/';
 
   // drops the item from the cache
-  this.dropItem = function( host, itemId, options, callback ){
-    Cache.removeAll('agol', itemId, options, function(err, res){
+  agol.dropItem = function( host, itemId, options, callback ){
+    koop.Cache.removeAll('agol', itemId, options, function(err, res){
       callback(err, res);
     });
   };
 
   // got the service and get the item
-  this.getItem = function( host, itemId, options, callback ){
+  agol.getItem = function( host, itemId, options, callback ){
     var url = host + this.agol_path + itemId+'?f=json';
     this.req(url, function(err, data ){
       if (err) {
@@ -79,17 +75,17 @@ var AGOL = function( koop ){
     });
   };
 
-  this.getCount = function( key, callback){
-    Cache.getInfo( key, callback );
+  agol.getCount = function( key, callback){
+    koop.Cache.getInfo( key, callback );
   };
 
   // wraps Cache.getInfo to make testing possible w/o the cache
-  this.getInfo = function(key, callback){
-    Cache.getInfo( key, callback);
+  agol.getInfo = function(key, callback){
+    koop.Cache.getInfo( key, callback);
   };
 
   // got the service and get the item
-  this.getItemData = function( host, itemId, hash, options, callback ){
+  agol.getItemData = function( host, itemId, hash, options, callback ){
     var self = this;
     this.getItem(host, itemId, options, function( err, itemJson ){
       
@@ -112,7 +108,7 @@ var AGOL = function( koop ){
             }
           }
           if ( is_expired ) {
-            Cache.remove('agol', itemId, options, function(err, res){
+            koop.Cache.remove('agol', itemId, options, function(err, res){
               self.getData(itemJson, host, itemId, hash, options, callback);
             });
           } else {
@@ -124,7 +120,7 @@ var AGOL = function( koop ){
     });
   };
 
-  this.getServiceLayerData = function( host, itemId, hash, options, callback ){
+  agol.getServiceLayerData = function( host, itemId, hash, options, callback ){
     var self = this;
     var reqCount = 0, nlayers, serviceInfo, serviceUrl;
     var qKey = ['agol', itemId, 'all'].join(':');
@@ -133,7 +129,7 @@ var AGOL = function( koop ){
       serviceInfo.layerInfo.push(layerInfo);
       serviceInfo.geometryType = 'esriGeometryPoint';
       if ( reqCount++ == nlayers){
-        Cache.insert( 'agol', itemId, { 
+        koop.Cache.insert( 'agol', itemId, { 
           features: [], 
           info: serviceInfo }, 
           'all', 
@@ -156,7 +152,7 @@ var AGOL = function( koop ){
       });
     },4);
 
-    Cache.getInfo( qKey, function(err, info){
+    koop.Cache.getInfo( qKey, function(err, info){
       // if we have it send that back
       if (!err && info){
         callback(null, info.info);
@@ -178,13 +174,13 @@ var AGOL = function( koop ){
     });
   };
 
-  this.getData = function(itemJson, host, itemId, hash, options, callback){
+  agol.getData = function(itemJson, host, itemId, hash, options, callback){
     if ( itemJson.type == 'CSV' ){
-      this.getCSV( host + this.agol_path, itemId, itemJson, options, callback );
+      agol.getCSV( host + agol.agol_path, itemId, itemJson, options, callback );
     } else if ( itemJson.type == 'Feature Collection' ){
-      this.getFeatureCollection( host + this.agol_path, itemId, itemJson, options, callback );
+      agol.getFeatureCollection( host + agol.agol_path, itemId, itemJson, options, callback );
     } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
-      this.getFeatureService( itemId, itemJson, hash, options, callback );
+      agol.getFeatureService( itemId, itemJson, hash, options, callback );
     } else {
       callback('item must be a Feature Collection, Feature Service, or CSV', itemJson);
     }
@@ -193,7 +189,7 @@ var AGOL = function( koop ){
   // this queue is used to control the flow of the csv inserts 
   // if we get many requests for a new CSV they insert multiple times
   // here we handle removing the data cache before we insert
-  this.csvQueue = async.queue(function(task, cb){
+  agol.csvQueue = async.queue(function(task, cb){
     request.get(task.url, function(err, data ){
       if (err) {
         task.callback(err, null);
@@ -228,7 +224,7 @@ var AGOL = function( koop ){
     });
   },1);
 
-  this.getCSV = function(base_url, id, itemJson, options, callback){
+  agol.getCSV = function(base_url, id, itemJson, options, callback){
     var self = this, task = {};
     var qKey = ['agol', id, (options.layer || 0)].join(':');
 
@@ -262,8 +258,8 @@ var AGOL = function( koop ){
     });
   };
 
-  this.getFeatureCollection = function(base_url, id, itemJson, options, callback){
-    Cache.get( 'agol', id, options, function(err, entry ){
+  agol.getFeatureCollection = function(base_url, id, itemJson, options, callback){
+    koop.Cache.get( 'agol', id, options, function(err, entry ){
       if ( err ){
         var url = base_url + '/' + id + '/data?f=json'; 
         request.get(url, function(err, data ){
@@ -271,8 +267,8 @@ var AGOL = function( koop ){
             callback(err, null);
           } else {
             var json = JSON.parse( data.body ).featureCollection.layers[0].featureSet;
-            GeoJSON.fromEsri( [], json, function(err, geojson){
-              Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
+            koop.GeoJSON.fromEsri( [], json, function(err, geojson){
+              koop.Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                 if ( success ) {
                   itemJson.data = [geojson];
                   callback( null, itemJson );
@@ -290,13 +286,13 @@ var AGOL = function( koop ){
     });
   };
 
-  this.getFeatureService = function( id, itemJson, hash, options, callback){
+  agol.getFeatureService = function( id, itemJson, hash, options, callback){
     var self = this;
     if ( !itemJson.url ){
       callback( 'Missing url parameter for Feature Service Item', null );
     } else {
 
-      Cache.get( 'agol', id, options, function(err, entry ){
+      koop.Cache.get( 'agol', id, options, function(err, entry ){
         if ( err ){
           // no data in the cache; request new data 
           self.makeFeatureServiceRequest( id, itemJson, hash, options, callback );
@@ -322,14 +318,14 @@ var AGOL = function( koop ){
   };
 
   // removes the layer from the end of a url 
-  this.stripLayerOffUrl = function(url){
+  agol.stripLayerOffUrl = function(url){
     return url.substring(0, url.length - 2);
   };
 
 
   // makes a request to the feature service 
   // checks the count and determines if koop should make one or many requests  
-  this.makeFeatureServiceRequest = function( id, itemJson, hash, options, callback ){
+  agol.makeFeatureServiceRequest = function( id, itemJson, hash, options, callback ){
     var self = this;
 
     // check the last char on the url
@@ -347,10 +343,10 @@ var AGOL = function( koop ){
     //}
 
     // get the id count of the service 
-    this.req(idUrl, function(err, data ){
+    agol.req(idUrl, function(err, serviceIds ){
       // determine if its greater then 1000
       try {
-        var idJson = JSON.parse(data.body);
+        var idJson = JSON.parse(serviceIds;
         if (idJson.error){
           callback( idJson.error.message + ': ' + idUrl, null );
         } else {
@@ -370,10 +366,10 @@ var AGOL = function( koop ){
 
           // Count is low 
           } else if ( count < 1000 ){
-            self.singlePageFeatureService( id, itemJson, options, callback );
+            agol.singlePageFeatureService( id, itemJson, options, callback );
           // We HAVE to page 
           } else if ( count >= 1000 ){
-            self.pageFeatureService( id, itemJson, count, hash, options, callback );
+            agol.pageFeatureService( id, itemJson, count, hash, options, callback );
           } else {
             callback( 'Unable to count features, make sure the layer you requested exists', null );
           }
@@ -387,7 +383,7 @@ var AGOL = function( koop ){
 
 
   // make a request to a single page feature service 
-  this.singlePageFeatureService = function( id, itemJson, options, callback ){
+  agol.singlePageFeatureService = function( id, itemJson, options, callback ){
     var self = this;
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
@@ -413,7 +409,7 @@ var AGOL = function( koop ){
               data.body = data.body.replace(/\.null/g, '')
               var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
-              GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
+              koop.GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
 
                 geojson.name = itemJson.name || itemJson.title;
                 geojson.updated_at = itemJson.modified;
@@ -422,7 +418,7 @@ var AGOL = function( koop ){
                 geojson.retrieved_at = Date.now(); 
 
                 // save the data 
-                Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
+                koop.Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                   if ( success ) {
                     itemJson.data = [geojson];
                     callback( null, itemJson );
@@ -442,8 +438,8 @@ var AGOL = function( koop ){
   };
 
 
-  this._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
-    this.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
+  agol._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
+    agol.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
       koop.exporter.taskQueue.push( {
         id: id,
         type: 'agol',
@@ -456,7 +452,7 @@ var AGOL = function( koop ){
 
 
   // handles pagin over the feature service 
-  this.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
+  agol.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
     var self = this;    
     var geomType;
 
@@ -466,7 +462,7 @@ var AGOL = function( koop ){
     }
 
     // get the featureservice info 
-    this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
+    agol.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
       // sanitize any single quotes in the service description
       if (serviceInfo ) {
         if ( serviceInfo.description ) {
@@ -480,10 +476,10 @@ var AGOL = function( koop ){
         options.fields = serviceInfo.fields;    
       }
           
-      options.objectIdField = self.getObjectIDField(serviceInfo);
+      options.objectIdField = agol.getObjectIDField(serviceInfo);
 
       // creates the empty table
-      Cache.remove('agol', id, {layer: (options.layer || 0)}, function(){
+      koop.Cache.remove('agol', id, {layer: (options.layer || 0)}, function(){
 
         var expiration = Date.now() + self.cacheLife;
 
@@ -503,7 +499,7 @@ var AGOL = function( koop ){
         }
 
         
-        Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
+        koop.Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
 
           // return in a processing state, but continue on
           itemJson.data = [{ features:[] }];
@@ -518,53 +514,53 @@ var AGOL = function( koop ){
           // build legit offset based page requests 
           if ( serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
             var nPages = Math.ceil(count / maxCount);
-            pageRequests = self.buildOffsetPages( nPages, itemJson.url, maxCount, options );
+            pageRequests = agol.buildOffsetPages( nPages, itemJson.url, maxCount, options );
             self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
 
           } else if ( serviceInfo.supportsStatistics ) {
             // build where clause based pages 
-            var statsUrl = self.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
+            var statsUrl = agol.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
           
-            self.req( statsUrl, function( err, res ){
+            agol.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse(res.body);
               console.log(statsUrl, statsJson);
 
               if ( statsJson.error ){
                 // default to sequential objectID paging
-                pageRequests = self.buildObjectIDPages(
+                pageRequests = agol.buildObjectIDPages(
                   itemJson.url,
                   0,
                   count,
                   maxCount,
                   options
                 );
-                self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               } else {
-                  pageRequests = self.buildObjectIDPages(
+                  pageRequests = agol.buildObjectIDPages(
                     itemJson.url,
                     statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID,
                     statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID,
                     maxCount,
                     options
                   );
-                  self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                  agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               }
             });
 
           } else {
             if ( count < 50000 ){
-              self.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
-                pageRequests = self.buildIDPages(
+              agol.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
+                pageRequests = agol.buildIDPages(
                   itemJson.url,
                   ids,
                   250,
                   options
                 );
-                self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               });
             } else { 
             // default to sequential objectID paging
-            pageRequests = self.buildObjectIDPages(
+            pageRequests = agol.buildObjectIDPages(
                 itemJson.url,
                 0,
                 count,
@@ -583,7 +579,7 @@ var AGOL = function( koop ){
   };
 
 
-  this.geomTypes = {
+  agol.geomTypes = {
     'esriGeometryPolygon':'Polygon',
     'esriGeometryPoint':'Point',
     'esriGeometryPolyLine':'LineString'
@@ -591,7 +587,7 @@ var AGOL = function( koop ){
 
 
   //build resultOffset based page requests 
-  this.buildOffsetPages = function( pages, url, max, options ){
+  agol.buildOffsetPages = function( pages, url, max, options ){
     var reqs = [], 
       resultOffset;
     for (var i=0; i < pages; i++){
@@ -615,7 +611,7 @@ var AGOL = function( koop ){
 
 
   //build object id query based page requests 
-  this.buildObjectIDPages = function( url, min, max, maxCount, options ){
+  agol.buildObjectIDPages = function( url, min, max, maxCount, options ){
     var reqs = [], 
       pageMax, pageMin;
 
@@ -640,7 +636,7 @@ var AGOL = function( koop ){
   };
 
    //build object id query based page requests 
-  this.buildIDPages = function( url, ids, maxCount, options ){
+  agol.buildIDPages = function( url, ids, maxCount, options ){
     var reqs = [],
       pageMax;
     
@@ -668,7 +664,7 @@ var AGOL = function( koop ){
 
   // make requests for feature pages 
   // execute done when we have all features 
-  this.requestQueue = function(max, reqs, id, itemJson, layerId, options, done){
+  agol.requestQueue = function(max, reqs, id, itemJson, layerId, options, done){
     var reqCount = 0;
     // setup the place to collect all the features
     itemJson.data = [ {features: []} ];
@@ -679,10 +675,10 @@ var AGOL = function( koop ){
         done( json.error.details[0], null);
       } else {
         // insert a partial
-        GeoJSON.fromEsri( options.fields || [], json, function(err, geojson){
+        koop.GeoJSON.fromEsri( options.fields || [], json, function(err, geojson){
           // concat the features so we return the full json
           //itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
-          Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
+          koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
             cb();
             if (reqCount++ == reqs.length-1){
               // pass back the full array of features
@@ -731,7 +727,7 @@ var AGOL = function( koop ){
   };
 
   // Gets the feature service info 
-  this.getFeatureServiceLayerInfo = function( url, layer, callback ){
+  agol.getFeatureServiceLayerInfo = function( url, layer, callback ){
     request.get( url +'/'+ layer + '?f=json', function( err, res ){
       try {
         var json = JSON.parse( res.body );
@@ -743,7 +739,7 @@ var AGOL = function( koop ){
   };
 
   // Gets the feature service object ids for pagination
-  this.getFeatureServiceLayerIds = function( url, layer, callback ){
+  agol.getFeatureServiceLayerIds = function( url, layer, callback ){
     request.get( url +'/'+ layer + '/query?where=1=1&returnIdsOnly=true&f=json', function( err, res ){
       var json = JSON.parse( res.body );
       callback( err, json.objectIds );
@@ -751,14 +747,14 @@ var AGOL = function( koop ){
   };
 
   // builds a url for querying the min/max values of the object id 
-  this.buildStatsUrl = function( url, layer, field ){
+  agol.buildStatsUrl = function( url, layer, field ){
     var json = [{"statisticType":"min","onStatisticField":field,"outStatisticFieldName":"min_oid"},
       {"statisticType":"max","onStatisticField":field,"outStatisticFieldName":"max_oid"}];
     return url+'/'+layer+'/query?f=json&outFields=&outStatistics='+JSON.stringify(json);
   };
 
   // find and return the OID field from the list of fields
-  this.getObjectIDField = function(info){
+  agol.getObjectIDField = function(info){
     var field;
     info.fields.forEach(function(f,i){
       if (f.type == 'esriFieldTypeOID'){
@@ -768,25 +764,8 @@ var AGOL = function( koop ){
     return field;
   };
 
-  // wrap the exportToFormat for testing ease
-  this.exportToFormat = function(format, dir, key, data, info, callback){
-    koop.exporter.exportToFormat(format, dir, key, data, info, callback);
-  };
 
-  // wraps for testing ease
-  this.exportLarge = function(format, id, key, type, callback){
-    koop.exporter.exportLarge(format, id, key, type, callback);
-  };
-
-  this.generateThumbnail = function(data, id, options, callback){
-    koop.Thumbnail.generate( data, id, options, callback );
-  };
-
-  this.getTile = function(params, data, callback){
-    koop.Tiles.get( params, data, callback);
-  }
-
-  return this;
+  return agol;
 };
   
 
