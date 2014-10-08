@@ -531,7 +531,7 @@ var Controller = extend({
 
     // Get the tile and send the response to the client
     var _send = function( err, data ){
-      req.params.key = key + ':' + layer;
+      req.params.key = req.params.item + ':' + layer;
       Tiles.get( req.params, data[0], function(err, tile){
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
@@ -556,6 +556,7 @@ var Controller = extend({
     };
 
     var _sendImmediate = function( file ){
+      console.log(file);
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
         res.sendfile( file );
       } else {
@@ -573,6 +574,7 @@ var Controller = extend({
 
     var jsonFile = file.replace(/png|pbf|utf/g, 'json');
 
+    console.log(file)
     // if the json file alreadty exists, dont hit the db, just send the data
     if (fs.existsSync(jsonFile) && !fs.existsSync( file ) ){
       
@@ -599,8 +601,8 @@ var Controller = extend({
           var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
           var hash = crypto.createHash('md5').update(toHash).digest('hex');
 
-          var factor = .5;
-          req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
+          var factor = .1;
+//          req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
 
 
           // Get the item
@@ -687,8 +689,8 @@ var Controller = extend({
               sorted_query[key] = req.query[key];
             }
           });
-          req.query.simplify = true;
-          req.query.zoom = req.params.z;
+          //req.query.simplify = true;
+          //req.query.zoom = req.params.z;
 
           // Get the item
           agol.getServiceLayerData( data.host, req.params.item, null, req.query, function(error, itemJson){
