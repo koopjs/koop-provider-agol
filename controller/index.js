@@ -194,7 +194,7 @@ var Controller = function( agol ){
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
-          koop.files.exists( null, fileName, function( exists ) {
+          agol.files.exists( null, fileName, function( exists ) {
             if ( exists ){ 
               contoller.returnFile(req, res, dir, key, fileName);
             } else {
@@ -246,7 +246,7 @@ var Controller = function( agol ){
             }
 
             // does the data export already exist? 
-            koop.files.exists( null, fileName, function( exists ){
+            agol.files.exists( null, fileName, function( exists ){
               if ( exists && !is_expired ){
                 // return it.
                 controller.returnFile(req, res, dir, key, fileName);
@@ -416,7 +416,7 @@ var Controller = function( agol ){
         req.query.f_base = dir + '/' + req.params.item + '/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
         var png = req.query.f_base+'.png';
 
-        koop.files.exists( png, function( exists ){
+        agol.files.exists( png, function( exists ){
           if ( exists ){
             res.sendfile( png );
           } else {
@@ -498,11 +498,11 @@ var Controller = function( agol ){
           res.sendfile( tile );
         } else {
           if ( callback ){
-            koop.files.read(null, tile, function(err, data){
+            agol.files.read(null, tile, function(err, data){
               res.send( callback + '(' + JSON.parse( data ) + ')' );
             });
           } else {
-            koop.files.read(null, tile, function(err, data){
+            agol.files.read(null, tile, function(err, data){
               res.json( JSON.parse( data ) );
             });
           }
@@ -522,14 +522,14 @@ var Controller = function( agol ){
 
     var _sendImmediate = function( file ){
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
-        res.sendfile( koop.cache_dir +'/'+ file );
+        res.sendfile( agol.cache_dir +'/'+ file );
       } else {
         if ( callback ){
-          koop.files.read(null, file, function(err, data){
+          agol.files.read(null, file, function(err, data){
             res.send( callback + '(' + data + ')' );
           });
         } else {
-          koop.files.read(null, file, function(err, data){
+          agol.files.read(null, file, function(err, data){
             res.json( JSON.parse( data ) );
           });
         }
@@ -544,17 +544,17 @@ var Controller = function( agol ){
     var jsonFile = file.replace(/png|pbf|utf/g, 'json');
 
     // if the json file alreadty exists, dont hit the db, just send the data
-    koop.files.exists(jsonFile, function( jsonExists ){
+    agol.files.exists(jsonFile, function( jsonExists ){
       if ( jsonExists ){
 
       } 
-      koop.files.exists( file, function( fileExists ){
+      agol.files.exists( file, function( fileExists ){
 
         if ( jsonExists && !fileExists ){
-          koop.files.read(null, jsonFile, function(err, data){
+          agol.files.read(null, jsonFile, function(err, data){
             _send( null, [JSON.parse( jsonFile )] );
           });
-        } else if ( !fileExists )
+        } else if ( !fileExists ) {
 
           agol.find(req.params.id, function(err, data){
             if (err) {
@@ -654,7 +654,7 @@ var Controller = function( agol ){
       file += key + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
-    koop.files.exists( null, file, function( exists ){
+    agol.files.exists( null, file, function( exists ){
       if ( exists ){
         res.sendfile( file );
       } else {
