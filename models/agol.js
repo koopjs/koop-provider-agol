@@ -356,7 +356,7 @@ var AGOL = function( koop ){
             count = idJson.objectIds.length;
           }
 
-          console.log('Count', count);
+          agol.log('debug', JSON.stringify({method:'makeFeatureServiceRequest', id:id, 'count': count}));
 
           // WHEN COUNT IS 0 - No Features 
           if (count === 0){
@@ -440,6 +440,7 @@ var AGOL = function( koop ){
 
 
   agol._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
+    console.log('pageRequests', pageRequests.length);
     agol.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
       koop.exporter.taskQueue.push( {
         id: id,
@@ -499,7 +500,6 @@ var AGOL = function( koop ){
           info.format = options.format;
         }
 
-        
         koop.Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
 
           // return in a processing state, but continue on
@@ -537,10 +537,12 @@ var AGOL = function( koop ){
                 );
                 agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               } else {
+                  //console.log(statsJson);
+                  var names = Object.keys(statsJson.fieldAliases);
                   pageRequests = agol.buildObjectIDPages(
                     itemJson.url,
-                    statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID,
-                    statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID,
+                    statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID ||statsJson.features[0].attributes[names[0]],
+                    statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID || statsJson.features[0].attributes[names[1]],
                     maxCount,
                     options
                   );
@@ -666,7 +668,6 @@ var AGOL = function( koop ){
   // make requests for feature pages 
   // execute done when we have all features 
   agol.requestQueue = function(max, reqs, id, itemJson, layerId, options, done){
-    console.log(itemJson)
     var reqCount = 0;
     // setup the place to collect all the features
     itemJson.data = [ {features: []} ];
@@ -696,7 +697,7 @@ var AGOL = function( koop ){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      koop.log.info('get page %d %s', i++, task.req);
+      agol.log('info', 'get page '+ (i++) +' '+ task.req);
       request.get(task.req, function(err, data, response){
         try {
           // so sometimes server returns these crazy asterisks in the coords
@@ -706,14 +707,13 @@ var AGOL = function( koop ){
           var json = JSON.parse(data.body.replace(/OwnerPLY\./g,'').replace(/NaN/g, 'null'));
           _collect(json, callback);
         } catch(e){
-          // TODO use a centralized logger for all logs
-          koop.log.info('Requesting page %s %s', task.req, err);
+          agol.log('info','Requesting page '+ task.req +' '+ err);
           if ( task.retry && task.retry < 3 ){
             task.retry++;
             q.push(task, function(err){ if (err) console.log(err); });
           } else if (task.retry && task.retry == 3 ){ 
             _collect( { error: { details: ['failed to parse json after 3 requests'] } }, callback);
-            koop.log.error('failed to parse json %s %s', task.req, err);
+            agol.log('error', 'failed to parse json '+ task.req +' '+ err);
           } else {
             task.retry = 1;
             q.push(task, function(err){ if (err) console.log(err); });

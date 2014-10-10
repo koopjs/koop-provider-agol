@@ -6,10 +6,8 @@ var request = require('request'),
   merc = new sm({size:256}),
   crypto = require('crypto'),
   _ = require('lodash'),
-  BaseController = require('koop-server/lib/BaseController.js'),
-  fs = require('fs');
+  BaseController = require('koop-server/lib/BaseController.js');
 
-console.log(BaseController);
 // inherit from base controller
 var Controller = function( agol ){
 
@@ -172,7 +170,7 @@ var Controller = function( agol ){
       var key = crypto.createHash('md5').update(toHash).digest('hex');
 
       var _returnProcessing = function(){
-          console.log('processing still... return 202');
+          agol.log('debug',JSON.stringify({status: 202, item: req.params.item, layer: ( req.params.layer || 0 )})); 
           agol.getCount(table_key, {}, function(err, count){
             res.json( {
               status: 'processing',
@@ -196,11 +194,13 @@ var Controller = function( agol ){
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
-          if ( fs.existsSync( fileName ) ){
-            contoller.returnFile(req, res, dir, key, fileName);
-          } else {
-            _returnProcessing();
-          }
+          koop.files.exists( fileName, function( exists ) {
+            if ( exists ){ 
+              contoller.returnFile(req, res, dir, key, fileName);
+            } else {
+              _returnProcessing();
+            }
+          });
         } else {
           _returnProcessing();
         }
@@ -376,13 +376,13 @@ var Controller = function( agol ){
   };
 
   controller.returnFile = function( req, res, dir, key, fileName ){
-    setTimeout(function () {
+    //setTimeout(function () {
       // block the process until the file has a size greater than 5 byts
       // this is a hack for times when the request gets files that are still writing to disk
-      if ( !fs.statSync( fileName ).size > 5 ) {
-        setTimeout(arguments.callee, 25);
-        return;
-      }
+      //if ( !fs.statSync( fileName ).size > 5 ) {
+      //  setTimeout(arguments.callee, 25);
+      //  return;
+      //}
 
     if ( req.query.url_only ){
       var origUrl = req.originalUrl.split('?');
@@ -393,7 +393,7 @@ var Controller = function( agol ){
       }
       res.sendfile( fileName );
     }
-    }, 0);
+    //}, 0);
   };
 
   controller.featureserver = function( req, res ){
@@ -561,7 +561,6 @@ var Controller = function( agol ){
     };
 
     var _sendImmediate = function( file ){
-      console.log(file);
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
         res.sendfile( file );
       } else {
@@ -580,7 +579,6 @@ var Controller = function( agol ){
 
     var jsonFile = file.replace(/png|pbf|utf/g, 'json');
 
-    console.log(file)
     // if the json file alreadty exists, dont hit the db, just send the data
     if (fs.existsSync(jsonFile) && !fs.existsSync( file ) ){
       
