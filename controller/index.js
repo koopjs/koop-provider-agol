@@ -194,7 +194,7 @@ var Controller = function( agol ){
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
-          koop.files.exists( fileName, function( exists ) {
+          koop.files.exists( null, fileName, function( exists ) {
             if ( exists ){ 
               contoller.returnFile(req, res, dir, key, fileName);
             } else {
@@ -246,109 +246,73 @@ var Controller = function( agol ){
             }
 
             // does the data export already exist? 
-            if ( fs.existsSync( fileName ) && !is_expired ){
-              // return it.
-              controller.returnFile(req, res, dir, key, fileName);
-
-            // ELSE the data exist but the cache is expired...
-            // return the file, but make sure we kick off a new request to re-populate the cache 
-            } else if (fs.existsSync( fileName ) && is_expired) {
-              if ( req.query.url_only ){
-                var origUrl = req.originalUrl.split('?');
-                res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+            koop.files.exists( null, fileName, function( exists ){
+              if ( exists && !is_expired ){
+                // return it.
+                controller.returnFile(req, res, dir, key, fileName);
               } else {
-                if (req.params.format == 'json' || req.params.format == 'geojson'){
-                  res.contentType('text');
-                }
-                res.sendfile( fileName );
-                agol.find( req.params.id, function( err, data ){
-                    if ( !parseInt(req.query.layer) ){
-                      req.query.layer = 0;
+                // check the koop status table to see if we have a job running 
+                  // if we do then return 
+                  // else proceed 
+                req.query.format = req.params.format;
+                _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
+                  if (err){
+                    if ( err.code && err.error ){
+                      res.send( err.error, err.code );
+                    } else {
+                      res.send( err, 500);
                     }
+                  } else if ( !itemJson.data[0].features.length ){
+                    agol.log('error', req.url +' No features in data');
+                    res.send( 'No features exist for the requested FeatureService layer', 500 );
+                  } else {
+                    if (itemJson.koop_status && itemJson.koop_status == 'too big'){
+                      // export as a series of small queries/files
+                      var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
 
-                    agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
-                     
-                      req.query.ignore_cache = true;
- 
-                      if (itemJson.koop_status && itemJson.koop_status == 'too big'){
-                        // export as a series of small queries/files
-                        var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
-                        req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson. data[0].info.title : itemJson.name;
-                        // set the geometry type so the exporter can do its thing for csv points (add x,y)
-                        req.query.geomType = itemJson.data[0].info.geometryType;
-                        Exporter.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
-                          console.log('Done creating large file for', key);
-                        });
-                      } else {
-                        agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], {name:itemJson.data[0].info.name || itemJson.data[0].info.title}, function(err, result){
-                          console.log('Done creating file for', key);
-                        });
-                      }
-                    });
+                      req.query.name = (itemJson.data[0] && itemJson.data[0].info) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name; 
+                      // set the geometry type so the exporter can do its thing for csv points (add x,y)
+                      req.query.geomType = itemJson.data[0].info.geometryType;
+
+                      agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
+                        if (result && result.status && result.status == 'processing'){
+                          res.json( { status: 'processing', count: 0 }, 202);          
+                        } else if ( req.query.url_only ){
+                          var origUrl = req.originalUrl.split('?');
+                          res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+                        } else {
+                          if (err) {
+                            res.send( err, 500 );
+                          } else {
+                            if (req.params.format == 'json' || req.params.format == 'geojson'){
+                              res.contentType('text');
+                            }
+                            res.sendfile(result);
+                          }
+                        }
+                      });
+                    } else {
+                      var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name;
+                      agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
+                        if ( req.query.url_only ){
+                          var origUrl = req.originalUrl.split('?');
+                          res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+                        } else {
+                          if (err) {
+                            res.send( err, 500 );
+                          } else {
+                            if (req.params.format == 'json' || req.params.format == 'geojson'){
+                              res.contentType('text');
+                            }
+                            res.sendfile(result);
+                          }
+                        }
+                      });
+                    }
+                  }
                 });
               }
-            } else {
-              // check the koop status table to see if we have a job running 
-                // if we do then return 
-                // else proceed 
-              req.query.format = req.params.format;
-              _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
-                if (err){
-                  if ( err.code && err.error ){
-                    res.send( err.error, err.code );
-                  } else {
-                    res.send( err, 500);
-                  }
-                } else if ( !itemJson.data[0].features.length ){
-                  agol.log('error', req.url +' No features in data');
-                  res.send( 'No features exist for the requested FeatureService layer', 500 );
-                } else {
-                  if (itemJson.koop_status && itemJson.koop_status == 'too big'){
-                    // export as a series of small queries/files
-                    var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
-
-                    req.query.name = (itemJson.data[0]) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name; 
-                    // set the geometry type so the exporter can do its thing for csv points (add x,y)
-                    req.query.geomType = itemJson.data[0].info.geometryType;
-
-                    agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
-                      if (result && result.status && result.status == 'processing'){
-                        res.json( { status: 'processing', count: 0 }, 202);          
-                      } else if ( req.query.url_only ){
-                        var origUrl = req.originalUrl.split('?');
-                        res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                      } else {
-                        if (err) {
-                          res.send( err, 500 );
-                        } else {
-                          if (req.params.format == 'json' || req.params.format == 'geojson'){
-                            res.contentType('text');
-                          }
-                          res.sendfile(result);
-                        }
-                      }
-                    });
-                  } else {
-                    var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name;
-                    agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
-                      if ( req.query.url_only ){
-                        var origUrl = req.originalUrl.split('?');
-                        res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                      } else {
-                        if (err) {
-                          res.send( err, 500 );
-                        } else {
-                          if (req.params.format == 'json' || req.params.format == 'geojson'){
-                            res.contentType('text');
-                          }
-                          res.sendfile(result);
-                        }
-                      }
-                    });
-                  }
-                }
-              });
-            }
+            });
           }
         } else {
           // if we have a layer then append it to the query params 
@@ -376,14 +340,6 @@ var Controller = function( agol ){
   };
 
   controller.returnFile = function( req, res, dir, key, fileName ){
-    //setTimeout(function () {
-      // block the process until the file has a size greater than 5 byts
-      // this is a hack for times when the request gets files that are still writing to disk
-      //if ( !fs.statSync( fileName ).size > 5 ) {
-      //  setTimeout(arguments.callee, 25);
-      //  return;
-      //}
-
     if ( req.query.url_only ){
       var origUrl = req.originalUrl.split('?');
       res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
@@ -393,7 +349,6 @@ var Controller = function( agol ){
       }
       res.sendfile( fileName );
     }
-    //}, 0);
   };
 
   controller.featureserver = function( req, res ){
@@ -461,54 +416,55 @@ var Controller = function( agol ){
         req.query.f_base = dir + '/' + req.params.item + '/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
         var png = req.query.f_base+'.png';
 
-        //var fileName = .exists(key, req.query); 
-        if ( fs.existsSync(png) ){
-          res.sendfile( png );
-        } else {
+        koop.files.exists( png, function( exists ){
+          if ( exists ){
+            res.sendfile( png );
+          } else {
 
-          // if we have a layer then pass it along
-          if ( req.params.layer ) {
-            req.query.layer = req.params.layer;
-          }
-          // sort the req.query before we hash so we are consistent 
-          var sorted_query = {};
-          _(req.query).keys().sort().each(function (key) {
-            if (key != 'url_only'){
-              sorted_query[key] = req.query[key];
+            // if we have a layer then pass it along
+            if ( req.params.layer ) {
+              req.query.layer = req.params.layer;
             }
-          });
-          // build the file key as an MD5 hash that's a join on the paams and look for the file 
-          var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-          key = crypto.createHash('md5').update(toHash).digest('hex');
+            // sort the req.query before we hash so we are consistent 
+            var sorted_query = {};
+            _(req.query).keys().sort().each(function (key) {
+              if (key != 'url_only'){
+                sorted_query[key] = req.query[key];
+              }
+            });
+            // build the file key as an MD5 hash that's a join on the paams and look for the file 
+            var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+            key = crypto.createHash('md5').update(toHash).digest('hex');
 
-          // Get the item 
-          agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
-            if (error) {
-              res.send( error, 500);
-            } else {
-                if ( itemJson.extent && itemJson.extent.length ){
-                  req.query.extent = {
-                    xmin: itemJson.extent[0][0],
-                    ymin: itemJson.extent[0][1],
-                    xmax: itemJson.extent[1][0],
-                    ymax: itemJson.extent[1][1]
-                  }; 
-                }
-
-                // generate a thumbnail
-                delete itemJson.data[0].info;
-                agol.generateThumbnail( itemJson.data[0], req.params.item, req.query, function(err, file){
-                  if (err){
-                    res.send(err, 500);
-                  } else {
-                    // send back image
-                    res.sendfile( file );
+            // Get the item 
+            agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
+              if (error) {
+                res.send( error, 500);
+              } else {
+                  if ( itemJson.extent && itemJson.extent.length ){
+                    req.query.extent = {
+                      xmin: itemJson.extent[0][0],
+                      ymin: itemJson.extent[0][1],
+                      xmax: itemJson.extent[1][0],
+                      ymax: itemJson.extent[1][1]
+                    }; 
                   }
-                });
-                
-            }
-          });
-        }
+
+                  // generate a thumbnail
+                  delete itemJson.data[0].info;
+                  agol.generateThumbnail( itemJson.data[0], req.params.item, req.query, function(err, file){
+                    if (err){
+                      res.send(err, 500);
+                    } else {
+                      // send back image
+                      res.sendfile( file );
+                    }
+                  });
+                  
+              }
+            });
+          }
+        });
       }
     });
 
@@ -542,9 +498,13 @@ var Controller = function( agol ){
           res.sendfile( tile );
         } else {
           if ( callback ){
-            res.send( callback + '(' + JSON.stringify( JSON.parse( fs.readFileSync( tile ) ) ) + ')' );
+            koop.files.read(null, tile, function(err, data){
+              res.send( callback + '(' + JSON.parse( data ) + ')' );
+            });
           } else {
-            res.json( JSON.parse( fs.readFileSync( tile ) ) );
+            koop.files.read(null, tile, function(err, data){
+              res.json( JSON.parse( data ) );
+            });
           }
         }
       });
@@ -562,72 +522,86 @@ var Controller = function( agol ){
 
     var _sendImmediate = function( file ){
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
-        res.sendfile( file );
+        res.sendfile( koop.cache_dir +'/'+ file );
       } else {
         if ( callback ){
-          res.send( callback + '(' + JSON.stringify( JSON.parse( fs.readFileSync( file ) ) ) + ')' );
+          koop.files.read(null, file, function(err, data){
+            res.send( callback + '(' + data + ')' );
+          });
         } else {
-          res.json( JSON.parse( fs.readFileSync( file ) ) );
+          koop.files.read(null, file, function(err, data){
+            res.json( JSON.parse( data ) );
+          });
         }
       }
     }; 
 
     key = ['agol', req.params.id, req.params.item].join(':');
-    var file = agol.cacheDir + 'tiles/';
+    var file = 'tiles/';
       file += key + ':' + layer + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
     var jsonFile = file.replace(/png|pbf|utf/g, 'json');
 
     // if the json file alreadty exists, dont hit the db, just send the data
-    if (fs.existsSync(jsonFile) && !fs.existsSync( file ) ){
-      
-      _send( null, [JSON.parse(fs.readFileSync( jsonFile ))] );
+    koop.files.exists(jsonFile, function( jsonExists ){
+      if ( jsonExists ){
 
-    } else if ( !fs.existsSync( file ) ) {
-      agol.find(req.params.id, function(err, data){
-        if (err) {
-          res.send( err, 500);
-        } else {
-          // if we have a layer then pass it along
-          if ( req.params.layer ) {
-            req.query.layer = req.params.layer;
-          }
+      } 
+      koop.files.exists( file, function( fileExists ){
 
-          // sort the req.query before we hash so we are consistent 
-          var sorted_query = {};
-          _(req.query).keys().sort().each(function (key) {
-            if (key != 'url_only'){
-              sorted_query[key] = req.query[key];
-            }
+        if ( jsonExists && !fileExists ){
+          koop.files.read(null, jsonFile, function(err, data){
+            _send( null, [JSON.parse( jsonFile )] );
           });
-          // build the file key as an MD5 hash that's a join on the paams and look for the file 
-          var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-          var hash = crypto.createHash('md5').update(toHash).digest('hex');
+        } else if ( !fileExists )
 
-          var factor = .1;
-//          req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
-
-
-          // Get the item
-          agol.getItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
-            if (error) {
-              if ( itemJson && itemJson.type == 'Image Service' && req.params.format == 'png' ){
-                Tiles.getImageServiceTile( req.params, function(err, newFile){
-                  _sendImmediate( newFile );
-                });
-              } else {
-                res.send( error, 500);
-              }
+          agol.find(req.params.id, function(err, data){
+            if (err) {
+              res.send( err, 500);
             } else {
-              _send(error, itemJson.data);
+              // if we have a layer then pass it along
+              if ( req.params.layer ) {
+                req.query.layer = req.params.layer;
+              }
+
+              // sort the req.query before we hash so we are consistent 
+              var sorted_query = {};
+              _(req.query).keys().sort().each(function (key) {
+                if (key != 'url_only'){
+                  sorted_query[key] = req.query[key];
+                }
+              });
+              // build the file key as an MD5 hash that's a join on the paams and look for the file 
+              var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+              var hash = crypto.createHash('md5').update(toHash).digest('hex');
+
+              var factor = .1;
+//              req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
+
+
+              // Get the item
+              agol.getItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
+                if (error) {
+                  if ( itemJson && itemJson.type == 'Image Service' && req.params.format == 'png' ){
+                    Tiles.getImageServiceTile( req.params, function(err, newFile){
+                      _sendImmediate( newFile );
+                    });
+                  } else {
+                    res.send( error, 500);
+                  }
+                } else {
+                  _send(error, itemJson.data);
+                }
+              });
             }
           });
+        } else {
+          _sendImmediate( file );
         }
       });
-    } else {
-      _sendImmediate(file);
-    }
+    });
+
   },
 
   // logic for handling service level, multi-layer tiles 
@@ -676,41 +650,42 @@ var Controller = function( agol ){
     var key = [req.params.item,'all'].join(':');
     // build the names of the files 
     // Note that the layer id would be present in service level tiles 
-    var file = config.data_dir + 'tiles/';
+    var file = 'tiles/';
       file += key + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
-    if ( !fs.existsSync(file)){
-      agol.find( req.params.id, function( err, data ){
-        if (err) {
-          res.send( err, 500);
-        } else {
+    koop.files.exists( null, file, function( exists ){
+      if ( exists ){
+        res.sendfile( file );
+      } else {
+        agol.find( req.params.id, function( err, data ){
+          if (err) {
+            res.send( err, 500);
+          } else {
 
-          // sort the req.query before we hash so we are consistent 
-          var sorted_query = {};
-          _(req.query).keys().sort().each(function (key) {
-            if (key != 'url_only'){
-              sorted_query[key] = req.query[key];
-            }
-          });
-          //req.query.simplify = true;
-          //req.query.zoom = req.params.z;
+            // sort the req.query before we hash so we are consistent 
+            var sorted_query = {};
+            _(req.query).keys().sort().each(function (key) {
+              if (key != 'url_only'){
+                sorted_query[key] = req.query[key];
+              }
+            });
+            //req.query.simplify = true;
+            //req.query.zoom = req.params.z;
 
-          // Get the item
-          agol.getServiceLayerData( data.host, req.params.item, null, req.query, function(error, itemJson){
-            if (error) {
-              res.send( error, 500);
-            } else {
-              // send the data for the tile to Tiles 
-              _send(error, itemJson);
-            }
-          });
-        }
-      });
-
-    } else {
-      res.sendfile( file );
-    }
+            // Get the item
+            agol.getServiceLayerData( data.host, req.params.item, null, req.query, function(error, itemJson){
+              if (error) {
+                res.send( error, 500);
+              } else {
+                // send the data for the tile to Tiles 
+                _send(error, itemJson);
+              }
+            });
+          }
+        });
+      }
+    });
 
   };
 
