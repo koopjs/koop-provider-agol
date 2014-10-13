@@ -10,12 +10,13 @@ var largeCSV = fs.readFileSync('./test/fixtures/largeCSV.csv').toString();
 before(function(done){
   // setup koop 
   koop.Cache.db = koop.PostGIS.connect( config.db.postgis.conn );
-  var data_dir = __dirname + '/output/';
-  koop.Cache.data_dir = data_dir;
-  koop.Tiles.data_dir = data_dir;
-  koop.Thumbnail.data_dir = data_dir;
+  config.data_dir = __dirname + '/output/';
+  koop.Cache.data_dir = config.data_dir;
+  koop.Tiles.data_dir = config.data_dir;
+  koop.Thumbnail.data_dir = config.data_dir;
   // Need the exporter to have access to the cache so we pass it Koop
-  koop.exporter = new koop.Exporter( koop.Cache );
+  koop.exporter = new koop.Exporter( koop );
+  koop.files = new koop.Files( koop );
   koop.log = new koop.Logger({});
   agol = new require('../models/agol.js')( koop );
   done();
@@ -25,7 +26,7 @@ describe('AGOL Model', function(){
 
     describe('get / remove items', function() {
       before(function(done ){
-        sinon.stub(koop.Cache, 'removeAll', function(host, itemid, opts, callback){
+        sinon.stub(koop.Cache, 'remove', function(host, itemid, opts, callback){
           callback();
         });
 
@@ -36,7 +37,7 @@ describe('AGOL Model', function(){
       });
 
       after(function(done){
-        koop.Cache.removeAll.restore();
+        koop.Cache.remove.restore();
         agol.req.restore();
         done();
       });
@@ -47,7 +48,7 @@ describe('AGOL Model', function(){
 
       it('should call cache db remove on dropItem', function(done){
         agol.dropItem('host', 'itemid1', {}, function(){
-          koop.Cache.removeAll.called.should.equal(true);
+          koop.Cache.remove.called.should.equal(true);
           done();
         });
       });
@@ -529,7 +530,7 @@ describe('AGOL Model', function(){
         });
 
         sinon.stub(agol, 'req', function(url, callback){
-          callback(null, {body: JSON.stringify({features: [{attributes: {min:0, max: 1001}}]})});
+          callback(null, {body: JSON.stringify({features: [{attributes: {min_oid:1, max_oid: 1001}}]})});
         });
         sinon.stub(agol, 'getFeatureServiceLayerInfo', function( url, layer, callback ){
           serviceInfo.advancedQueryCapabilities = {supportsPagination:false};

@@ -50,8 +50,15 @@ var AGOL = function( koop ){
 
   // drops the item from the cache
   agol.dropItem = function( host, itemId, options, callback ){
-    koop.Cache.removeAll('agol', itemId, options, function(err, res){
-      callback(err, res);
+    var dir = [ itemId, (options.layer || 0) ].join('_');
+    koop.Cache.remove('agol', itemId, options, function(err, res){
+      koop.files.removeDir( 'files/' + dir, function(err, res){
+        koop.files.removeDir( 'tiles/'+ dir, function(err, res){
+          koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
+            callback(err, res);
+          });
+        });
+      });
     });
   };
 
@@ -206,16 +213,24 @@ var AGOL = function( koop ){
             json.info = { name: task.itemJson.name };
             json.features = [];
 
-            koop.Cache.removeAll('agol', task.id, task.options, function(err, res){
-              koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
-                koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
-                  if ( success ) {
-                    task.itemJson.data = [geojson];
-                    task.callback( null, task.itemJson );
-                  } else {
-                    task.callback( err, null );
-                  }
-                  cb();
+            var dir = [ task.id, (task.options.layer || 0) ].join('_');
+
+            koop.Cache.remove('agol', task.id, task.options, function(err, res){
+              koop.files.removeDir( 'files/' + dir, function(err, res){
+                koop.files.removeDir( 'tiles/'+ dir, function(err, res){
+                  koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
+                    koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
+                      koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
+                        if ( success ) {
+                          task.itemJson.data = [geojson];
+                          task.callback( null, task.itemJson );
+                        } else {
+                          task.callback( err, null );
+                        }
+                        cb();
+                      });
+                    });
+                  });
                 });
               });
             });
@@ -538,7 +553,10 @@ var AGOL = function( koop ){
                 agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               } else {
                   //console.log(statsJson);
-                  var names = Object.keys(statsJson.fieldAliases);
+                  var names;
+                  if ( statsJson && statsJson.fieldAliases ) { 
+                    names = Object.keys(statsJson.fieldAliases);
+                  }
                   pageRequests = agol.buildObjectIDPages(
                     itemJson.url,
                     statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID ||statsJson.features[0].attributes[names[0]],

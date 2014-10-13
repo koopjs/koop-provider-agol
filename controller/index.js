@@ -185,18 +185,18 @@ var Controller = function( agol ){
           // this logic should be wrapped into a Function since its copied from below
           req.params.format = req.params.format.replace('geojson', 'json');
           var dir = req.params.item + '_' + ( req.params.layer || 0 );
-          var fileName = [config.data_dir + 'files', dir, key + '.' + req.params.format].join('/');
+          var fileName = ['files', dir, key + '.' + req.params.format].join('/');
           if (info && req.params.format == 'zip'){
             var name = info.info.name || info.info.title;
-            fileName = [config.data_dir + 'files', dir, key, name + '.' + req.params.format].join('/');
+            fileName = ['files', dir, key, name + '.' + req.params.format].join('/');
           }
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
-          agol.files.exists( null, fileName, function( exists ) {
+          agol.files.exists( null, fileName, function( exists, path ) {
             if ( exists ){ 
-              contoller.returnFile(req, res, dir, key, fileName);
+              contoller.returnFile(req, res, dir, key, path);
             } else {
               _returnProcessing();
             }
@@ -223,9 +223,7 @@ var Controller = function( agol ){
 
           // redirect to thumbnail for png access
           if (req.params.format == 'png'){
-            //self.thumbnail(req, res);
-            
-            
+            controller.thumbnail(req, res);
           } else {
 
             // change geojson to json
@@ -233,12 +231,14 @@ var Controller = function( agol ){
             // use the item as the file dir so we can organize exports by id
             var dir = req.params.item + '_' + ( req.params.layer || 0 );
             // the file name for the export   
-            var fileName = [agol.cacheDir() + 'files', dir, key + '.' + req.params.format].join('/');
+            var path = [ 'files', dir ].join( '/' );
+            var fileName = key + '.' + req.params.format;
 
             // if we know the name and its a zip request; check for file via name
             if (info && req.params.format == 'zip'){
               var name = info.info.name || info.info.title;
-              fileName = [agol.cacheDir() + 'files', dir, key, name + '.' + req.params.format].join('/');
+              path = [ 'files', dir, key ].join( '/' );
+              fileName = name + '.' + req.params.format;
             }
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
@@ -246,10 +246,10 @@ var Controller = function( agol ){
             }
 
             // does the data export already exist? 
-            agol.files.exists( null, fileName, function( exists ){
+            agol.files.exists( path, fileName, function( exists, path ){
               if ( exists && !is_expired ){
                 // return it.
-                controller.returnFile(req, res, dir, key, fileName);
+                controller.returnFile(req, res, dir, key, path);
               } else {
                 // check the koop status table to see if we have a job running 
                   // if we do then return 
@@ -339,7 +339,7 @@ var Controller = function( agol ){
     });
   };
 
-  controller.returnFile = function( req, res, dir, key, fileName ){
+  controller.returnFile = function( req, res, dir, key, path ){
     if ( req.query.url_only ){
       var origUrl = req.originalUrl.split('?');
       res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
@@ -347,7 +347,13 @@ var Controller = function( agol ){
       if (req.params.format == 'json' || req.params.format == 'geojson'){
         res.contentType('text');
       }
-      res.sendfile( fileName );
+      if (path.substr(0,4) == 'http'){
+        res.redirect(path);
+      } else {
+        //agol.files.path(null, fileName, function(err, path){
+          res.sendfile( path );
+        //});
+      }
     }
   };
 
@@ -407,16 +413,17 @@ var Controller = function( agol ){
       if (err) {
         res.send( err, 500);
       } else {
+        var layer = (req.params.layer || 0);
 
         // check the image first and return if exists
-        var key = ['agol', req.params.id, req.params.item, (req.params.layer || 0)].join(':');
-        var dir = agol.cacheDir() + '/thumbs';
+        var key = ['agol', req.params.id, req.params.item, layer].join(':');
+        var dir = '/thumbs';
         req.query.width = parseInt( req.query.width ) || 150;
         req.query.height = parseInt( req.query.height ) || 150;
-        req.query.f_base = dir + '/' + req.params.item + '/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
+        req.query.f_base = dir + '/' + req.params.item +'_'+ layer +'/'+ req.params.item +'::' + req.query.width + '::' + req.query.height;
         var png = req.query.f_base+'.png';
 
-        agol.files.exists( png, function( exists ){
+        agol.files.exists( null, png, function( exists ){
           if ( exists ){
             res.sendfile( png );
           } else {
@@ -452,7 +459,7 @@ var Controller = function( agol ){
 
                   // generate a thumbnail
                   delete itemJson.data[0].info;
-                  agol.generateThumbnail( itemJson.data[0], req.params.item, req.query, function(err, file){
+                  agol.generateThumbnail( itemJson.data[0], req.params.item+'_'+req.params.layer, req.query, function(err, file){
                     if (err){
                       res.send(err, 500);
                     } else {
@@ -492,7 +499,7 @@ var Controller = function( agol ){
 
     // Get the tile and send the response to the client
     var _send = function( err, data ){
-      req.params.key = req.params.item + ':' + layer;
+      req.params.key = req.params.item + '_' + layer;
       agol.tileGet( req.params, data[0], function(err, tile){
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
@@ -522,7 +529,7 @@ var Controller = function( agol ){
 
     var _sendImmediate = function( file ){
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
-        res.sendfile( agol.cache_dir +'/'+ file );
+        res.sendfile( file );
       } else {
         if ( callback ){
           agol.files.read(null, file, function(err, data){
@@ -536,19 +543,16 @@ var Controller = function( agol ){
       }
     }; 
 
-    key = ['agol', req.params.id, req.params.item].join(':');
+    key = [req.params.item, layer].join('_');
     var file = 'tiles/';
-      file += key + ':' + layer + '/' + req.params.format;
+      file += key + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
     var jsonFile = file.replace(/png|pbf|utf/g, 'json');
 
     // if the json file alreadty exists, dont hit the db, just send the data
-    agol.files.exists(jsonFile, function( jsonExists ){
-      if ( jsonExists ){
-
-      } 
-      agol.files.exists( file, function( fileExists ){
+    agol.files.exists(null, jsonFile, function( jsonExists ){
+      agol.files.exists( null, file, function( fileExists, filePath ){
 
         if ( jsonExists && !fileExists ){
           agol.files.read(null, jsonFile, function(err, data){
@@ -584,7 +588,7 @@ var Controller = function( agol ){
               agol.getItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
                 if (error) {
                   if ( itemJson && itemJson.type == 'Image Service' && req.params.format == 'png' ){
-                    Tiles.getImageServiceTile( req.params, function(err, newFile){
+                    agol.getImageServiceTile( req.params, function(err, newFile){
                       _sendImmediate( newFile );
                     });
                   } else {
@@ -597,7 +601,7 @@ var Controller = function( agol ){
             }
           });
         } else {
-          _sendImmediate( file );
+          _sendImmediate( filePath );
         }
       });
     });
@@ -637,7 +641,7 @@ var Controller = function( agol ){
     var _send = function( err, info ){
       req.params.key = key;
       req.params.type = 'agol';
-      Tiles.getServiceTile( req.params, info, function(err, tile){
+      agol.getServiceTile( req.params, info, function(err, tile){
         if ( err ){
           res.send( err, 401 );
           return;
