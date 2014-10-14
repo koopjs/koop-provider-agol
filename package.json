@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha test/ -t 40000",
+    "test": "mocha test/model-test.js -t 40000",
     "lint": "node_modules/jshint/bin/jshint **/*.js"
   },
   "dependencies": {

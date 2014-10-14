@@ -55,7 +55,7 @@ var AGOL = function( koop ){
       koop.files.removeDir( 'files/' + dir, function(err, res){
         koop.files.removeDir( 'tiles/'+ dir, function(err, res){
           koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
-            callback(err, res);
+            callback(err, true);
           });
         });
       });
@@ -444,7 +444,7 @@ var AGOL = function( koop ){
                 });
               });
             } catch (e){
-              console.log(e, url);
+              koop.log.info( 'Error parsing response '+id+' '+e+' - '+url);
               callback( 'Unable to parse Feature Service response', null );
             }
           }

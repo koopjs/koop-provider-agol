@@ -7,6 +7,8 @@ var should = require('should'),
 
 var itemJson = require('./fixtures/itemJson.js');
 
+var agol, controller;
+
 before(function(done){
   var provider = require('../index.js');
   agol = new provider.model( kooplib );

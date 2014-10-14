@@ -186,10 +186,10 @@ var Controller = function( agol ){
           req.params.format = req.params.format.replace('geojson', 'json');
           var dir = req.params.item + '_' + ( req.params.layer || 0 );
           var fileName = ['files', dir, key + '.' + req.params.format].join('/');
-          if (info && req.params.format == 'zip'){
-            var name = info.info.name || info.info.title;
-            fileName = ['files', dir, key, name + '.' + req.params.format].join('/');
-          }
+          //if (info && req.params.format == 'zip'){
+          //  var name = info.info.name || info.info.title;
+          //  fileName = ['files', dir, key, name + '.' + req.params.format].join('/');
+          //}
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
