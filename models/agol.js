@@ -33,7 +33,13 @@ var AGOL = function( koop ){
 
   // get service by id, no id == return all
   agol.find = function( id, callback ){
-    koop.Cache.db.serviceGet( 'agol:services', parseInt(id) || id, callback);
+    koop.Cache.db.serviceGet( 'agol:services', parseInt(id) || id, function(err, res){
+      if (err){
+        callback('No service table found for that id. Try POSTing {"id":"arcgis", "host":"http://www.arcgis.com"} to /agol', null);
+      } else {
+        callback(null, res);
+      }
+    });
   };
 
   // Centralized request method 
