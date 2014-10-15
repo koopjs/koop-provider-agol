@@ -1,7 +1,6 @@
 var request = require('request'),
   terraformer = require('terraformer'),
   terraformerParser = require('terraformer-arcgis-parser'),
-  extend = require('node.extend'),
   sm = require('sphericalmercator'),
   merc = new sm({size:256}),
   crypto = require('crypto'),
