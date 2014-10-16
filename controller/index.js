@@ -5,6 +5,7 @@ var request = require('request'),
   merc = new sm({size:256}),
   crypto = require('crypto'),
   _ = require('lodash'),
+  fs = require('fs'),
   BaseController = require('koop-server/lib/BaseController.js');
 
 // inherit from base controller
@@ -512,13 +513,9 @@ var Controller = function( agol ){
           res.sendfile( tile );
         } else {
           if ( callback ){
-            agol.files.read(null, tile, function(err, data){
-              res.send( callback + '(' + JSON.parse( data ) + ')' );
-            });
+            res.send( callback + '(' + fs.readFileSync( JSON.parse( tile ) ) + ')' );
           } else {
-            agol.files.read(null, tile, function(err, data){
-              res.json( JSON.parse( data ) );
-            });
+            res.json( fs.readFileSync( JSON.parse( tile ) ) );
           }
         }
       });
@@ -539,79 +536,67 @@ var Controller = function( agol ){
         res.sendfile( file );
       } else {
         if ( callback ){
-          agol.files.read(null, file, function(err, data){
-            res.send( callback + '(' + data + ')' );
-          });
+          res.send( callback + '(' + JSON.parse( fs.readFileSync( tile ) ) + ')' );
         } else {
-          agol.files.read(null, file, function(err, data){
-            res.json( JSON.parse( data ) );
-          });
+          res.json( JSON.parse( fs.readFileSync( tile ) ) );
         }
       }
     }; 
 
     key = [req.params.item, layer].join('_');
-    var file = 'tiles/';
+    var file = agol.files.localDir + '/tiles/';
       file += key + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
     var jsonFile = file.replace(/png|pbf|utf/g, 'json');
 
     // if the json file alreadty exists, dont hit the db, just send the data
-    agol.files.exists(null, jsonFile, function( jsonExists ){
-      agol.files.exists( null, file, function( fileExists, filePath ){
+    if (fs.existsSync(jsonFile) && !fs.existsSync( file ) ){
+      _send( null, fs.readFileSync( jsonFile ) );
+    } else if ( !fs.existsSync( file ) ) {
+      agol.find(req.params.id, function(err, data){
 
-        if ( jsonExists && !fileExists ){
-          agol.files.read(null, jsonFile, function(err, data){
-            _send( null, [JSON.parse( jsonFile )] );
-          });
-        } else if ( !fileExists ) {
+        if (err) {
+          res.send( err, 500);
+        } else {
+          // if we have a layer then pass it along
+          if ( req.params.layer ) {
+            req.query.layer = req.params.layer;
+          }
 
-          agol.find(req.params.id, function(err, data){
-            if (err) {
-              res.send( err, 500);
-            } else {
-              // if we have a layer then pass it along
-              if ( req.params.layer ) {
-                req.query.layer = req.params.layer;
-              }
-
-              // sort the req.query before we hash so we are consistent 
-              var sorted_query = {};
-              _(req.query).keys().sort().each(function (key) {
-                if (key != 'url_only'){
-                  sorted_query[key] = req.query[key];
-                }
-              });
-              // build the file key as an MD5 hash that's a join on the paams and look for the file 
-              var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-              var hash = crypto.createHash('md5').update(toHash).digest('hex');
-
-              var factor = .1;
-//              req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
-
-
-              // Get the item
-              agol.getItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
-                if (error) {
-                  if ( itemJson && itemJson.type == 'Image Service' && req.params.format == 'png' ){
-                    agol.getImageServiceTile( req.params, function(err, newFile){
-                      _sendImmediate( newFile );
-                    });
-                  } else {
-                    res.send( error, 500);
-                  }
-                } else {
-                  _send(error, itemJson.data);
-                }
-              });
+          // sort the req.query before we hash so we are consistent 
+          var sorted_query = {};
+          _(req.query).keys().sort().each(function (key) {
+            if (key != 'url_only'){
+              sorted_query[key] = req.query[key];
             }
           });
-        } else {
-          _sendImmediate( filePath );
+          // build the file key as an MD5 hash that's a join on the paams and look for the file 
+          var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+          var hash = crypto.createHash('md5').update(toHash).digest('hex');
+
+          var factor = .1;
+          //req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
+
+          // Get the item
+          agol.getItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
+            if (error) {
+              if ( itemJson && itemJson.type == 'Image Service' && req.params.format == 'png' ){
+                agol.getImageServiceTile( req.params, function(err, newFile){
+                  _sendImmediate( newFile );
+                });
+              } else {
+                res.send( error, 500);
+              }
+            } else {
+              _send(error, itemJson.data);
+            }
+          });
         }
       });
-    });
+    } else {
+      _sendImmediate( filePath );
+    }
 
   },
 
@@ -661,42 +646,38 @@ var Controller = function( agol ){
     var key = [req.params.item,'all'].join(':');
     // build the names of the files 
     // Note that the layer id would be present in service level tiles 
-    var file = 'tiles/';
+    var file = agol.files.localDir + '/tiles/';
       file += key + '/' + req.params.format;
       file += '/' + req.params.z + '/' + req.params.x + '/' + req.params.y + '.' + req.params.format;
 
-    agol.files.exists( null, file, function( exists ){
-      if ( exists ){
-        res.sendfile( file );
-      } else {
-        agol.find( req.params.id, function( err, data ){
-          if (err) {
-            res.send( err, 500);
-          } else {
+    // if the json file alreadty exists, dont hit the db, just send the data
+    if ( fs.existsSync( file ) ){
+      res.sendfile( file );
+    } else  {
+      agol.find( req.params.id, function( err, data ){
+        if (err) {
+          res.send( err, 500);
+        } else {
 
-            // sort the req.query before we hash so we are consistent 
-            var sorted_query = {};
-            _(req.query).keys().sort().each(function (key) {
-              if (key != 'url_only'){
-                sorted_query[key] = req.query[key];
-              }
-            });
-            //req.query.simplify = true;
-            //req.query.zoom = req.params.z;
-
-            // Get the item
-            agol.getServiceLayerData( data.host, req.params.item, null, req.query, function(error, itemJson){
-              if (error) {
-                res.send( error, 500);
-              } else {
-                // send the data for the tile to Tiles 
-                _send(error, itemJson);
-              }
-            });
-          }
-        });
-      }
-    });
+          // sort the req.query before we hash so we are consistent 
+          var sorted_query = {};
+          _(req.query).keys().sort().each(function (key) {
+            if (key != 'url_only'){
+              sorted_query[key] = req.query[key];
+            }
+          });
+          // Get the item
+          agol.getServiceLayerData( data.host, req.params.item, null, req.query, function(error, itemJson){
+            if (error) {
+              res.send( error, 500);
+            } else {
+              // send the data for the tile to Tiles 
+              _send(error, itemJson);
+            }
+          });
+        }
+      });
+    }
 
   };
 
