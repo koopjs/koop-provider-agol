@@ -134,15 +134,17 @@ var Controller = function( agol ){
               callback( error, null);
             // if we have status return right away
             } else if ( itemJson.koop_status == 'processing'){
-              // return w/202 
-              var response = {
-                status: 'processing',
-                count: 0
-              }; 
-              if ( itemJson.generating ){
-                response.generating = itemJson.generating;
-              }
-              res.json( response, 202);
+              // return w/202
+              agol.getCount(['agol', item, options.layer].join(':'), {}, function(err, count){
+                var response = {
+                  status: 'processing',
+                  count: count
+                };
+                if ( itemJson.generating ){
+                  response.generating = itemJson.generating;
+                }
+                res.json( response, 202);
+              }); 
             } else {
               callback( null, itemJson );
             }
@@ -275,7 +277,12 @@ var Controller = function( agol ){
                       
                       agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
                         if (result && result.status && result.status == 'processing'){
-                          res.json( { status: 'processing', count: 0 }, 202);          
+                          agol.getCount(table, {}, function(err, count){
+                            res.json( {
+                              status: 'processing',
+                              count: count
+                            }, 202);
+                          });
                         } else if ( req.query.url_only ){
                           var origUrl = req.originalUrl.split('?');
                           res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
