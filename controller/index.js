@@ -185,10 +185,10 @@ var Controller = function( agol ){
           req.params.format = req.params.format.replace('geojson', 'json');
           var dir = req.params.item + '_' + ( req.params.layer || 0 );
           var fileName = ['files', dir, key + '.' + req.params.format].join('/');
-          //if (info && req.params.format == 'zip'){
-          //  var name = info.info.name || info.info.title;
-          //  fileName = ['files', dir, key, name + '.' + req.params.format].join('/');
-          //}
+          if (info && req.params.format == 'zip'){
+            var name = info.info.name || info.info.title;
+            fileName = ['files', dir, name + '.' + req.params.format].join('/');
+          }
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
@@ -235,8 +235,8 @@ var Controller = function( agol ){
 
             // if we know the name and its a zip request; check for file via name
             if (info && req.params.format == 'zip'){
+              console.log(info)
               var name = info.info.name || info.info.title;
-              path = [ 'files', dir, key ].join( '/' );
               fileName = name + '.' + req.params.format;
             }
             // if we have a layer then append it to the query params 
@@ -272,7 +272,7 @@ var Controller = function( agol ){
                       req.query.name = (itemJson.data[0] && itemJson.data[0].info) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name; 
                       // set the geometry type so the exporter can do its thing for csv points (add x,y)
                       req.query.geomType = itemJson.data[0].info.geometryType;
-
+                      
                       agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
                         if (result && result.status && result.status == 'processing'){
                           res.json( { status: 'processing', count: 0 }, 202);          

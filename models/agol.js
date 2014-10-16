@@ -321,7 +321,7 @@ var AGOL = function( koop ){
         } else if ( entry && entry[0] && entry[0].status == 'processing' ){
           itemJson.data = [{
             features:[],
-            name: itemJson.name,
+            name: itemJson.info.name,
             geomType: self.geomTypes[itemJson.geometryType],
             info: itemJson.info
           }];
@@ -461,7 +461,6 @@ var AGOL = function( koop ){
 
 
   agol._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
-    console.log('pageRequests', pageRequests.length);
     agol.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
       koop.exporter.taskQueue.push( {
         id: id,
@@ -479,13 +478,13 @@ var AGOL = function( koop ){
     var self = this;    
     var geomType;
 
-    // set the name in options
-    if ( itemJson.name || itemJson.title && !options.name ){
-      options.name = itemJson.name || itemJson.title;
-    }
-
     // get the featureservice info 
     agol.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
+      // set the name in options
+      if ( (itemJson.name || itemJson.title) && !options.name ){
+        options.name = serviceInfo.name || itemJson.name || itemJson.title;
+      }
+
       // sanitize any single quotes in the service description
       if (serviceInfo ) {
         if ( serviceInfo.description ) {
@@ -511,7 +510,7 @@ var AGOL = function( koop ){
           updated_at: itemJson.modified,
           expires_at: expiration,
           retrieved_at: Date.now(), 
-          name: itemJson.name,
+          name: serviceInfo.name,
           geomType: self.geomTypes[itemJson.geometryType],
           info: serviceInfo,
           features:[]
