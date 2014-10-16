@@ -196,6 +196,7 @@ var Controller = function( agol ){
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
+
           agol.files.exists( path, fileName, function( exists, path ) {
             if ( exists ){ 
               contoller.returnFile(req, res, dir, key, path);
