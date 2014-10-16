@@ -186,16 +186,17 @@ var Controller = function( agol ){
           // this logic should be wrapped into a Function since its copied from below
           req.params.format = req.params.format.replace('geojson', 'json');
           var dir = req.params.item + '_' + ( req.params.layer || 0 );
-          var fileName = ['files', dir, key + '.' + req.params.format].join('/');
+          var path = ['files', dir, key].join('/');
+          var fileName = key + '.' + req.params.format;
           if (info && req.params.format == 'zip'){
             var name = info.info.name || info.info.title;
-            fileName = ['files', dir, name + '.' + req.params.format].join('/');
+            fileName = name + '.' + req.params.format;
           }
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
-          agol.files.exists( null, fileName, function( exists, path ) {
+          agol.files.exists( path, fileName, function( exists, path ) {
             if ( exists ){ 
               contoller.returnFile(req, res, dir, key, path);
             } else {
@@ -231,13 +232,12 @@ var Controller = function( agol ){
             req.params.format = req.params.format.replace('geojson', 'json');
             // use the item as the file dir so we can organize exports by id
             var dir = req.params.item + '_' + ( req.params.layer || 0 );
+            var path = [ 'files', dir, key ].join( '/' );
             // the file name for the export   
-            var path = [ 'files', dir ].join( '/' );
             var fileName = key + '.' + req.params.format;
 
             // if we know the name and its a zip request; check for file via name
-            if (info && req.params.format == 'zip'){
-              console.log(info)
+            if (info && info.info && req.params.format == 'zip'){
               var name = info.info.name || info.info.title;
               fileName = name + '.' + req.params.format;
             }

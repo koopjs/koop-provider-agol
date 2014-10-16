@@ -720,7 +720,7 @@ var AGOL = function( koop ){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      agol.log('info', 'get page '+ (i++) +' '+ task.req);
+      //agol.log('info', 'get page '+ (i++) +' '+ task.req);
       request.get(task.req, function(err, data, response){
         try {
           // so sometimes server returns these crazy asterisks in the coords
