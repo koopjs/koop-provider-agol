@@ -720,7 +720,7 @@ var AGOL = function( koop ){
     // concurrent queue for feature pages 
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      //agol.log('info', 'get page '+ (i++) +' '+ task.req);
+      agol.log('info', id + ' get page '+ (i++));
       request.get(task.req, function(err, data, response){
         try {
           // so sometimes server returns these crazy asterisks in the coords
@@ -746,6 +746,7 @@ var AGOL = function( koop ){
     // If service is hosted send concurrent 16 requests; else 4 
     }, ( itemJson && itemJson.url && itemJson.url.split('//')[1].match(/^service/) ) ? 16 : 4);
 
+    agol.log('info', id + ' # of requests:' + reqs.length);
     // add all the page urls to the queue 
     q.push(reqs, function(err){ if (err) console.log(err); });
 
