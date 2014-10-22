@@ -115,8 +115,7 @@ var Controller = function( agol ){
     });
   };
 
-  // gets the items data 
-  // this means 
+  // find the items data 
   controller.findItemData = function(req, res){
     var self = this;
     // closure that actually goes out gets the data
@@ -210,18 +209,6 @@ var Controller = function( agol ){
         }
       } else { 
 
-        // check if the cache is expired
-        var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
-
-        // check for info on last edit date (for hosted services dont expired unless changed) 
-        // set is_expired to false if it hasnt changed or if its null
-        if ( info && info.retrieved_at && info.info && info.info.editingInfo ) {             
-          if ( !info.info.editingInfo.lastEditDate || ( info.retrieved_at < info.info.editingInfo.lastEditDate )){
-            is_expired = false;
-          }
-        }
-
-
         // check format for exporting data
         if ( req.params.format ){
 
@@ -250,74 +237,77 @@ var Controller = function( agol ){
 
             // does the data export already exist? 
             agol.files.exists( path, fileName, function( exists, path ){
-              if ( exists && !is_expired ){
-                // return it.
-                controller.returnFile(req, res, dir, key, path);
+              if ( exists ){
+                // check if the cache is expired
+                var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+                is_expired = true;
+
+                if ( info.info.url ){
+                  agol.getFeatureServiceLayerInfo( info.info.url, ( req.params.layer || 0 ), function(err, serviceInfo){
+                    console.log('got service info');
+                    // check for info on last edit date (for hosted services dont expired unless changed) 
+                    // set is_expired to false if it hasnt changed or if its null
+                    if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo ) {
+                      if ( serviceInfo.editingInfo && !serviceInfo.editingInfo.lastEditDate ){
+                        is_expired = false;
+                      } else if ( info.retrieved_at > serviceInfo.editingInfo.lastEditDate ){
+                        is_expired = false;
+                      } else {
+                        is_expired = true;
+                      }
+                    }
+                    // return it.
+                    console.log('exists, expired?', is_expired);
+                    // if expired -> remove the data and request
+                    if ( is_expired ){
+                      //var d = [dir, key ].join( '/' );
+                      agol.find( req.params.id, function( err, data ){
+                        if ( err ) {
+                          res.send( err, 500 );
+                        } else {
+                          agol.dropItem( data.host, req.params.item, req.query, function( err, success ){
+                              req.query.format = req.params.format;
+                              _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
+                                controller.requestNewFile( req, res, dir, key, err, itemJson );
+                              });
+                          });
+                        }
+                      });
+                    } else {
+                      // else serve it
+                      controller.returnFile(req, res, dir, key, path);
+                    }
+                  });
+
+                } else {
+
+                  // if expired -> remove the data and request
+                  if ( is_expired ){
+                    var d = [dir, key ].join( '/' );
+                    agol.files.removeDir( 'files/' + d, function(err, result){
+                      agol.files.removeDir( 'tiles/'+ d, function(err, result){
+                        agol.files.removeDir( 'thumbs/'+ d, function(err, result){
+                          req.query.format = req.params.format;
+                          _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
+                            controller.requestNewFile( req, res, dir, key, err, itemJson );
+                          });
+                        });
+                      });
+                    });
+                  } else {
+                    // else serve it
+                    controller.returnFile(req, res, dir, key, path);
+                  }
+
+                }
+                
               } else {
                 // check the koop status table to see if we have a job running 
                   // if we do then return 
                   // else proceed 
                 req.query.format = req.params.format;
                 _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
-                  if (err){
-                    if ( err.code && err.error ){
-                      res.send( err.error, err.code );
-                    } else {
-                      res.send( err, 500);
-                    }
-                  } else if ( !itemJson.data[0].features.length ){
-                    agol.log('error', req.url +' No features in data');
-                    res.send( 'No features exist for the requested FeatureService layer', 500 );
-                  } else {
-                    if (itemJson.koop_status && itemJson.koop_status == 'too big'){
-                      // export as a series of small queries/files
-                      var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
-
-                      req.query.name = (itemJson.data[0] && itemJson.data[0].info) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name; 
-                      // set the geometry type so the exporter can do its thing for csv points (add x,y)
-                      req.query.geomType = itemJson.data[0].info.geometryType;
-                      
-                      agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
-                        if (result && result.status && result.status == 'processing'){
-                          agol.getCount(table, {}, function(err, count){
-                            res.json( {
-                              status: 'processing',
-                              count: count
-                            }, 202);
-                          });
-                        } else if ( req.query.url_only ){
-                          var origUrl = req.originalUrl.split('?');
-                          res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                        } else {
-                          if (err) {
-                            res.send( err, 500 );
-                          } else {
-                            if (req.params.format == 'json' || req.params.format == 'geojson'){
-                              res.contentType('text');
-                            }
-                            res.sendfile(result);
-                          }
-                        }
-                      });
-                    } else {
-                      var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.title : itemJson.name;
-                      agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
-                        if ( req.query.url_only ){
-                          var origUrl = req.originalUrl.split('?');
-                          res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
-                        } else {
-                          if (err) {
-                            res.send( err, 500 );
-                          } else {
-                            if (req.params.format == 'json' || req.params.format == 'geojson'){
-                              res.contentType('text');
-                            }
-                            res.sendfile(result);
-                          }
-                        }
-                      });
-                    }
-                  }
+                  controller.requestNewFile( req, res, dir, key, err, itemJson );
                 });
               }
             });
@@ -345,6 +335,69 @@ var Controller = function( agol ){
         }
       }
     });
+  };
+
+  controller.requestNewFile = function( req, res, dir, key, err, itemJson ){
+    if (err){
+      if ( err.code && err.error ){
+        res.send( err.error, err.code );
+      } else {
+        res.send( err, 500);
+      }
+    } else if ( !itemJson.data[0].features.length ){
+      agol.log('error', req.url +' No features in data');
+      res.send( 'No features exist for the requested FeatureService layer', 500 );
+    } else {
+      if (itemJson.koop_status && itemJson.koop_status == 'too big'){
+        // export as a series of small queries/files
+        var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
+
+        req.query.name = (itemJson.data[0] && itemJson.data[0].info) ? itemJson.data[0].info.name || itemJson.data[0].info.title :    itemJson.name;
+        // set the geometry type so the exporter can do its thing for csv points (add x,y)
+        req.query.geomType = itemJson.data[0].info.geometryType;
+
+        agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
+          if (result && result.status && result.status == 'processing'){
+            agol.getCount(table, {}, function(err, count){
+              res.json( {
+                status: 'processing',
+                count: count
+              }, 202);
+            });
+          } else if ( req.query.url_only ){
+            var origUrl = req.originalUrl.split('?');
+            res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+           } else {
+            if (err) {
+              res.send( err, 500 );
+            } else {
+              if (req.params.format == 'json' || req.params.format == 'geojson'){
+                res.contentType('text');
+              }
+              res.sendfile(result);
+            }
+          }
+        });
+      } else {
+        var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.title :        itemJson.name;
+        agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
+          if ( req.query.url_only ){
+            var origUrl = req.originalUrl.split('?');
+            res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+          } else {
+            if (err) {
+              res.send( err, 500 );
+            } else {
+              if (req.params.format == 'json' || req.params.format == 'geojson'){
+                res.contentType('text');
+              }
+              res.sendfile(result);
+            }
+          }
+        });
+      }
+    }
+
   };
 
   controller.returnFile = function( req, res, dir, key, path ){

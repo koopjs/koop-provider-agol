@@ -120,9 +120,13 @@ var AGOL = function( koop ){
             
             // check for infon on last edit date 
             // set is_expired to false if it hasnt changed
-            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo ) { 
-              if ( !serviceInfo.editingInfo.lastEditDate || ( info.retrieved_at > serviceInfo.editingInfo.lastEditDate )){
+            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo ) {
+              if ( serviceInfo.editingInfo && !serviceInfo.editingInfo.lastEditDate ){
                 is_expired = false;
+              } else if ( info.retrieved_at > serviceInfo.editingInfo.lastEditDate ){
+                is_expired = false;
+              } else {
+                is_expired = true;
               }
             }
 
@@ -427,6 +431,7 @@ var AGOL = function( koop ){
         //} else {
           url += '&geometry=&returnGeometry=true';
         //}
+
         // get the features
         self.req(url, function(err, data ){
           if (err) {
@@ -439,7 +444,7 @@ var AGOL = function( koop ){
               var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
               koop.GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
-
+                
                 geojson.name = itemJson.name || itemJson.title;
                 geojson.updated_at = itemJson.modified;
                 geojson.expires_at = Date.now() + self.cacheLife;
@@ -502,7 +507,8 @@ var AGOL = function( koop ){
         }
         // set the geom type 
         options.geomType = serviceInfo.geometryType; 
-        options.fields = serviceInfo.fields;    
+        options.fields = serviceInfo.fields;
+      
       }
           
       options.objectIdField = agol.getObjectIDField(serviceInfo);
@@ -564,7 +570,6 @@ var AGOL = function( koop ){
                 );
                 agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               } else {
-                  //console.log(statsJson);
                   var names;
                   if ( statsJson && statsJson.fieldAliases ) { 
                     names = Object.keys(statsJson.fieldAliases);
@@ -764,6 +769,7 @@ var AGOL = function( koop ){
     request.get( url +'/'+ layer + '?f=json', function( err, res ){
       try {
         var json = JSON.parse( res.body );
+        json.url = url;
         callback( err, json );
       } catch (e) {
         callback( 'failed to parse service info', null );
