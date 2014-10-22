@@ -114,20 +114,27 @@ var AGOL = function( koop ){
         self.getInfo( qKey, function(err, info){
 
           var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
-          // check for infon on last edit date 
-          // set is_expired to false if it hasnt changed
-          if ( info && info.retrieved_at && info.info && info.info.editingInfo ) { 
-            if ( !info.info.editingInfo.lastEditDate || ( info.retrieved_at < info.info.editingInfo.lastEditDate )){
-              is_expired = false;
+
+          // in order to correctly expire hosted services we need to ping the server
+          self.getFeatureServiceLayerInfo( itemJson.url, (options.layer || 0), function(err, serviceInfo){
+            
+            // check for infon on last edit date 
+            // set is_expired to false if it hasnt changed
+            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo ) { 
+              if ( !serviceInfo.editingInfo.lastEditDate || ( info.retrieved_at > serviceInfo.editingInfo.lastEditDate )){
+                is_expired = false;
+              }
             }
-          }
-          if ( is_expired ) {
-            koop.Cache.remove('agol', itemId, options, function(err, res){
+
+            if ( is_expired ) {
+              koop.Cache.remove('agol', itemId, options, function(err, res){
+                self.getData(itemJson, host, itemId, hash, options, callback);
+              });
+            } else {
               self.getData(itemJson, host, itemId, hash, options, callback);
-            });
-          } else {
-            self.getData(itemJson, host, itemId, hash, options, callback);
-          }
+            }
+          });
+
         });
 
       }
