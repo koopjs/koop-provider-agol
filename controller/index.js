@@ -240,11 +240,9 @@ var Controller = function( agol ){
               if ( exists ){
                 // check if the cache is expired
                 var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
-                is_expired = true;
 
                 if ( info.info.url ){
                   agol.getFeatureServiceLayerInfo( info.info.url, ( req.params.layer || 0 ), function(err, serviceInfo){
-                    console.log('got service info');
                     // check for info on last edit date (for hosted services dont expired unless changed) 
                     // set is_expired to false if it hasnt changed or if its null
                     if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo ) {
@@ -257,7 +255,6 @@ var Controller = function( agol ){
                       }
                     }
                     // return it.
-                    console.log('exists, expired?', is_expired);
                     // if expired -> remove the data and request
                     if ( is_expired ){
                       //var d = [dir, key ].join( '/' );

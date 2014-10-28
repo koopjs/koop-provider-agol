@@ -129,7 +129,6 @@ var AGOL = function( koop ){
                 is_expired = true;
               }
             }
-
             if ( is_expired ) {
               koop.Cache.remove('agol', itemId, options, function(err, res){
                 self.getData(itemJson, host, itemId, hash, options, callback);
