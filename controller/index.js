@@ -402,15 +402,22 @@ var Controller = function( agol ){
       var origUrl = req.originalUrl.split('?');
       res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
     } else {
-      if (req.params.format == 'json' || req.params.format == 'geojson'){
-        res.contentType('text');
-      }
       if (path.substr(0,4) == 'http'){
-        res.redirect(path);
+        if (req.params.format == 'json' || req.params.format == 'geojson'){
+          request.get(path, function(err, data, response){
+            res.contentType('text');
+            res.json(JSON.parse(response));
+          }); 
+        } else {
+          res.redirect(path);
+        }
       } else {
-        //agol.files.path(null, fileName, function(err, path){
+        if (req.params.format == 'json' || req.params.format == 'geojson'){
+          res.contentType('text');
+          res.json(fs.readFileSync( path ));
+        } else {
           res.sendfile( path );
-        //});
+        }
       }
     }
   };
