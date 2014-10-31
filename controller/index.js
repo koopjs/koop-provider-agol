@@ -652,7 +652,7 @@ var Controller = function( agol ){
         }
       });
     } else {
-      _sendImmediate( filePath );
+      _sendImmediate( file );
     }
 
   },
