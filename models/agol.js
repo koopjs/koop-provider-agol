@@ -331,7 +331,7 @@ var AGOL = function( koop ){
         } else if ( entry && entry[0] && entry[0].status == 'processing' ){
           itemJson.data = [{
             features:[],
-            name: itemJson.info.name,
+            name: ( itemJson.info ) ? itemJson.info.name : itemJson.name,
             geomType: self.geomTypes[itemJson.geometryType],
             info: itemJson.info
           }];
