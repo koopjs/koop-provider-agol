@@ -557,6 +557,7 @@ var AGOL = function( koop ){
             agol.req( statsUrl, function( err, res ){
               var statsJson = JSON.parse( res.body );
               koop.log.info( 'statsUrl %s %s', id, statsUrl );
+              console.log(statsJson);
 
               if ( statsJson.error ){
                 // default to sequential objectID paging
