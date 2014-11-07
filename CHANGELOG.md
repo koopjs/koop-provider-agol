@@ -1,6 +1,8 @@
 ## Change Log
 
-### upcoming (2014/11/07 02:51 +00:00)
+### upcoming (2014/11/07 03:04 +00:00)
+- [fc1ff3f](https://github.com/Esri/koop-agol/commit/fc1ff3f21d065a839b2e02ce4482b35318cf31a1) adding content-disposition to file exports (@chelm)
+- [e3f49fd](https://github.com/Esri/koop-agol/commit/e3f49fd074cebedc4bcd561e9bedc803d38f2052) adding change log to repo (@chelm)
 - [9e0793d](https://github.com/Esri/koop-agol/commit/9e0793defe98b9e4a0c3d448680d15d4be505b21) forcing file names to use layer names instead of generated hash keys (@chelm)
 - [94cf227](https://github.com/Esri/koop-agol/commit/94cf2278769063a843320d96a5b636eb9db24527) making koop-agol report its version (@chelm)
 - [56059f5](https://github.com/Esri/koop-agol/commit/56059f532445f13fe3272694b17ce3976062a93d) fixing itemjson info name (@chelm)
@@ -34,8 +36,8 @@
 - [23d3466](https://github.com/Esri/koop-agol/commit/23d3466f0de23731631d07ab7fbadaff09533ab8) adding log ability (@chelm)
 - [c08d61d](https://github.com/Esri/koop-agol/commit/c08d61d72bf7c527c2a6fbf51a86e344138a4aa2) adding log ability (@chelm)
 - [e775422](https://github.com/Esri/koop-agol/commit/e775422f8ef4b01439eaf4c3199caac57b87ab6b) refactored routes go one (@chelm)
-- [466e889](https://github.com/Esri/koop-agol/commit/466e889315028b9f6e12280d3c6e169122b0f709) all working (@chelm)
 - [714f339](https://github.com/Esri/koop-agol/commit/714f339ad29b21007fcf5f46c7cd50ee188c0c7d) working on deglobal fixes (@chelm)
+- [466e889](https://github.com/Esri/koop-agol/commit/466e889315028b9f6e12280d3c6e169122b0f709) all working (@chelm)
 - [d16b0d4](https://github.com/Esri/koop-agol/commit/d16b0d428a4f882c73a871d26a5000cbcf9128a2) models/agol.js (@chelm)
 - [7a695be](https://github.com/Esri/koop-agol/commit/7a695becf7a30c2d36fefa351c9763f6ce372e5c) tests passing (@chelm)
 - [73d9267](https://github.com/Esri/koop-agol/commit/73d92673a4d6c8534eb2b63bae1671fe8181c6a5) better pattern (@chelm)
