@@ -187,11 +187,17 @@ var Controller = function( agol ){
           req.params.format = req.params.format.replace('geojson', 'json');
           var dir = req.params.item + '_' + ( req.params.layer || 0 );
           var path = ['files', dir, key].join('/');
-          var fileName = key + '.' + req.params.format;
-          if (info && req.params.format == 'zip'){
-            var name = info.info.name || info.info.title;
-            fileName = name + '.' + req.params.format;
-          }
+
+          // get the name of the data; else use the key (md5 hash)
+          var name = ( info && info.info ) ? info.info.name || info.info.title || info.name : key;
+          var fileName = name + '.' + req.params.format;
+          fileName = fileName.replace(/ /g, '_');
+
+          //if (info && req.params.format == 'zip'){
+          // var name = info.info.name || info.info.title;
+          //  fileName = name + '.' + req.params.format;
+          //}
+
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
@@ -212,6 +218,12 @@ var Controller = function( agol ){
         // check format for exporting data
         if ( req.params.format ){
 
+          // force an override on the format param if given a format in the query
+          if ( req.query.format ){
+            req.params.format = req.query.format;
+            delete req.query.format;
+          }
+
           // redirect to thumbnail for png access
           if (req.params.format == 'png'){
             controller.thumbnail(req, res);
@@ -222,14 +234,11 @@ var Controller = function( agol ){
             // use the item as the file dir so we can organize exports by id
             var dir = req.params.item + '_' + ( req.params.layer || 0 );
             var path = [ 'files', dir, key ].join( '/' );
-            // the file name for the export   
-            var fileName = key + '.' + req.params.format;
+            // the file name for the export 
+            var name = ( info && info.info ) ? info.info.name || info.info.title || info.name : key;
+            var fileName = name + '.' + req.params.format;
+            fileName = fileName.replace(/ /g, '_');
 
-            // if we know the name and its a zip request; check for file via name
-            if (info && info.info && req.params.format == 'zip'){
-              var name = info.info.name || info.info.title;
-              fileName = name + '.' + req.params.format;
-            }
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
               req.query.layer = req.params.layer;
@@ -345,11 +354,14 @@ var Controller = function( agol ){
       agol.log('error', req.url +' No features in data');
       res.send( 'No features exist for the requested FeatureService layer', 500 );
     } else {
+      var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.    title : itemJson.name;
+      name = name.replace(/ /g, '_');
+
       if (itemJson.koop_status && itemJson.koop_status == 'too big'){
         // export as a series of small queries/files
         var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
 
-        req.query.name = (itemJson.data[0] && itemJson.data[0].info) ? itemJson.data[0].info.name || itemJson.data[0].info.title :    itemJson.name;
+        req.query.name = name;
         // set the geometry type so the exporter can do its thing for csv points (add x,y)
         req.query.geomType = itemJson.data[0].info.geometryType;
 
@@ -376,7 +388,6 @@ var Controller = function( agol ){
           }
         });
       } else {
-        var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.title :        itemJson.name;
         agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
           if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
