@@ -382,8 +382,8 @@ var Controller = function( agol ){
             } else {
               if (req.params.format == 'json' || req.params.format == 'geojson'){
                 res.contentType('text');
-              } else {
-                res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+              //} else {
+              //  res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
               }  
               res.sendfile(result);
             }
@@ -400,8 +400,8 @@ var Controller = function( agol ){
             } else {
               if (req.params.format == 'json' || req.params.format == 'geojson'){
                 res.contentType('text');
-              } else {
-                res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+              //} else {
+              //  res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
               }  
               res.sendfile(result);
             }
