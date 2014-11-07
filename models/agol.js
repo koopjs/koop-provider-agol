@@ -494,7 +494,7 @@ var AGOL = function( koop ){
       // set the name in options
       if ( (itemJson.name || itemJson.title) && !options.name ){
         options.name = serviceInfo.name || itemJson.name || itemJson.title;
-        options.name = options.name.replace(/ /g, '_');
+        options.name = options.name.replace(/ /g, '_').replace(/\(|\)/g, '');
       }
 
       // sanitize any single quotes in the service description
