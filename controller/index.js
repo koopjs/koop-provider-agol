@@ -162,7 +162,7 @@ var Controller = function( agol ){
       // sort the req.query before we hash so we are consistent 
       var sorted_query = {};
       _(req.query).keys().sort().each(function (key) {
-        if (key != 'url_only' || key != 'format'){
+        if (key != 'url_only' && key != 'format'){
           sorted_query[key] = req.query[key];
         }
       });
@@ -473,7 +473,7 @@ var Controller = function( agol ){
         // sort the req.query before we hash so we are consistent 
         var sorted_query = {};
         _(req.query).keys().sort().each(function (key) {
-          if (key != 'url_only' || key != 'format'){
+          if (key != 'url_only' && key != 'format'){
             sorted_query[key] = req.query[key];
           }
         });
@@ -529,7 +529,7 @@ var Controller = function( agol ){
             // sort the req.query before we hash so we are consistent 
             var sorted_query = {};
             _(req.query).keys().sort().each(function (key) {
-              if (key != 'url_only' || key != 'format'){
+              if (key != 'url_only' && key != 'format'){
                 sorted_query[key] = req.query[key];
               }
             });
@@ -653,7 +653,7 @@ var Controller = function( agol ){
           // sort the req.query before we hash so we are consistent 
           var sorted_query = {};
           _(req.query).keys().sort().each(function (key) {
-            if (key != 'url_only' || key != 'format'){
+            if (key != 'url_only' && key != 'format'){
               sorted_query[key] = req.query[key];
             }
           });
@@ -748,7 +748,7 @@ var Controller = function( agol ){
           // sort the req.query before we hash so we are consistent 
           var sorted_query = {};
           _(req.query).keys().sort().each(function (key) {
-            if (key != 'url_only' || key != 'format'){
+            if (key != 'url_only' && key != 'format'){
               sorted_query[key] = req.query[key];
             }
           });
