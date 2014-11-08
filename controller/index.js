@@ -162,7 +162,7 @@ var Controller = function( agol ){
       // sort the req.query before we hash so we are consistent 
       var sorted_query = {};
       _(req.query).keys().sort().each(function (key) {
-        if (key != 'url_only'){
+        if (key != 'url_only' || key != 'format'){
           sorted_query[key] = req.query[key];
         }
       });
@@ -182,6 +182,12 @@ var Controller = function( agol ){
 
       if (info && info.status == 'processing'){
         if ( req.params.format ) {
+
+          // force an override on the format param if given a format in the query
+          if ( req.query.format ){
+            req.params.format = req.query.format;
+            delete req.query.format;
+          }
 
           // this logic should be wrapped into a Function since its copied from below
           req.params.format = req.params.format.replace('geojson', 'json');
@@ -375,7 +381,10 @@ var Controller = function( agol ){
             });
           } else if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
-            res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+            origUrl[0] = origUrl[0].replace(/json/,req.params.format);
+            var newUrl = req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true|/,'').replace('format='+req.params.format,'').replace('&format='+req.params.format,'');
+            
+            res.json({url: newUrl});
            } else {
             if (err) {
               res.send( err, 500 );
@@ -393,7 +402,10 @@ var Controller = function( agol ){
         agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
           if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
-            res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+            origUrl[0] = origUrl[0].replace(/json/,req.params.format);
+            var newUrl = req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true|/,'').replace('format='+req.params.format,'').replace('&format='+req.params.format,'');
+
+            res.json({url: newUrl});
           } else {
             if (err) {
               res.send( err, 500 );
@@ -415,7 +427,9 @@ var Controller = function( agol ){
   controller.returnFile = function( req, res, dir, key, path ){
     if ( req.query.url_only ){
       var origUrl = req.originalUrl.split('?');
-      res.json({url: req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true/,'')});
+      origUrl[0] = origUrl[0].replace(/json/,req.params.format);
+      var newUrl = req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true|/,'').replace('format='+req.params.format,'').replace('&format='+req.params.format,'');
+      res.json({url: newUrl});
     } else {
       if (path.substr(0,4) == 'http'){
         if (req.params.format == 'json' || req.params.format == 'geojson'){
@@ -459,7 +473,7 @@ var Controller = function( agol ){
         // sort the req.query before we hash so we are consistent 
         var sorted_query = {};
         _(req.query).keys().sort().each(function (key) {
-          if (key != 'url_only'){
+          if (key != 'url_only' || key != 'format'){
             sorted_query[key] = req.query[key];
           }
         });
@@ -515,7 +529,7 @@ var Controller = function( agol ){
             // sort the req.query before we hash so we are consistent 
             var sorted_query = {};
             _(req.query).keys().sort().each(function (key) {
-              if (key != 'url_only'){
+              if (key != 'url_only' || key != 'format'){
                 sorted_query[key] = req.query[key];
               }
             });
@@ -639,7 +653,7 @@ var Controller = function( agol ){
           // sort the req.query before we hash so we are consistent 
           var sorted_query = {};
           _(req.query).keys().sort().each(function (key) {
-            if (key != 'url_only'){
+            if (key != 'url_only' || key != 'format'){
               sorted_query[key] = req.query[key];
             }
           });
@@ -734,7 +748,7 @@ var Controller = function( agol ){
           // sort the req.query before we hash so we are consistent 
           var sorted_query = {};
           _(req.query).keys().sort().each(function (key) {
-            if (key != 'url_only'){
+            if (key != 'url_only' || key != 'format'){
               sorted_query[key] = req.query[key];
             }
           });
