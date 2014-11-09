@@ -208,7 +208,6 @@ var Controller = function( agol ){
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
-
           agol.files.exists( path, fileName, function( exists, path ) {
             if ( exists ){ 
               contoller.returnFile(req, res, dir, key, path);
@@ -370,7 +369,6 @@ var Controller = function( agol ){
         req.query.name = name;
         // set the geometry type so the exporter can do its thing for csv points (add x,y)
         req.query.geomType = itemJson.data[0].info.geometryType;
-
         agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
           if (result && result.status && result.status == 'processing'){
             agol.getCount(table, {}, function(err, count){

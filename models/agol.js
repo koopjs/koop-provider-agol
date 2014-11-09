@@ -277,7 +277,7 @@ var AGOL = function( koop ){
             callback({ code: 413, error: 'The requested CSV exceeds the allowable size of ' + maxSize + ' bytes' }, null );
           }
         } else {
-          if ( entry && entry[0] && entry[0].status == 'too big' ){
+          if ( entry && entry[0] && entry[0].exceeds_limit){
             itemJson.data = entry;
             itemJson.koop_status = 'too big';
             callback(null, itemJson);
@@ -337,7 +337,7 @@ var AGOL = function( koop ){
           }];
           itemJson.koop_status = 'processing';
           callback(null, itemJson);
-        } else if ( entry && entry[0] && entry[0].status == 'too big' ){
+        } else if ( entry && entry[0] && entry[0].exceeds_limit ){
           itemJson.data = entry;
           itemJson.koop_status = 'too big';
           callback(null, itemJson);
