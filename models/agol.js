@@ -1,13 +1,25 @@
 var request = require('request'),
+  kue = require('kue'),
   csv = require('csv'),
   BaseModel = require('koop-server/lib/BaseModel.js'),
   async = require('async');
+
+var config = require('./config.js');
 
 var AGOL = function( koop ){
 
   var agol = {};
   agol.__proto__ = BaseModel( koop );
 
+  if (config.use_workers){
+    agol.worker_q = kue.createQueue({
+      prefix: 'q',
+      redis: {
+        port: 6379,
+        host: '127.0.0.1'
+      }
+    });
+  }
 
   // how to long to persist the cache of data 
   // after which data will be dropped and re-fetched
@@ -714,6 +726,7 @@ var AGOL = function( koop ){
   // make requests for feature pages 
   // execute done when we have all features 
   agol.requestQueue = function(max, reqs, id, itemJson, layerId, options, done){
+    var self = this;
     var reqCount = 0;
     // setup the place to collect all the features
     itemJson.data = [ {features: []} ];
@@ -776,8 +789,31 @@ var AGOL = function( koop ){
     }, ( itemJson && itemJson.url && itemJson.url.split('//')[1].match(/^service/) ) ? 16 : 4);
 
     agol.log('info', id + ' # of requests:' + reqs.length);
-    // add all the page urls to the queue 
-    q.push(reqs, logErrorCB);
+
+    if ( config.use_workers ){
+      // before we queue up jobs we need to setup some tracking 
+      // we get the db info, add the number of jobs to it
+      // this lets the workers update the number of jobs processed
+      // when all jobs are done the status:'processed' needs to be removed 
+      var key = ['agol', id, layerId].join( ":" );
+      koop.Cache.getInfo(key, function(err, info){
+        if (info) {
+          info.request_jobs = {total: reqs.length, processed: 0};
+          koop.Cache.updateInfo(key, info, function(err, success){
+            reqs.forEach(function(req){
+              req.id = id;
+              req.layerId = layerId;
+              var job = agol.worker_q.create( 'agol', req ).attempts(3).save( function(err){
+                agol.log('debug', 'added job to queue' + job.id );
+              });
+            });
+          });
+        }
+      });
+    } else {
+      // add all the page urls to the queue 
+      q.push(reqs, logErrorCB);
+    }
 
   };
 
