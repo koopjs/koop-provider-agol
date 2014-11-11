@@ -25,8 +25,8 @@ if ( config && config.db ) {
 jobs = kue.createQueue({
   prefix: 'q',
   redis: {
-    port: 6379,
-    host: '127.0.0.1'
+    port: config.redis.port,
+    host: config.redis.host
   }
 });
 
@@ -37,15 +37,40 @@ if (cluster.isMaster) {
   for (var i = 0; i < clusterWorkerSize; i++) {
     cluster.fork();
   }
+  process.once( 'SIGINT', function ( sig ) {
+    jobs.active(function(err, ids){
+      console.log(ids)
+      if ( ids.length ){
+        ids.forEach( function( id ) {
+          kue.Job.get( id, function( err, job ) {
+            job.inactive();
+            jobs.active(function(err, activeIds){
+              if (!activeIds.length){
+               jobs.shutdown(function(err) {
+                 console.log( 'Koop Kue is shut down.', err||'' );
+                 process.exit( 0 );
+               }, 5000 );
+              }
+            });
+          });
+        });
+      } else {
+        jobs.shutdown(function(err) {
+          console.log( 'Koop Kue is shut down.', err||'' );
+          process.exit( 0 );
+        }, 5000 );
+      }
+    });
+  });
 } else {
   jobs.process('agol', 2, function(job, done){
     console.log(job.data);
-    makeRequest(job.data.req, job.data.id, job.data.layerId, done);
+    makeRequest(job.id, job.data.req, job.data.id, job.data.layerId, done);
   });
 }
 
 
-function makeRequest(url, id, layerId, done){
+function makeRequest(jobId, url, id, layerId, done){
   request.get(url, function(err, data, response){
     try {
       // so sometimes server returns these crazy asterisks in the coords
@@ -61,8 +86,9 @@ function makeRequest(url, id, layerId, done){
           koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
             var key = [ 'agol', id, layerId ].join(':');
             koop.Cache.getInfo(key, function(err, info){
-              info.request_jobs.processed++;
-              console.log(info.request_jobs);
+              info.request_jobs.processed += 1;
+              info.request_jobs.jobs[jobId] = 'done';
+              console.log(info.request_jobs.processed, Object.keys(info.request_jobs.jobs).length);
               if (info.request_jobs.processed == info.request_jobs.total){
                 delete info.status;
               }
@@ -74,17 +100,9 @@ function makeRequest(url, id, layerId, done){
         });
       }
     } catch(e){
-      //agol.log('info','Requesting page '+ task.req +' '+ err);
-      console.log(e);
       done('Failed to request page ' + url);
     }
   });
 
 }
 
-process.once( 'SIGTERM', function ( sig ) {
-  queue.shutdown(function(err) {
-    console.log( 'Koop Kue is shut down.', err||'' );
-    process.exit( 0 );
-  }, 5000 );
-});

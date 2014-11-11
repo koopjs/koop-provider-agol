@@ -170,7 +170,7 @@ var Controller = function( agol ){
       var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
       var key = crypto.createHash('md5').update(toHash).digest('hex');
 
-      var _returnProcessing = function(){
+      var _returnProcessing = function( ){
           agol.log('debug',JSON.stringify({status: 202, item: req.params.item, layer: ( req.params.layer || 0 )})); 
           agol.getCount(table_key, {}, function(err, count){
             var response = {
@@ -202,11 +202,6 @@ var Controller = function( agol ){
           var name = ( info && info.info ) ? info.info.name || info.info.title || info.name : key;
           var fileName = name + '.' + req.params.format;
           fileName = fileName.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
-
-          //if (info && req.params.format == 'zip'){
-          // var name = info.info.name || info.info.title;
-          //  fileName = name + '.' + req.params.format;
-          //}
 
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {

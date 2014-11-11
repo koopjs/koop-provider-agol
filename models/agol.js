@@ -798,13 +798,23 @@ var AGOL = function( koop ){
       var key = ['agol', id, layerId].join( ":" );
       koop.Cache.getInfo(key, function(err, info){
         if (info) {
-          info.request_jobs = {total: reqs.length, processed: 0};
+          info.request_jobs = {total: reqs.length, processed: 0, failed: 0, jobs: {}};
           koop.Cache.updateInfo(key, info, function(err, success){
             reqs.forEach(function(req){
               req.id = id;
               req.layerId = layerId;
               var job = agol.worker_q.create( 'agol', req ).attempts(3).save( function(err){
                 agol.log('debug', 'added job to queue' + job.id );
+              });
+              job.on('failed', function(err){
+                koop.Cache.getInfo(key, function(err, info){
+                  if (info && info.request_jobs){
+                    info.request_jobs.failed++;
+                    koop.Cache.updateInfo(key, info, function(err, success){
+                      koop.log('error', 'Request Worker Job Failed '+err);
+                    });
+                  }
+                });
               });
             });
           });
