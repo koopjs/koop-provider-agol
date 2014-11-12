@@ -29,6 +29,8 @@ jobs = kue.createQueue({
   }
 });
 
+console.log(jobs);
+
 var clusterWorkerSize = 4;
 
 if (cluster.isMaster) {
