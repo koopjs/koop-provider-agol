@@ -8,16 +8,21 @@ var itemJson = require('./fixtures/itemJson.js');
 var largeCSV = fs.readFileSync('./test/fixtures/largeCSV.csv').toString();
 
 before(function(done){
-  // setup koop 
-  koop.Cache.db = koop.PostGIS.connect( config.db.postgis.conn );
+  // setup koop
   config.data_dir = __dirname + '/output/';
-  koop.Cache.data_dir = config.data_dir;
-  koop.Tiles.data_dir = config.data_dir;
-  koop.Thumbnail.data_dir = config.data_dir;
+  koop.config = config;
+  koop.log = new koop.Logger({});
+
+  koop.Cache = new koop.DataCache( koop ); 
+  koop.Cache.db = koop.PostGIS.connect( config.db.postgis.conn );
+  koop.Cache.db.log = koop.log;
+
+  //koop.Cache.data_dir = config.data_dir;
+  //koop.Tiles.data_dir = config.data_dir;
+  //koop.Thumbnail.data_dir = config.data_dir;
   // Need the exporter to have access to the cache so we pass it Koop
   koop.exporter = new koop.Exporter( koop );
   koop.files = new koop.Files( koop );
-  koop.log = new koop.Logger({});
   agol = new require('../models/agol.js')( koop );
   done();
 });
@@ -280,8 +285,7 @@ describe('AGOL Model', function(){
 
       it('should call Cache.get can return with "too big"', function(done){
         agol.getFeatureService('itemid', {url: 'dummyurl'}, 'dummyhash', {}, function(err, json){
-          should.exist(json.koop_status);
-          json.koop_status.should.equal('too big');
+          should.exist(json.data[0].status);
           should.exist(json.data);
           koop.Cache.get.called.should.equal(true);
           done();
@@ -604,7 +608,7 @@ describe('AGOL Model', function(){
         var info = {
           updated_at: null,
           name: 'Test Dataset',
-          geomType: 'MultiPolygon',
+          geomType: 'Polygon',
           geometryType: 'esriGeometryPolygon',
           features:[]
         };
@@ -714,7 +718,7 @@ describe('AGOL Model', function(){
           callback(null, {body: largeCSV});
         });
         sinon.stub(koop.Cache, 'get', function(type, id, options, callback){
-          callback(null, [{status: 'too big'}]);
+          callback(null, {info:{status: 'too big'}});
         });
         done();
       });
@@ -727,8 +731,8 @@ describe('AGOL Model', function(){
 
       
       it('should call cache.get and cache.insert, and should return GeoJSON', function(done){
-        agol.getCSV('base-url', 'itemid1', {}, {}, function(err, data){
-          data.koop_status.should.equal('too big');
+        agol.getCSV('base-url', 'itemid1', {}, {}, function(err, entry){
+          entry.data.info.status.should.equal('too big');
           koop.Cache.get.called.should.equal(true);
           //agol.req.called.should.equal(true);
           //koop.Cache.insert.called.should.equal(true);
