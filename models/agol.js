@@ -229,6 +229,8 @@ var AGOL = function( koop ){
             json.info = { name: task.itemJson.name };
             json.features = [];
 
+            console.log(json.name, task.itemJson.name.replace('.csv',''), task.itemJson.name );
+
             var dir = [ task.id, (task.options.layer || 0) ].join('_');
 
             koop.Cache.remove('agol', task.id, task.options, function(err, res){
@@ -266,6 +268,9 @@ var AGOL = function( koop ){
       koop.Cache.get( 'agol', id, options, function(err, entry ){
         if ( err || (info && info.retrieved_at < itemJson.modified)){
           if ( itemJson.size < maxSize ) {
+            // replace .csv in name 
+            itemJson.name = itemJson.name.replace('.csv','');
+          
             task.url = base_url + '/' + id + '/data?f=json';
             task.itemJson = itemJson;
             task.id = id;
