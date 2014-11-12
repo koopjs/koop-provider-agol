@@ -173,10 +173,14 @@ var Controller = function( agol ){
       var _returnProcessing = function(){
           agol.log('debug',JSON.stringify({status: 202, item: req.params.item, layer: ( req.params.layer || 0 )})); 
           agol.getCount(table_key, {}, function(err, count){
-            res.json( {
+            var response = {
               status: 'processing',
               count: count
-            }, 202);
+            };
+            if ( info.generating ){
+              response.generating = info.generating;
+            }
+            res.json( response, 202);
           });
       };
 
@@ -372,10 +376,14 @@ var Controller = function( agol ){
         agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
           if (result && result.status && result.status == 'processing'){
             agol.getCount(table, {}, function(err, count){
-              res.json( {
+              var response = {
                 status: 'processing',
                 count: count
-              }, 202);
+              };
+              if ( result.generating ){
+                response.generating = result.generating;
+              }
+              res.json( response, 202);
             });
           } else if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
