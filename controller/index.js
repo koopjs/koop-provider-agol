@@ -210,7 +210,7 @@ var Controller = function( agol ){
           }
           agol.files.exists( path, fileName, function( exists, path ) {
             if ( exists ){ 
-              contoller.returnFile(req, res, dir, key, path);
+              controller.returnFile(req, res, dir, key, path);
             } else {
               _returnProcessing();
             }
