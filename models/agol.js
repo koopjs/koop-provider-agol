@@ -835,6 +835,7 @@ var AGOL = function( koop ){
         json.url = url;
         callback( err, json );
       } catch (e) {
+        console.log('failed to get URL', url, res.body);
         callback( 'failed to parse service info', null );
       }
     });

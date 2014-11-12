@@ -3,8 +3,7 @@ var kue = require('kue'),
   agol = require('../index'),
   koop = require('koop-server/lib'),
   request = require('request'),
-  config = require('config'),
-  jobs = kue.createQueue();
+  config = require('config');
 
 koop.log = new koop.Logger( config );
 koop.Cache = new koop.DataCache( koop );
@@ -30,7 +29,7 @@ jobs = kue.createQueue({
   }
 });
 
-var clusterWorkerSize = 4; //require('os').cpus().length;
+var clusterWorkerSize = 4;
 
 if (cluster.isMaster) {
   kue.app.listen(process.env.PORT || 3000);
@@ -63,15 +62,15 @@ if (cluster.isMaster) {
     });
   });
 } else {
-  jobs.process('agol', 2, function(job, done){
-    console.log(job.data);
+  jobs.process('agol', function(job, done){
     makeRequest(job.id, job.data.req, job.data.id, job.data.layerId, done);
   });
 }
 
 
 function makeRequest(jobId, url, id, layerId, done){
-  request.get(url, function(err, data, response){
+  console.log( 'starting job', jobId );
+  request.get( url, function( err, data, response ){
     try {
       // so sometimes server returns these crazy asterisks in the coords
       // I do a regex to replace them in both the case that I've found them
@@ -85,21 +84,24 @@ function makeRequest(jobId, url, id, layerId, done){
         koop.GeoJSON.fromEsri( [], json, function(err, geojson){
           koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
             var key = [ 'agol', id, layerId ].join(':');
-            koop.Cache.getInfo(key, function(err, info){
-              info.request_jobs.processed += 1;
-              info.request_jobs.jobs[jobId] = 'done';
-              console.log(info.request_jobs.processed, Object.keys(info.request_jobs.jobs).length);
-              if (info.request_jobs.processed == info.request_jobs.total){
-                delete info.status;
-              }
-              koop.Cache.updateInfo(key, info, function(err, info){
-                done();
+            setTimeout(function () {
+              koop.Cache.getInfo(key, function(err, info){
+                info.request_jobs.processed += 1;
+                info.request_jobs.jobs[jobId] = 'done';
+                console.log(info.request_jobs.processed, Object.keys(info.request_jobs.jobs).length);
+                if (info.request_jobs.processed == info.request_jobs.total){
+                  delete info.status;
+                }
+                koop.Cache.updateInfo(key, info, function(err, info){
+                  done();
+                });
               });
-            });
+            }, Math.floor(Math.random() * 3000));
           });
         });
       }
     } catch(e){
+      console.log('failed to get data?', jobId);
       done('Failed to request page ' + url);
     }
   });

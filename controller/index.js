@@ -385,7 +385,6 @@ var Controller = function( agol ){
             var origUrl = req.originalUrl.split('?');
             origUrl[0] = origUrl[0].replace(/json/,req.params.format);
             var newUrl = req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true|/,'').replace('format='+req.params.format,'').replace('&format='+req.params.format,'');
-            
             res.json({url: newUrl});
            } else {
             if (err) {
@@ -416,8 +415,10 @@ var Controller = function( agol ){
                 res.contentType('text');
               //} else {
               //  res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
-              }  
-              res.sendfile(result);
+              }
+              //console.log(result);  
+              console.log('should be sending back info with "status:processing"');
+              //res.sendfile(result);
             }
           }
         });
