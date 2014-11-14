@@ -1,13 +1,13 @@
 {
   "name": "koop-agol",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "An ArcGIS Online wrapper for koop",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "mocha test/model-test.js -t 40000",
+    "test": "mocha test/*.js -t 40000",
     "lint": "node_modules/jshint/bin/jshint **/*.js"
   },
   "dependencies": {

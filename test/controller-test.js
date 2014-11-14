@@ -207,7 +207,7 @@ describe('AGOL Controller', function(){
         var itemInfo = require('./fixtures/itemInfo.js');
 
         sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
-          callback(null, {data:[{features:[]}]});
+          callback(null, {name:'', data:[{name:'', features:[]}]});
         });
 
         sinon.stub(agol, 'find', function(id, callback){
@@ -248,7 +248,7 @@ describe('AGOL Controller', function(){
         });
 
         sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
-          callback(null, { data:[{info:'dummy', features:[{}]}]});
+          callback(null, { data:[{info:{name:'dummy'}, features:[{}]}]});
         });
 
         sinon.stub(agol, 'find', function(id, callback){
@@ -294,7 +294,7 @@ describe('AGOL Controller', function(){
         });
 
         sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
-          callback(null, { koop_status: 'too big', data:[{info:'dummy', features:[{}]}]});
+          callback(null, { koop_status: 'too big', data:[{info:{name:'dummy'}, features:[{}]}]});
         });
 
         sinon.stub(agol, 'find', function(id, callback){
@@ -379,7 +379,7 @@ describe('AGOL Controller', function(){
         var itemInfo = require('./fixtures/itemInfo.js');
 
         sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
-          callback(null, { koop_status: 'too big', data:[{info:'dummy', features:[{}]}]});
+          callback(null, { name:'', koop_status: 'too big', data:[{name:'', info:'dummy', features:[{}]}]});
         });
 
         sinon.stub(agol, 'find', function(id, callback){
