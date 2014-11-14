@@ -735,7 +735,9 @@ var AGOL = function( koop ){
     };
 
     var i = 0;
-    // concurrent queue for feature pages 
+    var logErrorCB = function(err){ if (err) console.log(err); }; 
+
+    // concurrent queue for feature pages
     var q = async.queue(function (task, callback) {
       // make a request for a page 
       agol.log('info', id + ' get page '+ (i++));
@@ -751,13 +753,15 @@ var AGOL = function( koop ){
           agol.log('info','Requesting page '+ task.req +' '+ err);
           if ( task.retry && task.retry < 3 ){
             task.retry++;
-            q.push(task, function(err){ if (err) console.log(err); });
+            q.push(task, logErrorCB);
+            callback();
           } else if (task.retry && task.retry == 3 ){ 
             _collect( { error: { details: ['failed to parse json after 3 requests'] } }, callback);
             agol.log('error', 'failed to parse json '+ task.req +' '+ err);
           } else {
             task.retry = 1;
-            q.push(task, function(err){ if (err) console.log(err); });
+            q.push(task, logErrorCB);
+            callback();
           }
         }
       });
@@ -766,7 +770,7 @@ var AGOL = function( koop ){
 
     agol.log('info', id + ' # of requests:' + reqs.length);
     // add all the page urls to the queue 
-    q.push(reqs, function(err){ if (err) console.log(err); });
+    q.push(reqs, logErrorCB);
 
   };
 
