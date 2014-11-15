@@ -201,7 +201,7 @@ var Controller = function( agol ){
           // get the name of the data; else use the key (md5 hash)
           var name = ( info && info.info ) ? info.info.name || info.info.title || info.name : key;
           var fileName = name + '.' + req.params.format;
-          fileName = fileName.replace(/,|\.|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+          fileName = fileName.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
 
           //if (info && req.params.format == 'zip'){
           // var name = info.info.name || info.info.title;
@@ -246,7 +246,7 @@ var Controller = function( agol ){
             // the file name for the export 
             var name = ( info && info.info ) ? info.info.name || info.info.title || info.name : key;
             var fileName = name + '.' + req.params.format;
-            fileName = fileName.replace(/,|\.|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');;
+            fileName = fileName.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');;
 
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
@@ -364,7 +364,7 @@ var Controller = function( agol ){
       res.send( 'No features exist for the requested FeatureService layer', 500 );
     } else {
       var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.    title : itemJson.name;
-      name = name.replace(/,|\.|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+      name = name.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
 
       if (itemJson.koop_status && itemJson.koop_status == 'too big'){
         // export as a series of small queries/files
