@@ -229,8 +229,6 @@ var AGOL = function( koop ){
             json.info = { name: task.itemJson.name };
             json.features = [];
 
-            console.log(json.name, task.itemJson.name.replace('.csv',''), task.itemJson.name );
-
             var dir = [ task.id, (task.options.layer || 0) ].join('_');
 
             koop.Cache.remove('agol', task.id, task.options, function(err, res){

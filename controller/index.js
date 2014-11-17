@@ -499,6 +499,8 @@ var Controller = function( agol ){
             }
           } else {
             // pass to the shared logic for FeatureService routing
+            delete req.query.geometry;
+            delete req.query.where;
             controller.processFeatureServer( req, res, err, itemJson.data, callback);
           }
         });
