@@ -222,11 +222,11 @@ var AGOL = function( koop ){
           koop.GeoJSON.fromCSV( csv_data, function(err, geojson){
             // store metadata with the data
             var json = {};
-            json.name = task.itemJson.name || task.itemJson.title;
+            json.name = task.itemJson.title || task.itemJson.name;
             json.updated_at = task.itemJson.modified;
             json.expires_at = task.expires_at;
             json.retrieved_at = Date.now();
-            json.info = { name: task.itemJson.name };
+            json.info = { name: json.name };
             json.features = [];
 
             var dir = [ task.id, (task.options.layer || 0) ].join('_');
