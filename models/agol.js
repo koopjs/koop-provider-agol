@@ -1,6 +1,7 @@
 var request = require('request'),
   kue = require('kue'),
   csv = require('csv'),
+  crypto = require('crypto'),
   BaseModel = require('koop-server/lib/BaseModel.js'),
   async = require('async');
 
@@ -800,11 +801,27 @@ var AGOL = function( koop ){
         if (info) {
           info.request_jobs = {total: reqs.length, processed: 0, failed: 0, jobs: {}};
           koop.Cache.updateInfo(key, info, function(err, success){
+
+            // create a unique to give to each job - used for tracking completeness;
+            var search_key = crypto.createHash('md5').update(id+Date.now()).digest('hex'); 
+
+            // create worker for each request page
             reqs.forEach(function(req){
               req.id = id;
               req.layerId = layerId;
-              var job = agol.worker_q.create( 'agol', req ).attempts(3).save( function(err){
+              var job = agol.worker_q.create( 'agol', req ).searchKeys([search_key]).attempts(3).save( function(err){
                 agol.log('debug', 'added job to queue' + job.id );
+              });
+              agol.worker_q.on('job complete', function(id) {
+                kue.Job.get(id, function(err, job) {
+                   if (err) return;
+                   job.remove(function(err){
+                      if (err) {
+                        agol.log('debug', 'could not remove completed job #'+ job.id);
+                      } 
+                      agol.log('debug', 'removed completed job #'+ job.id + ' - ' + id);
+                   });
+                });  
               });
               job.on('failed', function(err){
                 koop.Cache.getInfo(key, function(err, info){
