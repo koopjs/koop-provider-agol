@@ -3,7 +3,16 @@ var kue = require('kue'),
   agol = require('../index'),
   koop = require('koop-server/lib'),
   request = require('request'),
+  reds = require('reds');
   config = require('config');
+
+
+var search;
+function getSearch() {
+    if (search) return search;
+    reds.createClient = require('redis').createClient;
+    return search = reds.createSearch(jobs.client.getKey('search'));
+}
 
 koop.log = new koop.Logger( config );
 koop.Cache = new koop.DataCache( koop );
@@ -83,7 +92,7 @@ function makeRequest(jobId, data, done){
       // I do a regex to replace them in both the case that I've found them
       data.body = data.body.replace(/\*+/g,'null');
       data.body = data.body.replace(/\.null/g, '');
-      var json = JSON.parse(data.body.replace(/OwnerPLY\./g,'').replace(/NaN/g, 'null'));
+      var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
       if ( json.error ){
         done( json.error.details[0] );
       } else {
@@ -92,11 +101,15 @@ function makeRequest(jobId, data, done){
           koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
             var key = [ 'agol', id, layerId ].join(':');
             setTimeout(function () {
+              // get the status of complete jobs with the same search_key 
+              getSearch().query(searchKey).end(function (err, ids) { 
+              //jobs.client.keys(searchKey, function(err, d){
+              console.log(err,ids);
+              //console.log(jobs.client)
               koop.Cache.getInfo(key, function(err, info){
                 info.request_jobs.processed += 1;
                 info.request_jobs.jobs[jobId] = 'done';
                 console.log(info.request_jobs.processed, Object.keys(info.request_jobs.jobs).length, searchKey);
-                // get the status of complete jobs with the same search_key 
                 if (info.request_jobs.processed == info.request_jobs.total){
                   delete info.status;
                 }
@@ -104,12 +117,13 @@ function makeRequest(jobId, data, done){
                   done();
                 });
               });
+              });             
             }, Math.floor(Math.random() * 3000));
           });
         });
       }
     } catch(e){
-      console.log('failed to get data?', jobId);
+      console.log('failed to get data?', jobId, e );
       done('Failed to request page ' + url);
     }
   });

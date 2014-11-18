@@ -829,7 +829,7 @@ var AGOL = function( koop ){
                   if (info && info.request_jobs){
                     info.request_jobs.failed++;
                     koop.Cache.updateInfo(key, info, function(err, success){
-                      koop.log('error', 'Request Worker Job Failed '+err);
+                      agol.log('error', 'Request Worker Job Failed '+err);
                     });
                   }
                 });
