@@ -494,9 +494,14 @@ var AGOL = function( koop ){
 
     // get the featureservice info 
     agol.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
+      if (err){
+        //callback(err, null);
+        //return;
+      }
+      
       // set the name in options
       if ( (itemJson.name || itemJson.title) && !options.name ){
-        options.name = serviceInfo.name || itemJson.name || itemJson.title;
+        options.name = itemJson.name || itemJson.title;
         options.name = options.name.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
       }
 
@@ -508,13 +513,15 @@ var AGOL = function( koop ){
         if ( serviceInfo.definitionExpression ){
           serviceInfo.definitionExpression = serviceInfo.definitionExpression.replace(/'/g, '');
         }
+        if ( serviceInfo.name ){
+          options.name = serviceInfo.name;
+        }
         // set the geom type 
         options.geomType = serviceInfo.geometryType; 
         options.fields = serviceInfo.fields;
-      
+        options.objectIdField = agol.getObjectIDField(serviceInfo);
       }
-          
-      options.objectIdField = agol.getObjectIDField(serviceInfo);
+         
 
       // creates the empty table
       koop.Cache.remove('agol', id, {layer: (options.layer || 0)}, function(){
@@ -526,9 +533,9 @@ var AGOL = function( koop ){
           updated_at: itemJson.modified,
           expires_at: expiration,
           retrieved_at: Date.now(), 
-          name: serviceInfo.name,
+          name: options.name,
           geomType: self.geomTypes[itemJson.geometryType],
-          info: serviceInfo,
+          info: serviceInfo || {},
           features:[]
         };
 
@@ -549,12 +556,12 @@ var AGOL = function( koop ){
           
 
           // build legit offset based page requests 
-          if ( serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
+          if ( serviceInfo && serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
             var nPages = Math.ceil(count / maxCount);
             pageRequests = agol.buildOffsetPages( nPages, itemJson.url, maxCount, options );
             self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
 
-          } else if ( serviceInfo.supportsStatistics ) {
+          } else if ( serviceInfo && serviceInfo.supportsStatistics ) {
             // build where clause based pages 
             var statsUrl = agol.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
           

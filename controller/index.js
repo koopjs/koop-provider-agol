@@ -363,7 +363,8 @@ var Controller = function( agol ){
       agol.log('error', req.url +' No features in data');
       res.send( 'No features exist for the requested FeatureService layer', 500 );
     } else {
-      var name = ( itemJson.data[0] && itemJson.data[0].info ) ? itemJson.data[0].info.name || itemJson.data[0].info.    title : itemJson.name;
+      var name = ( itemJson.data[0] && (itemJson.data[0].name || itemJson.data[0].info.name) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
+      // cleanze the name
       name = name.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
 
       if (itemJson.koop_status && itemJson.koop_status == 'too big'){
