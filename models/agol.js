@@ -20,6 +20,17 @@ var AGOL = function( koop ){
         host: '127.0.0.1'
       }
     });
+    agol.worker_q.on('job complete', function(id) {
+      kue.Job.get( id, function( err, job ) {
+         if (err) return;
+         job.remove(function( err ){
+            if (err) {
+              agol.log('debug', 'could not remove completed job #' + job.id);
+            } 
+            agol.log('debug', 'removed completed job #' + job.id + ' - ' + id);
+         });
+      });  
+    });
   }
 
   // how to long to persist the cache of data 
@@ -803,25 +814,15 @@ var AGOL = function( koop ){
           koop.Cache.updateInfo(key, info, function(err, success){
 
             // create a unique to give to each job - used for tracking completeness;
-            var search_key = crypto.createHash('md5').update(id+Date.now()).digest('hex'); 
+            var searchKey = crypto.createHash('md5').update(id+Date.now()).digest('hex'); 
 
             // create worker for each request page
             reqs.forEach(function(req){
               req.id = id;
               req.layerId = layerId;
-              var job = agol.worker_q.create( 'agol', req ).searchKeys([search_key]).attempts(3).save( function(err){
+              req.searchKey = searchKey;
+              var job = agol.worker_q.create( 'agol', req ).searchKeys([searchKey]).attempts(3).save( function(err){
                 agol.log('debug', 'added job to queue' + job.id );
-              });
-              agol.worker_q.on('job complete', function(id) {
-                kue.Job.get(id, function(err, job) {
-                   if (err) return;
-                   job.remove(function(err){
-                      if (err) {
-                        agol.log('debug', 'could not remove completed job #'+ job.id);
-                      } 
-                      agol.log('debug', 'removed completed job #'+ job.id + ' - ' + id);
-                   });
-                });  
               });
               job.on('failed', function(err){
                 koop.Cache.getInfo(key, function(err, info){

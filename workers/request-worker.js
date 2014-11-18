@@ -65,13 +65,18 @@ if (cluster.isMaster) {
   });
 } else {
   jobs.process('agol', function(job, done){
-    makeRequest(job.id, job.data.req, job.data.id, job.data.layerId, done);
+    makeRequest(job.id, job.data, done);
   });
 }
 
 
-function makeRequest(jobId, url, id, layerId, done){
+function makeRequest(jobId, data, done){
   console.log( 'starting job', jobId );
+  var url = data.req, 
+    id = data.id,
+    layerId = data.layerId,
+    searchKey = data.searchKey;
+
   request.get( url, function( err, data, response ){
     try {
       // so sometimes server returns these crazy asterisks in the coords
@@ -90,7 +95,8 @@ function makeRequest(jobId, url, id, layerId, done){
               koop.Cache.getInfo(key, function(err, info){
                 info.request_jobs.processed += 1;
                 info.request_jobs.jobs[jobId] = 'done';
-                console.log(info.request_jobs.processed, Object.keys(info.request_jobs.jobs).length);
+                console.log(info.request_jobs.processed, Object.keys(info.request_jobs.jobs).length, searchKey);
+                // get the status of complete jobs with the same search_key 
                 if (info.request_jobs.processed == info.request_jobs.total){
                   delete info.status;
                 }
