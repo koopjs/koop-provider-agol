@@ -723,8 +723,10 @@ var AGOL = function( koop ){
       if ( json.error ){
         done( json.error.details[0], null);
       } else {
+        console.log('Collect!!1');
         // insert a partial
         koop.GeoJSON.fromEsri( options.fields || [], json, function(err, geojson){
+          console.log('from Esri', err);
           // concat the features so we return the full json
           //itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
           koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
@@ -745,7 +747,7 @@ var AGOL = function( koop ){
     // concurrent queue for feature pages
     var q = async.queue(function (task, callback) {
       // make a request for a page 
-      agol.log('info', id + ' get page '+ (i++));
+      agol.log('info', id + ' get page '+ (i++) + ' : ' +task.req);
       request.get(task.req, function(err, data, response){
         try {
           // so sometimes server returns these crazy asterisks in the coords
