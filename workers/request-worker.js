@@ -143,7 +143,6 @@ function makeRequest(job, done){
     } else {
       task.retry = 1;
       koop.log.info('Re-requesting page '+ task.req +' '+ e);
-      console.log(task);
       requestQ.push(task, noOp);
     }
     return callback();
