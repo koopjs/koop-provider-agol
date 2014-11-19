@@ -416,9 +416,7 @@ var Controller = function( agol ){
               //} else {
               //  res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
               }
-              //console.log(result);  
-              console.log('should be sending back info with "status:processing"');
-              //res.sendfile(result);
+              res.sendfile(result);
             }
           }
         });

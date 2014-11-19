@@ -525,10 +525,6 @@ var AGOL = function( koop ){
 
     // get the featureservice info 
     agol.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
-      if (err){
-        //callback(err, null);
-        //return;
-      }
       
       // set the name in options
       if ( (itemJson.name || itemJson.title) && !options.name ){
@@ -755,10 +751,8 @@ var AGOL = function( koop ){
       if ( json.error ){
         done( json.error.details[0], null);
       } else {
-        console.log('Collect!!1');
         // insert a partial
         koop.GeoJSON.fromEsri( options.fields || [], json, function(err, geojson){
-          console.log('from Esri', err);
           // concat the features so we return the full json
           //itemJson.data[0].features = itemJson.data[0].features.concat( geojson.features );
           koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
@@ -868,7 +862,7 @@ var AGOL = function( koop ){
         json.url = url;
         callback( err, json );
       } catch (e) {
-        console.log('failed to get URL', url, res.body);
+        console.log('failed to get URL', url, e, err, res);
         callback( 'failed to parse service info', null );
       }
     });

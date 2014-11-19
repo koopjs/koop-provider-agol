@@ -79,15 +79,6 @@ describe('FeatureService Proxy Provider', function(){
           });
       });
 
-      it('should return 200 when accessing item data', function(done) {
-          request(koop)
-            .get('/agol/arcgis/af2d2aefeec745408e085da855c738f8/data')
-            .end(function(err, res){
-              res.should.have.status(200);
-              done();
-          });
-      });
-
       it('should return 200 when accessing item as a featureservice', function(done) {
          request(koop)
             .get('/agol/arcgis/af2d2aefeec745408e085da855c738f8/FeatureServer')
@@ -135,7 +126,7 @@ describe('FeatureService Proxy Provider', function(){
   
       it('should return 500 when exporting an empty layer', function(done) {
           request(koop)
-            .get('/agol/arcgis/000429f808ba404bb6b67e192170a5d7/data.csv')
+            .get('/agol/arcgis/000429f808ba404bb6b67e192170a5d7/0.csv')
             .end(function(err, res){
               res.status.should.equal(500);
               done();
