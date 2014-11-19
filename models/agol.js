@@ -5,21 +5,22 @@ var request = require('request'),
   BaseModel = require('koop-server/lib/BaseModel.js'),
   async = require('async');
 
-var config = require('./config.js');
-
 var AGOL = function( koop ){
 
   var agol = {};
   agol.__proto__ = BaseModel( koop );
 
-  if (config.use_workers){
+  if (koop.config.agol && koop.config.agol.request_workers){
     agol.worker_q = kue.createQueue({
-      prefix: 'q',
+      prefix: koop.config.agol.redis.prefix || 'q',
+      disableSearch: true,
       redis: {
-        port: 6379,
-        host: '127.0.0.1'
+        port: koop.config.agol.redis.port || 6379,
+        host: koop.config.agol.redis.host || '127.0.0.1'
       }
     });
+
+    // remove completed jobs from the queue 
     agol.worker_q.on('job complete', function(id) {
       kue.Job.get( id, function( err, job ) {
          if (err) return;
@@ -31,6 +32,12 @@ var AGOL = function( koop ){
          });
       });  
     });
+
+    // track and log job progress, just handy to have
+    agol.worker_q.on('job progress', function(id, progress){
+      agol.log('debug', 'progress ' + id + ' - ' + progress + '%');
+    });
+
   }
 
   // how to long to persist the cache of data 
@@ -766,6 +773,8 @@ var AGOL = function( koop ){
       }
     };
 
+    var concurrency = ( itemJson && itemJson.url && itemJson.url.split('//')[1].match(/^service/) ) ? 16 : 4;
+
     var i = 0;
     var logErrorCB = function(err){ if (err) console.log(err); }; 
 
@@ -798,46 +807,52 @@ var AGOL = function( koop ){
         }
       });
     // If service is hosted send concurrent 16 requests; else 4 
-    }, ( itemJson && itemJson.url && itemJson.url.split('//')[1].match(/^service/) ) ? 16 : 4);
+    }, concurrency);
 
     agol.log('info', id + ' # of requests:' + reqs.length);
 
-    if ( config.use_workers ){
+    if ( koop.config.agol && koop.config.agol.request_workers ){
       // before we queue up jobs we need to setup some tracking 
       // we get the db info, add the number of jobs to it
-      // this lets the workers update the number of jobs processed
       // when all jobs are done the status:'processed' needs to be removed 
-      var key = ['agol', id, layerId].join( ":" );
-      koop.Cache.getInfo(key, function(err, info){
-        if (info) {
-          info.request_jobs = {total: reqs.length, processed: 0, failed: 0, jobs: {}};
-          koop.Cache.updateInfo(key, info, function(err, success){
 
-            // create a unique to give to each job - used for tracking completeness;
-            var searchKey = crypto.createHash('md5').update(id+Date.now()).digest('hex'); 
+      // data that we want to pass to the workers 
+      // send ids, page urls, and the server concurrency (16 for hosted, else 4)
+      var jobData = {
+        id: id,
+        layerId: layerId,
+        pages: reqs,
+        concurrency: concurrency
+      };
 
-            // create worker for each request page
-            reqs.forEach(function(req){
-              req.id = id;
-              req.layerId = layerId;
-              req.searchKey = searchKey;
-              var job = agol.worker_q.create( 'agol', req ).searchKeys([searchKey]).attempts(3).save( function(err){
-                agol.log('debug', 'added job to queue' + job.id );
-              });
-              job.on('failed', function(err){
-                koop.Cache.getInfo(key, function(err, info){
-                  if (info && info.request_jobs){
-                    info.request_jobs.failed++;
-                    koop.Cache.updateInfo(key, info, function(err, success){
-                      agol.log('error', 'Request Worker Job Failed '+err);
-                    });
-                  }
+      // add the job to the distributed worker pool 
+      var job = agol.worker_q.create( 'agol', jobData ).save( function(err){
+        agol.log('debug', 'added page requests to job-queue' + job.id );
+      });
+
+      var key = [ 'agol', id, layerId ].join(':');
+      // track failed jobs and flag them 
+      job.on('failed', function(jobErr){
+          koop.Cache.getInfo(key, function(err, info){
+            if (info){
+              info.paging_failed = { error: jobErr };
+              agol.log('error', 'Request worker job failed ' + jobErr );
+              koop.Cache.updateInfo(key, info, function(err, success){
+                kue.Job.get( job.id, function( err, job ) {
+                  if (err) return;
+                  job.remove(function( err ){
+                    if (err) {
+                      agol.log('debug', 'could not remove failed job #' + job.id +' Error: '+ err);
+                      return;
+                    }
+                    agol.log('debug', 'removed failed job #' + job.id + ' - ' + id);
+                  });
                 });
               });
-            });
+            }
           });
-        }
       });
+
     } else {
       // add all the page urls to the queue 
       q.push(reqs, logErrorCB);

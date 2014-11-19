@@ -1,23 +1,16 @@
 var kue = require('kue'),
   cluster = require('cluster'),
-  agol = require('../index'),
   koop = require('koop-server/lib'),
   request = require('request'),
-  reds = require('reds');
+  async = require('async'),
   config = require('config');
 
-
-var search;
-function getSearch() {
-    if (search) return search;
-    reds.createClient = require('redis').createClient;
-    return search = reds.createSearch(jobs.client.getKey('search'));
-}
-
+// Init Koop with things it needs like a log and Cache 
 koop.log = new koop.Logger( config );
 koop.Cache = new koop.DataCache( koop );
 
 // Start the Cache DB with the conn string from config
+// the workers connect to the same DB as their corresponding koop
 if ( config && config.db ) {
   if ( config.db.postgis ) {
     koop.Cache.db = koop.PostGIS.connect( config.db.postgis.conn );
@@ -26,20 +19,24 @@ if ( config && config.db ) {
   }
   koop.Cache.db.log = koop.log;
 } else if (config && !config.db){
-  console.log('Exiting since no DB configuration found in config');
   process.exit();
 }
 
-jobs = kue.createQueue({
-  prefix: 'q',
+
+// Create the job queue for this worker process
+// connects to the redis same redis
+// TODO think about how we partition dev/QA/prod 
+// TODO make the prefix configurable 
+var jobs = kue.createQueue({
+  prefix: config.redis.prefix,
   redis: {
     port: config.redis.port,
     host: config.redis.host
   }
 });
 
-console.log(jobs);
-
+// Start 4 worker processes
+// TODO this should be configurable
 var clusterWorkerSize = 4;
 
 if (cluster.isMaster) {
@@ -49,7 +46,6 @@ if (cluster.isMaster) {
   }
   process.once( 'SIGINT', function ( sig ) {
     jobs.active(function(err, ids){
-      console.log(ids)
       if ( ids.length ){
         ids.forEach( function( id ) {
           kue.Job.get( id, function( err, job ) {
@@ -57,7 +53,6 @@ if (cluster.isMaster) {
             jobs.active(function(err, activeIds){
               if (!activeIds.length){
                jobs.shutdown(function(err) {
-                 console.log( 'Koop Kue is shut down.', err||'' );
                  process.exit( 0 );
                }, 5000 );
               }
@@ -66,7 +61,6 @@ if (cluster.isMaster) {
         });
       } else {
         jobs.shutdown(function(err) {
-          console.log( 'Koop Kue is shut down.', err||'' );
           process.exit( 0 );
         }, 5000 );
       }
@@ -74,59 +68,94 @@ if (cluster.isMaster) {
   });
 } else {
   jobs.process('agol', function(job, done){
-    makeRequest(job.id, job.data, done);
+    makeRequest(job, done);
   });
 }
 
+// makes the request to the feature service and inserts the Features
+function makeRequest(job, done){
+  console.log( 'starting job', job.id );
+  var id = job.data.id,
+    layerId = job.data.layerId,
+    len = job.data.pages.length,
+    completed = 0;
 
-function makeRequest(jobId, data, done){
-  console.log( 'starting job', jobId );
-  var url = data.req, 
-    id = data.id,
-    layerId = data.layerId,
-    searchKey = data.searchKey;
+  var requestQ = async.queue(function(task, cb){
+    var url = task.req;
 
-  request.get( url, function( err, data, response ){
-    try {
-      // so sometimes server returns these crazy asterisks in the coords
-      // I do a regex to replace them in both the case that I've found them
-      data.body = data.body.replace(/\*+/g,'null');
-      data.body = data.body.replace(/\.null/g, '');
-      var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
-      if ( json.error ){
-        done( json.error.details[0] );
-      } else {
-        // insert a partial
-        koop.GeoJSON.fromEsri( [], json, function(err, geojson){
-          koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
-            var key = [ 'agol', id, layerId ].join(':');
-            setTimeout(function () {
-              // get the status of complete jobs with the same search_key 
-              getSearch().query(searchKey).end(function (err, ids) { 
-              //jobs.client.keys(searchKey, function(err, d){
-              console.log(err,ids);
-              //console.log(jobs.client)
-              koop.Cache.getInfo(key, function(err, info){
-                info.request_jobs.processed += 1;
-                info.request_jobs.jobs[jobId] = 'done';
-                console.log(info.request_jobs.processed, Object.keys(info.request_jobs.jobs).length, searchKey);
-                if (info.request_jobs.processed == info.request_jobs.total){
+    request.get( url, function( err, data, response ){
+      try {
+        // so sometimes server returns these crazy asterisks in the coords
+        // I do a regex to replace them in both the case that I've found them
+        data.body = data.body.replace(/\*+/g,'null');
+        data.body = data.body.replace(/\.null/g, '');
+        var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
+        if ( json.error ){
+          done( json.error.details[0] );
+        } else {
+          // insert a partial
+          koop.GeoJSON.fromEsri( [], json, function(err, geojson){
+            koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
+              if (err) {
+                catchErrors(task, e, url, cb);
+              }
+              completed++;
+              job.progress( completed, len );
+              if ( completed == len ) {
+                var key = [ 'agol', id, layerId ].join(':');
+                koop.Cache.getInfo(key, function(err, info){
                   delete info.status;
-                }
-                koop.Cache.updateInfo(key, info, function(err, info){
-                  done();
+                  koop.Cache.updateInfo(key, info, function(err, info){
+                    done();
+                    cb();
+                  });
                 });
-              });
-              });             
-            }, Math.floor(Math.random() * 3000));
+              }
+              else {
+                cb();
+              }
+            });
           });
-        });
+        }
+      } catch(e){
+        catchErrors(task, e, url, cb);
       }
-    } catch(e){
-      console.log('failed to get data?', jobId, e );
-      done('Failed to request page ' + url);
+    });
+  }, job.data.concurrency);
+
+  // null operation fn to log errors from queue
+  var noOp = function(err){ 
+    if (err) {
+      koop.log.error(err); 
     }
+  }; 
+
+  // Catches errors from the Queue and check for a retry < 3 
+  // puts back on the queue if < 3 retries
+  // errors the entire job if if fails  
+  var catchErrors = function( task, e, url, callback){
+    if ( task.retry && task.retry < 3 ){
+      task.retry++;
+      requestQ.push( task, noOp );
+    } else if (task.retry && task.retry == 3 ){
+      koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
+      done('Failed to request a page of features' + url);
+    } else {
+      task.retry = 1;
+      koop.log.info('Re-requesting page '+ task.req +' '+ e);
+      console.log(task);
+      requestQ.push(task, noOp);
+    }
+    return callback();
+  };
+
+
+  // Add each request to the internal queue 
+  job.data.pages.forEach(function(task, i){
+    task.num = i;
+    requestQ.push( task, noOp);
   });
+  
 
 }
 
