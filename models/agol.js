@@ -593,33 +593,37 @@ var AGOL = function( koop ){
             var statsUrl = agol.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
           
             agol.req( statsUrl, function( err, res ){
-              var statsJson = JSON.parse( res.body );
-              koop.log.info( 'statsUrl %s %s', id, statsUrl );
-              console.log(statsJson);
+              try {
+                var statsJson = JSON.parse( res.body );
+                koop.log.info( 'statsUrl %s %s', id, statsUrl );
+                console.log(statsJson);
 
-              if ( statsJson.error ){
-                // default to sequential objectID paging
-                pageRequests = agol.buildObjectIDPages(
-                  itemJson.url,
-                  0,
-                  count,
-                  maxCount,
-                  options
-                );
-                agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
-              } else {
-                  var names;
-                  if ( statsJson && statsJson.fieldAliases ) { 
-                    names = Object.keys(statsJson.fieldAliases);
-                  }
+                if ( statsJson.error ){
+                  // default to sequential objectID paging
                   pageRequests = agol.buildObjectIDPages(
                     itemJson.url,
-                    statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID ||statsJson.features[0].attributes[names[0]],
-                    statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID || statsJson.features[0].attributes[names[1]],
+                    0,
+                    count,
                     maxCount,
                     options
                   );
                   agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                } else {
+                    var names;
+                    if ( statsJson && statsJson.fieldAliases ) { 
+                      names = Object.keys(statsJson.fieldAliases);
+                    }
+                    pageRequests = agol.buildObjectIDPages(
+                      itemJson.url,
+                      statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID ||statsJson.features[0].attributes[names[0]],
+                      statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID || statsJson.features[0].attributes[names[1]],
+                      maxCount,
+                      options
+                    );
+                    agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                }
+              } catch (e){
+                agol.log('error', 'Error parsing stats'+id+' '+e+' - '+statsUrl);
               }
             });
 
