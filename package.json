@@ -1,6 +1,6 @@
 {
   "name": "koop-agol",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "An ArcGIS Online wrapper for koop",
   "main": "index.js",
   "directories": {
@@ -11,7 +11,7 @@
     "lint": "node_modules/jshint/bin/jshint **/*.js"
   },
   "dependencies": {
-    "koop-server": "~0.1.1",
+    "koop-server": "*",
     "config": "~0.4.35",
     "terraformer": "1.0.3",
     "terraformer-arcgis-parser": "1.0.4",
