@@ -12,11 +12,11 @@ var AGOL = function( koop ){
 
   if (koop.config.agol && koop.config.agol.request_workers){
     agol.worker_q = kue.createQueue({
-      prefix: koop.config.agol.redis.prefix || 'q',
+      prefix: koop.config.agol.request_workers.redis.prefix || 'q',
       disableSearch: true,
       redis: {
-        port: koop.config.agol.redis.port || 6379,
-        host: koop.config.agol.redis.host || '127.0.0.1'
+        port: koop.config.agol.request_workers.redis.port || 6379,
+        host: koop.config.agol.request_workers.redis.host || '127.0.0.1'
       }
     });
 
