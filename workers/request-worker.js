@@ -36,7 +36,7 @@ var jobs = kue.createQueue({
 
 // Start 4 worker processes
 // TODO this should be configurable
-var clusterWorkerSize = 4;
+/*var clusterWorkerSize = 4;
 
 if (cluster.isMaster) {
   for (var i = 0; i < clusterWorkerSize; i++) {
@@ -64,11 +64,13 @@ if (cluster.isMaster) {
       }
     });
   });
-} else {
+} else {*/
+
   jobs.process('agol', function(job, done){
     makeRequest(job, done);
   });
-}
+
+//}
 
 // makes the request to the feature service and inserts the Features
 function makeRequest(job, done){
