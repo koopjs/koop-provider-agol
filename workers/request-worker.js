@@ -26,7 +26,6 @@ if ( config && config.db ) {
 // Create the job queue for this worker process
 // connects to the redis same redis
 // TODO think about how we partition dev/QA/prod 
-// TODO make the prefix configurable 
 var jobs = kue.createQueue({
   prefix: config.redis.prefix,
   redis: {
@@ -40,7 +39,6 @@ var jobs = kue.createQueue({
 var clusterWorkerSize = 4;
 
 if (cluster.isMaster) {
-  kue.app.listen(process.env.PORT || 3000);
   for (var i = 0; i < clusterWorkerSize; i++) {
     cluster.fork();
   }
