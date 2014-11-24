@@ -2,8 +2,11 @@ var kue = require('kue'),
   cluster = require('cluster'),
   koop = require('koop-server/lib'),
   request = require('request'),
+  http = require('http'),
   async = require('async'),
   config = require('config');
+
+//require('look').start();
 
 // Init Koop with things it needs like a log and Cache 
 koop.log = new koop.Logger( config );
@@ -34,43 +37,41 @@ var jobs = kue.createQueue({
   }
 });
 
-// Start 4 worker processes
-// TODO this should be configurable
-/*var clusterWorkerSize = 4;
-
-if (cluster.isMaster) {
-  for (var i = 0; i < clusterWorkerSize; i++) {
-    cluster.fork();
-  }
-  process.once( 'SIGINT', function ( sig ) {
-    jobs.active(function(err, ids){
-      if ( ids.length ){
-        ids.forEach( function( id ) {
-          kue.Job.get( id, function( err, job ) {
-            job.inactive();
-            jobs.active(function(err, activeIds){
-              if (!activeIds.length){
-               jobs.shutdown(function(err) {
-                 process.exit( 0 );
-               }, 5000 );
-              }
-            });
+process.once( 'SIGINT', function ( sig ) {
+  jobs.active(function(err, ids){
+    if ( ids.length ){
+      ids.forEach( function( id ) {
+        kue.Job.get( id, function( err, job ) {
+          job.inactive();
+          jobs.active(function(err, activeIds){
+            if (!activeIds.length){
+             jobs.shutdown(function(err) {
+               process.exit( 0 );
+             }, 5000 );
+            }
           });
         });
-      } else {
-        jobs.shutdown(function(err) {
-          process.exit( 0 );
-        }, 5000 );
-      }
-    });
+      });
+    } else {
+      jobs.shutdown(function(err) {
+        process.exit( 0 );
+      }, 5000 );
+    }
   });
-} else {*/
+});
 
-  jobs.process('agol', function(job, done){
-    makeRequest(job, done);
-  });
+jobs.process('agol', function(job, done){
+  makeRequest(job, done);
+});
 
-//}
+
+setInterval(function () {
+    if (typeof gc === 'function') {
+        gc();
+    }
+    console.log('Memory Usage', process.memoryUsage());
+}, 5000);
+
 
 // makes the request to the feature service and inserts the Features
 function makeRequest(job, done){
@@ -80,47 +81,73 @@ function makeRequest(job, done){
     len = job.data.pages.length,
     completed = 0;
 
-  var requestQ = async.queue(function(task, cb){
+  var requestFeatures = function(task, cb){
     var url = task.req;
+    http.get(url, function(response) {
+      var data = '';
+      response.on('data', function (chunk) {
+        data += chunk;
+      });
 
-    request.get( url, function( err, data, response ){
-      try {
-        // so sometimes server returns these crazy asterisks in the coords
-        // I do a regex to replace them in both the case that I've found them
-        data.body = data.body.replace(/\*+/g,'null');
-        data.body = data.body.replace(/\.null/g, '');
-        var json = JSON.parse(data.body.replace(/NaN/g, 'null'));
-        if ( json.error ){
-          done( json.error.details[0] );
-        } else {
-          // insert a partial
-          koop.GeoJSON.fromEsri( [], json, function(err, geojson){
-            koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
-              if (err) {
-                catchErrors(task, e, url, cb);
-              }
-              completed++;
-              job.progress( completed, len );
-              if ( completed == len ) {
-                var key = [ 'agol', id, layerId ].join(':');
-                koop.Cache.getInfo(key, function(err, info){
-                  delete info.status;
-                  koop.Cache.updateInfo(key, info, function(err, info){
-                    done();
-                    cb();
+      response.on('end', function () {
+
+        try {
+          // so sometimes server returns these crazy asterisks in the coords
+          // I do a regex to replace them in both the case that I've found them
+          data = data.replace(/\*+/g,'null');
+          data = data.replace(/\.null/g, '');
+          var json = JSON.parse(data.replace(/NaN/g, 'null'));
+
+          if ( json.error ){
+
+            catchErrors(task, e, url, cb);
+
+          } else {
+            // insert a partial
+            koop.GeoJSON.fromEsri( [], json, function(err, geojson){
+              koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
+                if (err) {
+                  catchErrors(task, e, url, cb);
+                }
+                completed++;
+                console.log(completed, len);
+                job.progress( completed, len );
+                
+                // clean up our big vars            
+                json = null;
+                geojson = null;
+                response = null;
+                data = null;
+
+                if ( completed == len ) {
+                  var key = [ 'agol', id, layerId ].join(':');
+                  koop.Cache.getInfo(key, function(err, info){
+                    delete info.status;
+                    koop.Cache.updateInfo(key, info, function(err, info){
+                      done();
+                      process.nextTick(cb);
+                      return;
+                    });
+                    return;
                   });
-                });
-              }
-              else {
-                cb();
-              }
+                } else {
+                  process.nextTick(cb);
+                  return;
+                }
+
+              });
             });
-          });
+          }
+        } catch(e){
+          catchErrors(task, e, url, cb);
         }
-      } catch(e){
-        catchErrors(task, e, url, cb);
-      }
+      });
     });
+  };
+
+
+  var requestQ = async.queue(function(task, callback){
+    requestFeatures(task, callback);
   }, job.data.concurrency);
 
   // null operation fn to log errors from queue
@@ -151,10 +178,9 @@ function makeRequest(job, done){
 
   // Add each request to the internal queue 
   job.data.pages.forEach(function(task, i){
-    task.num = i;
     requestQ.push( task, noOp);
+    return;
   });
-  
 
 }
 

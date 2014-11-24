@@ -138,6 +138,7 @@ var Controller = function( agol ){
               agol.getCount(['agol', item, options.layer].join(':'), {}, function(err, count){
                 var response = {
                   status: 'processing',
+                  processing_time: ( Date.now() - itemJson.retrieved_at)/1000 || 0, 
                   count: count
                 };
                 if ( itemJson.generating ){
@@ -175,6 +176,7 @@ var Controller = function( agol ){
           agol.getCount(table_key, {}, function(err, count){
             var response = {
               status: 'processing',
+              processing_time: ( Date.now() - info.retrieved_at)/1000 || 0, 
               count: count
             };
             if ( info.generating ){
@@ -374,6 +376,7 @@ var Controller = function( agol ){
             agol.getCount(table, {}, function(err, count){
               var response = {
                 status: 'processing',
+                processing_time: ( Date.now() - result.retrieved_at)/1000 || 0, 
                 count: count
               };
               if ( result.generating ){
