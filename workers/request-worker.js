@@ -69,7 +69,7 @@ setInterval(function () {
     if (typeof gc === 'function') {
         gc();
     }
-    console.log('Memory Usage', process.memoryUsage());
+    //console.log('Memory Usage', process.memoryUsage());
 }, 5000);
 
 
