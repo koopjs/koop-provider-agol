@@ -436,14 +436,14 @@ var Controller = function( agol ){
       res.json({url: newUrl});
     } else {
       if (path.substr(0,4) == 'http'){
-        if (req.params.format == 'json' || req.params.format == 'geojson'){
+        /*if (req.params.format == 'json' || req.params.format == 'geojson'){
           request.get(path, function(err, data, response){
             res.contentType('text');
             res.json(JSON.parse(response));
           }); 
-        } else {
+        } else {*/
           res.redirect(path);
-        }
+        //}
       } else {
         if (req.params.format == 'json' || req.params.format == 'geojson'){
           res.contentType('text');

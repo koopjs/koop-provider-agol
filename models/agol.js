@@ -10,18 +10,6 @@ var AGOL = function( koop ){
   var agol = {};
   agol.__proto__ = BaseModel( koop );
 
-  // we neeed access the export que so we can drop files
-  if ( koop.config.export_workers ){
-    agol.export_q = kue.createQueue({
-      prefix: koop.config.export_workers.redis.prefix,
-      disableSearch: true,
-      redis: {
-        port: koop.config.export_workers.redis.port,
-        host: koop.config.export_workers.redis.host
-      }
-    });
-  }
-
   // create a request Q if configured to page large data sets  
   if (koop.config.agol && koop.config.agol.request_workers){
     agol.worker_q = kue.createQueue({
@@ -102,7 +90,7 @@ var AGOL = function( koop ){
   agol.dropItem = function( host, itemId, options, callback ){
     var layerId = (options.layer || 0);
 
-    if ( agol.export_q ){
+    if ( koop.exporter.export_q ){
       var jobData = {
         id: itemId,
         layerId: layerId,
@@ -110,7 +98,7 @@ var AGOL = function( koop ){
       };
 
       // add the job to the distributed worker pool 
-      var job = agol.export_q.create( 'exports', jobData ).save( function(err){
+      var job = koop.exporter.export_q.create( 'exports', jobData ).save( function(err){
           agol.log('debug', 'added a remove job to the export_q' + job.id );
           var dir = [ itemId, layerId ].join('_');
           koop.Cache.remove('agol', itemId, options, function(err, res){
