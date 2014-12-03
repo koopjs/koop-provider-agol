@@ -296,15 +296,17 @@ var Controller = function( agol ){
                   // if expired -> remove the data and request
                   if ( is_expired ){
                     var d = [dir, key ].join( '/' );
-                    agol.files.removeDir( 'files/' + d, function(err, result){
-                      agol.files.removeDir( 'tiles/'+ d, function(err, result){
-                        agol.files.removeDir( 'thumbs/'+ d, function(err, result){
+                    agol.dropItem( '', req.params.item, req.query, function( err, success ){
+                     //agol.files.removeDir( 'files/' + d, function(err, result){
+                     //  agol.files.removeDir( 'tiles/'+ d, function(err, result){
+                     //    agol.files.removeDir( 'thumbs/'+ d, function(err, result){
                           req.query.format = req.params.format;
                           _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
                             controller.requestNewFile( req, res, dir, key, err, itemJson );
                           });
-                        });
-                      });
+                     //    });
+                     //  });
+                     //});
                     });
                   } else {
                     // else serve it
