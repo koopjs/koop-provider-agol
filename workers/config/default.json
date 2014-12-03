@@ -4,7 +4,6 @@
             "conn": "postgres://localhost/koopdev"
         }
     },
-    "logfile":"worker-log.log",
     "redis":{
         "prefix":"q",
         "port":6379,

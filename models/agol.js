@@ -10,6 +10,19 @@ var AGOL = function( koop ){
   var agol = {};
   agol.__proto__ = BaseModel( koop );
 
+  // we neeed access the export que so we can drop files
+  if ( koop.config.export_workers ){
+    agol.export_q = kue.createQueue({
+      prefix: koop.config.export_workers.redis.prefix,
+      disableSearch: true,
+      redis: {
+        port: koop.config.export_workers.redis.port,
+        host: koop.config.export_workers.redis.host
+      }
+    });
+  }
+
+  // create a request Q if configured to page large data sets  
   if (koop.config.agol && koop.config.agol.request_workers){
     agol.worker_q = kue.createQueue({
       prefix: koop.config.agol.request_workers.redis.prefix || 'q',
@@ -87,16 +100,44 @@ var AGOL = function( koop ){
 
   // drops the item from the cache
   agol.dropItem = function( host, itemId, options, callback ){
-    var dir = [ itemId, (options.layer || 0) ].join('_');
-    koop.Cache.remove('agol', itemId, options, function(err, res){
-      koop.files.removeDir( 'files/' + dir, function(err, res){
-        koop.files.removeDir( 'tiles/'+ dir, function(err, res){
-          koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
-            callback(err, true);
+    var layerId = (options.layer || 0);
+
+    if ( agol.export_q ){
+      var jobData = {
+        id: itemId,
+        layerId: layerId,
+        remove: true
+      };
+
+      // add the job to the distributed worker pool 
+      var job = agol.export_q.create( 'exports', jobData ).save( function(err){
+          agol.log('debug', 'added a remove job to the export_q' + job.id );
+          var dir = [ itemId, layerId ].join('_');
+          koop.Cache.remove('agol', itemId, options, function(err, res){
+            koop.files.removeDir( 'files/' + dir, function(err, res){
+              koop.files.removeDir( 'tiles/'+ dir, function(err, res){
+                koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
+                  callback(err, true);
+                });
+              });
+            });
+          });
+      });
+      
+    } else {
+
+      var dir = [ itemId, layerId ].join('_');
+      koop.Cache.remove('agol', itemId, options, function(err, res){
+        koop.files.removeDir( 'files/' + dir, function(err, res){
+          koop.files.removeDir( 'tiles/'+ dir, function(err, res){
+            koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
+              callback(err, true);
+            });
           });
         });
       });
-    });
+
+    }
   };
 
   // got the service and get the item
@@ -824,7 +865,7 @@ var AGOL = function( koop ){
 
       // add the job to the distributed worker pool 
       var job = agol.worker_q.create( 'agol', jobData ).save( function(err){
-        agol.log('debug', 'added page requests to job-queue' + job.id );
+        agol.log('debug', 'added page requests to job-queue ' + job.id );
       });
 
       var key = [ 'agol', id, layerId ].join(':');
