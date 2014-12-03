@@ -241,7 +241,7 @@ var Controller = function( agol ){
             var dir = req.params.item + '_' + ( req.params.layer || 0 );
             var path = [ 'files', dir, key ].join( '/' );
             // the file name for the export 
-            var name = ( info && info.info ) ? info.info.name || info.info.title || info.name : key;
+            var name = ( info && info.info ) ? info.name || info.info.name || info.info.title : key;
             var fileName = name + '.' + req.params.format;
             fileName = fileName.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');;
 

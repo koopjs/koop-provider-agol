@@ -477,7 +477,6 @@ var AGOL = function( koop ){
               var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
               koop.GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
-                
                 geojson.name = itemJson.name || itemJson.title;
                 geojson.updated_at = itemJson.modified;
                 geojson.expires_at = Date.now() + self.cacheLife;
