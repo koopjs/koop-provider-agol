@@ -490,7 +490,7 @@ var AGOL = function( koop ){
         //if (options.geometry){
         //  url += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
         //} else {
-          url += '&geometry=&returnGeometry=true';
+          url += '&geometry=&returnGeometry=true&geometryPrecision=6';
         //}
 
         // get the features
