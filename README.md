@@ -9,7 +9,7 @@ cd koop
 npm install https://github.com/chelm/koop-agol/tarball/master
 node server.js
 
-curl -i -X POST -d "id=arcgis" -d "host=https://www.arcgis.com" "http://localhost:1337/agol/register"
+curl -i -X POST -d "id=arcgis" -d "host=https://www.arcgis.com" "http://localhost:1337/agol"
 ```
 
 ## Installation for local development 
