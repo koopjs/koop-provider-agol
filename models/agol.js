@@ -436,7 +436,6 @@ var AGOL = function( koop ){
     //if (options.geometry){
       //idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
     //}
-
     // get the id count of the service 
     agol.req(idUrl, function(err, data ){
       // determine if its greater then 1000
@@ -515,8 +514,15 @@ var AGOL = function( koop ){
                 // save the data 
                 koop.Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                   if ( success ) {
-                    itemJson.data = [geojson];
-                    callback( null, itemJson );
+                    if (options.where || options.geometry){
+                      koop.Cache.get( 'agol', id, options, function(err, entry){
+                        itemJson.data = entry;
+                        callback( null, itemJson );
+                      });                     
+                    } else {
+                      itemJson.data = [geojson];
+                      callback( null, itemJson );
+                    }
                   } else {
                     callback( err, null );
                   }
@@ -619,12 +625,11 @@ var AGOL = function( koop ){
           } else if ( serviceInfo && serviceInfo.supportsStatistics ) {
             // build where clause based pages 
             var statsUrl = agol.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
-          
             agol.req( statsUrl, function( err, res ){
               try {
                 var statsJson = JSON.parse( res.body );
                 koop.log.info( 'statsUrl %s %s', id, statsUrl );
-                console.log(statsJson);
+                console.log( statsJson );
 
                 if ( statsJson.error ){
                   // default to sequential objectID paging
