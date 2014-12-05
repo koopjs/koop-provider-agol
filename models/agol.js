@@ -92,7 +92,7 @@ var AGOL = function( koop ){
 
     if ( koop.exporter.export_q ){
       var jobData = {
-        id: itemId,
+        itemId: itemId,
         layerId: layerId,
         remove: true
       };
