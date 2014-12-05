@@ -414,12 +414,15 @@ var Controller = function( agol ){
             if (err) {
               res.send( err, 500 );
             } else {
-              if (req.params.format == 'json' || req.params.format == 'geojson'){
-                res.contentType('text');
-              //} else {
-              //  res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+              if ( result.substr(0,4) == 'http' ){
+                res.redirect( result );
+              } else {
+                if (req.params.format == 'json' || req.params.format == 'geojson'){
+                  res.contentType('text');
+                }
+                //res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+                res.sendfile(result);
               }
-              res.sendfile(result);
             }
           }
         });
