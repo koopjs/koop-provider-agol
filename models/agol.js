@@ -711,9 +711,9 @@ var AGOL = function( koop ){
       pageUrl += '&resultRecordCount='+max;
 
       if ( options.geometry ){
-        pageUrl += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify( options.geometry );
+        pageUrl += '&returnGeometry=true&geometryPrecision=6&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify( options.geometry );
       } else {
-        pageUrl += '&geometry=&returnGeometry=true';
+        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
       }
       reqs.push({req: pageUrl});
     }
@@ -738,9 +738,9 @@ var AGOL = function( koop ){
       where = objId+'<=' + pageMax + '+AND+' + objId+'>=' + pageMin;
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
       if ( options.geometry ){
-        pageUrl += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
+        pageUrl += '&returnGeometry=true&geometryPrecision=6&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
       } else {
-        pageUrl += '&geometry=&returnGeometry=true';
+        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
       }
       reqs.push({req: pageUrl});
     }
@@ -868,6 +868,9 @@ var AGOL = function( koop ){
             if (info){
               info.paging_failed = { error: jobErr };
               agol.log('error', 'Request worker job failed ' + jobErr );
+              info.generating = {
+                error: 'Failed to cache the data'
+              };
               koop.Cache.updateInfo(key, info, function(err, success){
                 kue.Job.get( job.id, function( err, job ) {
                   if (err) return;

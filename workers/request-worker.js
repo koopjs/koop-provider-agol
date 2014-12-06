@@ -101,14 +101,14 @@ function makeRequest(job, done){
 
             if ( json.error ){
 
-              catchErrors(task, e, url, cb);
+              catchErrors(task, JSON.stringify(json.error), url, cb);
 
             } else {
               // insert a partial
               koop.GeoJSON.fromEsri( [], json, function(err, geojson){
                 koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
                   if (err) {
-                    catchErrors(task, e, url, cb);
+                    catchErrors(task, err, url, cb);
                   }
                   completed++;
                   console.log(completed, len);
@@ -169,15 +169,17 @@ function makeRequest(job, done){
     if ( task.retry && task.retry < 3 ){
       task.retry++;
       requestQ.push( task, noOp );
+      return callback();
     } else if (task.retry && task.retry == 3 ){
       koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
       done('Failed to request a page of features' + url);
+      return;
     } else {
       task.retry = 1;
       koop.log.info('Re-requesting page '+ task.req +' '+ e);
       requestQ.push(task, noOp);
+      return callback();
     }
-    return callback();
   };
 
 
