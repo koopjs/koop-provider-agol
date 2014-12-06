@@ -3,8 +3,15 @@ var kue = require('kue'),
   koop = require('koop-server/lib'),
   request = require('request'),
   http = require('http'),
+  https = require('https'),
   async = require('async'),
   config = require('config');
+
+// store these here so we can easily use refs to them based on protocol types
+var protocols = {
+  http: http, 
+  https: https
+};
 
 //require('look').start();
 
@@ -84,10 +91,14 @@ function makeRequest(job, done){
   var requestFeatures = function(task, cb){
     var url = task.req;
     try { 
-      http.get(url, function(response) {
+      ((url.substr(0,5) == 'https') ? protocols.https : protocols.http ).get(url, function(response) {
         var data = '';
         response.on('data', function (chunk) {
           data += chunk;
+        });
+
+        response.on('error', function(err){
+           catchErrors(task, err, url, cb);
         });
 
         response.on('end', function () {
