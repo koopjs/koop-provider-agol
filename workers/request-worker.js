@@ -83,66 +83,71 @@ function makeRequest(job, done){
 
   var requestFeatures = function(task, cb){
     var url = task.req;
-    http.get(url, function(response) {
-      var data = '';
-      response.on('data', function (chunk) {
-        data += chunk;
-      });
+    try { 
+      http.get(url, function(response) {
+        var data = '';
+        response.on('data', function (chunk) {
+          data += chunk;
+        });
 
-      response.on('end', function () {
+        response.on('end', function () {
 
-        try {
-          // so sometimes server returns these crazy asterisks in the coords
-          // I do a regex to replace them in both the case that I've found them
-          data = data.replace(/\*+/g,'null');
-          data = data.replace(/\.null/g, '');
-          var json = JSON.parse(data.replace(/NaN/g, 'null'));
+          try {
+            // so sometimes server returns these crazy asterisks in the coords
+            // I do a regex to replace them in both the case that I've found them
+            data = data.replace(/\*+/g,'null');
+            data = data.replace(/\.null/g, '');
+            var json = JSON.parse(data.replace(/NaN/g, 'null'));
 
-          if ( json.error ){
+            if ( json.error ){
 
-            catchErrors(task, e, url, cb);
+              catchErrors(task, e, url, cb);
 
-          } else {
-            // insert a partial
-            koop.GeoJSON.fromEsri( [], json, function(err, geojson){
-              koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
-                if (err) {
-                  catchErrors(task, e, url, cb);
-                }
-                completed++;
-                console.log(completed, len);
-                job.progress( completed, len );
-                
-                // clean up our big vars            
-                json = null;
-                geojson = null;
-                response = null;
-                data = null;
+            } else {
+              // insert a partial
+              koop.GeoJSON.fromEsri( [], json, function(err, geojson){
+                koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
+                  if (err) {
+                    catchErrors(task, e, url, cb);
+                  }
+                  completed++;
+                  console.log(completed, len);
+                  job.progress( completed, len );
+                  
+                  // clean up our big vars            
+                  json = null;
+                  geojson = null;
+                  response = null;
+                  data = null;
 
-                if ( completed == len ) {
-                  var key = [ 'agol', id, layerId ].join(':');
-                  koop.Cache.getInfo(key, function(err, info){
-                    delete info.status;
-                    koop.Cache.updateInfo(key, info, function(err, info){
-                      done();
-                      process.nextTick(cb);
+                  if ( completed == len ) {
+                    var key = [ 'agol', id, layerId ].join(':');
+                    koop.Cache.getInfo(key, function(err, info){
+                      delete info.status;
+                      koop.Cache.updateInfo(key, info, function(err, info){
+                        done();
+                        process.nextTick(cb);
+                        return;
+                      });
                       return;
                     });
+                  } else {
+                    process.nextTick(cb);
                     return;
-                  });
-                } else {
-                  process.nextTick(cb);
-                  return;
-                }
+                  }
 
+                });
               });
-            });
+            }
+          } catch(e){
+            catchErrors(task, e, url, cb);
           }
-        } catch(e){
-          catchErrors(task, e, url, cb);
-        }
+        });
       });
-    });
+    } catch(e){
+      console.log('error requesting page', e);
+      catchErrors(task, e, url, cb);
+    } 
   };
 
 
