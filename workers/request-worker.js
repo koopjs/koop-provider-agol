@@ -91,7 +91,7 @@ function makeRequest(job, done){
   var requestFeatures = function(task, cb){
     var url = task.req;
     try { 
-      ((url.substr(0,5) == 'https') ? protocols.https : protocols.http ).get(url, function(response) {
+      var request = ((url.substr(0,5) == 'https') ? protocols.https : protocols.http ).get(url, function(response) {
         var data = '';
         response.on('data', function (chunk) {
           data += chunk;
@@ -154,6 +154,11 @@ function makeRequest(job, done){
             catchErrors(task, e, url, cb);
           }
         });
+      });
+
+      request.on('error', function(err){
+         console.log('caught error', err, task);
+         done('url returned an econnreset, not trying again');
       });
     } catch(e){
       console.log('error requesting page', e);
