@@ -431,18 +431,18 @@ var AGOL = function( koop ){
 
 
     // get the ids only
-    var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&f=json';
+    var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
 
     //if (options.geometry){
       //idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
     //}
     // get the id count of the service 
-    agol.req(idUrl + '&returnCountOnly=true', function(err, data ){
+    agol.req(idUrl, function(err, data ){
       // determine if its greater then 1000
       try { 
         var idJson = JSON.parse( data.body );
         if (idJson.error){
-          callback( idJson.error.message + ': ' + idUrl + '&returnCountOnly=true', null );
+          callback( idJson.error.message + ': ' + idUrl, null );
         } else {
           var count = idJson.count;
           if (!count && idJson.objectIds && idJson.objectIds.length ){
@@ -632,20 +632,19 @@ var AGOL = function( koop ){
                 console.log( statsJson );
                 if ( statsJson.error ){
                   try{
+                    //DMF: if stats fail, try to grab all the object IDs
                     agol.req( idUrl , function( err, res ){
                         var idJson = JSON.parse( res.body );
                         koop.log.info( 'oidURL %s %s', id, idUrl );
                         var minID, maxID;
                         if ( idJson.error ){
-                          // default to sequential objectID paging
+                          //DMF: if grabbing objectIDs fails fall back to guessing based on 0 and count
                           minID = 0;
                           maxID = count;
                         } else{
                           idJson.objectIds.sort(function(a, b){return a-b;});
                           minID = idJson.objectIds[0];
                           maxID = idJson.objectIds[idJson.objectIds.length - 1];
-                          console.log(idJson);
-                          console.log('max ID is ' + maxID);
                         }
                         pageRequests = agol.buildObjectIDPages(itemJson.url, minID, maxID, maxCount, options);
                         agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);        
@@ -747,11 +746,13 @@ var AGOL = function( koop ){
 
     for (i=0; i < pages; i++){
       //there is a bug in server where queries fail if the max value queried is higher than the actual max
+      //so if this is the last page, then set the max to be the maxOID
       if ( i == pages - 1 ){
         pageMax = max;
       }
       else {
-        pageMax = min + (maxCount*(i+1))-1;}
+        pageMax = min + (maxCount*(i+1))-1;
+      }
       pageMin = min + (maxCount*i);
       where = objId+'<=' + pageMax + '+AND+' + objId+'>=' + pageMin;
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
