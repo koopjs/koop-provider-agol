@@ -431,18 +431,18 @@ var AGOL = function( koop ){
 
 
     // get the ids only
-    var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
+    var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&f=json';
 
     //if (options.geometry){
       //idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
     //}
     // get the id count of the service 
-    agol.req(idUrl, function(err, data ){
+    agol.req(idUrl + 'returnCountOnly=true', function(err, data ){
       // determine if its greater then 1000
-      try {
+      try { 
         var idJson = JSON.parse( data.body );
         if (idJson.error){
-          callback( idJson.error.message + ': ' + idUrl, null );
+          callback( idJson.error.message + ': ' + idUrl + 'returnCountOnly=true', null );
         } else {
           var count = idJson.count;
           if (!count && idJson.objectIds && idJson.objectIds.length ){
@@ -473,7 +473,6 @@ var AGOL = function( koop ){
       }
     });
   };
-
 
 
   // make a request to a single page feature service 
@@ -554,7 +553,7 @@ var AGOL = function( koop ){
 
   // handles pagin over the feature service 
   agol.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
-    var self = this;    
+    var self = this;
     var geomType;
 
     // get the featureservice info 
@@ -578,7 +577,7 @@ var AGOL = function( koop ){
           options.name = serviceInfo.name;
         }
         // set the geom type 
-        options.geomType = serviceInfo.geometryType; 
+        options.geomType = serviceInfo.geometryType;
         options.fields = serviceInfo.fields;
         options.objectIdField = agol.getObjectIDField(serviceInfo);
       }
@@ -632,14 +631,28 @@ var AGOL = function( koop ){
                 console.log( statsJson );
 
                 if ( statsJson.error ){
-                  // default to sequential objectID paging
-                  pageRequests = agol.buildObjectIDPages(
-                    itemJson.url,
-                    0,
-                    count,
-                    maxCount,
-                    options
-                  );
+                  agol.req( idUrl , function( err, res){
+                    try{
+                      var idJson = JSON.parse( res.body );
+                      if ( idJson.error ){
+                        // default to sequential objectID paging
+                        minID = 0;
+                        maxID = count;
+                        );
+                      } else{
+                        minID = idJson.objectIds.sort(function(a, b){return a-b})[0];
+                        maxID = idJson.objectIds.sort(function(a, b){return a-b})[idJson.length - 1];
+                      }
+                      pageRequests = agol.buildObjectIDPages(
+                        itemJson.url,
+                        minID,
+                        maxID,
+                        maxCount,
+                        options
+                    }catch (e){
+                      agol.log('error', 'Error parsing objectIDs'+id+' '+e+' - '+idUrl);
+                    }                    
+                  });
                   agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
                 } else {
                     var names;
@@ -724,16 +737,23 @@ var AGOL = function( koop ){
 
 
   //build object id query based page requests 
+  //0, 3051, 1000
   agol.buildObjectIDPages = function( url, min, max, maxCount, options ){
     var reqs = [], 
       pageMax, pageMin;
 
     var objId = options.objectIdField || 'objectId';
 
+
     var pages = ( max == maxCount ) ? max : Math.ceil((max-min) / maxCount);
 
     for (i=0; i < pages; i++){
-      pageMax = min + (maxCount*(i+1))-1;
+      //there is a bug in server where queries fail if the max value queried is higher than the actual max
+      if ( i == pages - 1 ){
+        pageMax = max;
+      }
+      else {
+        pageMax = min + (maxCount*(i+1))-1;}
       pageMin = min + (maxCount*i);
       where = objId+'<=' + pageMax + '+AND+' + objId+'>=' + pageMin;
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
