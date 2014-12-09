@@ -500,7 +500,7 @@ var AGOL = function( koop ){
             try {
               // have to replace asterrisks for bad coord values from agol
               data.body = data.body.replace(/\*+/g,'null');
-              data.body = data.body.replace(/\.null/g, '')
+              data.body = data.body.replace(/\.null/g, '');
               var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
               koop.GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
@@ -517,7 +517,7 @@ var AGOL = function( koop ){
                       koop.Cache.get( 'agol', id, options, function(err, entry){
                         itemJson.data = entry;
                         callback( null, itemJson );
-                      });                     
+                      });                  
                     } else {
                       itemJson.data = [geojson];
                       callback( null, itemJson );
@@ -629,39 +629,33 @@ var AGOL = function( koop ){
                 var statsJson = JSON.parse( res.body );
                 koop.log.info( 'statsUrl %s %s', id, statsUrl );
                 console.log( statsJson );
-
                 if ( statsJson.error ){
-                  agol.req( idUrl , function( err, res){
-                    try{
-                      var idJson = JSON.parse( res.body );
-                      if ( idJson.error ){
-                        // default to sequential objectID paging
-                        minID = 0;
-                        maxID = count;
-                        );
-                      } else{
-                        minID = idJson.objectIds.sort(function(a, b){return a-b})[0];
-                        maxID = idJson.objectIds.sort(function(a, b){return a-b})[idJson.length - 1];
-                      }
-                      pageRequests = agol.buildObjectIDPages(
-                        itemJson.url,
-                        minID,
-                        maxID,
-                        maxCount,
-                        options
-                    }catch (e){
-                      agol.log('error', 'Error parsing objectIDs'+id+' '+e+' - '+idUrl);
-                    }                    
-                  });
-                  agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                  try{
+                    agol.req( idUrl , function( err, res ){
+                        var idJson = JSON.parse( res.body );
+                        if ( idJson.error ){
+                          // default to sequential objectID paging
+                          minID = 0;
+                          maxID = count;
+                        } else{
+                          idJson.objectIds.sort(function(a, b){return a-b;});
+                          minID = idJson[0];
+                          maxID = idJson[idJson.length - 1];
+                        }
+                        pageRequests = agol.buildObjectIDPages(itemJson.url, minID, maxID, maxCount, options);           
+                    }
+                    agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                  );} catch (e){
+                    gol.log('error', 'Error parsing ObjectIds'+id+' '+e+' - '+idUrl);
+                  }  
                 } else {
                     var names;
-                    if ( statsJson && statsJson.fieldAliases ) { 
+                    if ( statsJson && statsJson.fieldAliases ) {
                       names = Object.keys(statsJson.fieldAliases);
                     }
                     pageRequests = agol.buildObjectIDPages(
                       itemJson.url,
-                      statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID ||statsJson.features[0].attributes[names[0]],
+                      statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID || statsJson.features[0].attributes[names[0]],
                       statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID || statsJson.features[0].attributes[names[1]],
                       maxCount,
                       options
@@ -684,7 +678,7 @@ var AGOL = function( koop ){
                 );
                 agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
               });
-            } else { 
+            } else {
             // default to sequential objectID paging
             pageRequests = agol.buildObjectIDPages(
                 itemJson.url,
@@ -737,7 +731,6 @@ var AGOL = function( koop ){
 
 
   //build object id query based page requests 
-  //0, 3051, 1000
   agol.buildObjectIDPages = function( url, min, max, maxCount, options ){
     var reqs = [], 
       pageMax, pageMin;
