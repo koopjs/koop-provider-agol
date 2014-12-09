@@ -437,12 +437,12 @@ var AGOL = function( koop ){
       //idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
     //}
     // get the id count of the service 
-    agol.req(idUrl + 'returnCountOnly=true', function(err, data ){
+    agol.req(idUrl + '&returnCountOnly=true', function(err, data ){
       // determine if its greater then 1000
       try { 
         var idJson = JSON.parse( data.body );
         if (idJson.error){
-          callback( idJson.error.message + ': ' + idUrl + 'returnCountOnly=true', null );
+          callback( idJson.error.message + ': ' + idUrl + '&returnCountOnly=true', null );
         } else {
           var count = idJson.count;
           if (!count && idJson.objectIds && idJson.objectIds.length ){
@@ -624,6 +624,7 @@ var AGOL = function( koop ){
           } else if ( serviceInfo && serviceInfo.supportsStatistics ) {
             // build where clause based pages 
             var statsUrl = agol.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
+            var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&f=json';
             agol.req( statsUrl, function( err, res ){
               try {
                 var statsJson = JSON.parse( res.body );
@@ -633,20 +634,24 @@ var AGOL = function( koop ){
                   try{
                     agol.req( idUrl , function( err, res ){
                         var idJson = JSON.parse( res.body );
+                        koop.log.info( 'oidURL %s %s', id, idUrl );
+                        var minID, maxID;
                         if ( idJson.error ){
                           // default to sequential objectID paging
                           minID = 0;
                           maxID = count;
                         } else{
                           idJson.objectIds.sort(function(a, b){return a-b;});
-                          minID = idJson[0];
-                          maxID = idJson[idJson.length - 1];
+                          minID = idJson.objectIds[0];
+                          maxID = idJson.objectIds[idJson.objectIds.length - 1];
+                          console.log(idJson);
+                          console.log('max ID is ' + maxID);
                         }
-                        pageRequests = agol.buildObjectIDPages(itemJson.url, minID, maxID, maxCount, options);           
+                        pageRequests = agol.buildObjectIDPages(itemJson.url, minID, maxID, maxCount, options);
+                        agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);        
                     }
-                    agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
                   );} catch (e){
-                    gol.log('error', 'Error parsing ObjectIds'+id+' '+e+' - '+idUrl);
+                    agol.log('error', 'Error parsing ObjectIds '+id+' '+e+' - '+idUrl);
                   }  
                 } else {
                     var names;
@@ -663,7 +668,7 @@ var AGOL = function( koop ){
                     agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
                 }
               } catch (e){
-                agol.log('error', 'Error parsing stats'+id+' '+e+' - '+statsUrl);
+                agol.log('error', 'Error parsing stats '+id+' '+e+' - '+statsUrl);
               }
             });
 
