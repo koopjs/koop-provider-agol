@@ -872,7 +872,8 @@ var AGOL = function( koop ){
         id: id,
         layerId: layerId,
         pages: reqs,
-        concurrency: concurrency
+        concurrency: concurrency, 
+        fields: options.fields || []
       };
 
       // add the job to the distributed worker pool 
@@ -921,7 +922,7 @@ var AGOL = function( koop ){
         json.url = url;
         callback( err, json );
       } catch (e) {
-        console.log('failed to get URL', url, e, err, res);
+        console.log('failed to get URL, no big deal, most likely this can be ignored', url, e, err, res);
         callback( 'failed to parse service info', null );
       }
     });

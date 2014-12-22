@@ -116,7 +116,7 @@ function makeRequest(job, done){
 
             } else {
               // insert a partial
-              koop.GeoJSON.fromEsri( [], json, function(err, geojson){
+              koop.GeoJSON.fromEsri( job.data.fields || [], json, function(err, geojson){
                 koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
                   if (err) {
                     catchErrors(task, err, url, cb);
