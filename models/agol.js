@@ -180,13 +180,9 @@ var AGOL = function( koop ){
             
             // check for infon on last edit date 
             // set is_expired to false if it hasnt changed
-            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo ) {
-              if ( serviceInfo.editingInfo && !serviceInfo.editingInfo.lastEditDate ){
-                is_expired = false;
-              } else if ( info.retrieved_at > serviceInfo.editingInfo.lastEditDate ){
-                is_expired = false;
-              } else {
-                is_expired = true;
+            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo && serviceInfo.editingInfo.lastEditDate) {
+              if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
+                is_expired = true;        
               }
             }
             if ( is_expired ) {

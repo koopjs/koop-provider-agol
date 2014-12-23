@@ -260,15 +260,12 @@ var Controller = function( agol ){
                   agol.getFeatureServiceLayerInfo( info.info.url, ( req.params.layer || 0 ), function(err, serviceInfo){
                     // check for info on last edit date (for hosted services dont expired unless changed) 
                     // set is_expired to false if it hasnt changed or if its null
-                    if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo ) {
-                      if ( serviceInfo.editingInfo && !serviceInfo.editingInfo.lastEditDate ){
-                        is_expired = false;
-                      } else if ( info.retrieved_at > serviceInfo.editingInfo.lastEditDate ){
-                        is_expired = false;
-                      } else {
+                    if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo && serviceInfo.editingInfo.lastEditDate) {
+                      if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
                         is_expired = true;
                       }
                     }
+
                     // return it.
                     // if expired -> remove the data and request
                     if ( is_expired ){
