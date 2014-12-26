@@ -180,11 +180,17 @@ var AGOL = function( koop ){
             
             // check for infon on last edit date 
             // set is_expired to false if it hasnt changed
-            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo && serviceInfo.editingInfo.lastEditDate) {
-              if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
+            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo){
+              if (!serviceInfo.editingInfo.lastEditDate && (info.retrieved_at > itemJson.modified)) {
+                is_expired = false;  
+              } else if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
                 is_expired = true;        
-              }
+              } 
             }
+
+            console.log(is_expired);
+
+
             if ( is_expired ) {
               koop.Cache.remove('agol', itemId, options, function(err, res){
                 self.getData(itemJson, host, itemId, hash, options, callback);

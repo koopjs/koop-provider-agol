@@ -252,75 +252,76 @@ var Controller = function( agol ){
 
             // does the data export already exist? 
             agol.files.exists( path, fileName, function( exists, path ){
-              if ( exists ){
-                // check if the cache is expired
-                var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+              // get the item data before we check for 
+              agol.find( id, function( err, data ){
+                if (err) {
+                  res.send( err, 500 );
+                  return;
+                } else {
+                  // Get the item
+                  req.query.layer = ( !parseInt(req.params.layer) ? 0 : req.params.layer;
 
-                if ( info.info.url ){
-                  agol.getFeatureServiceLayerInfo( info.info.url, ( req.params.layer || 0 ), function(err, serviceInfo){
-                    // check for info on last edit date (for hosted services dont expired unless changed) 
-                    // set is_expired to false if it hasnt changed or if its null
-                    if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo && serviceInfo.editingInfo.lastEditDate) {
-                      if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
-                        is_expired = true;
-                      }
-                    }
+                  agol.getItem(data.host, item, options, function( err, itemJson ){
+                    agol.getItemData( data.host, item, key, options, function(error, itemJson){
+                      if ( exists ){
+                        // check if the cache is expired
+                        var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+                      
+                        if ( info.info.url ){
+                          agol.getFeatureServiceLayerInfo( info.info.url, ( req.params.layer || 0 ), function(err, serviceInfo){
+                            // check for info on last edit date (for hosted services dont expired unless changed) 
+                            // set is_expired to false if it hasnt changed or if its null
+                            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo){
+                              if (!serviceInfo.editingInfo.lastEditDate && (info.retrieved_at > itemJson.modified)) {
+                                is_expired = false;
+                              } else if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
+                                is_expired = true;
+                              }
+                            }
 
-                    // return it.
-                    // if expired -> remove the data and request
-                    if ( is_expired ){
-                      //var d = [dir, key ].join( '/' );
-                      agol.find( req.params.id, function( err, data ){
-                        if ( err ) {
-                          res.send( err, 500 );
+                            // return it.
+                            // if expired -> remove the data and request
+                            if ( is_expired ){
+                              agol.dropItem( data.host, req.params.item, req.query, function( err, success ){
+                                req.query.format = req.params.format;
+                                _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
+                                  controller.requestNewFile( req, res, dir, key, err, itemJson );
+                                });
+                              });
+                            } else {
+                              // else serve it
+                              controller.returnFile(req, res, dir, key, path);
+                            }
+                          });
+
                         } else {
-                          agol.dropItem( data.host, req.params.item, req.query, function( err, success ){
+
+                          // if expired -> remove the data and request
+                          if ( is_expired ){
+                            var d = [dir, key ].join( '/' );
+                            agol.dropItem( '', req.params.item, req.query, function( err, success ){
                               req.query.format = req.params.format;
                               _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
                                 controller.requestNewFile( req, res, dir, key, err, itemJson );
                               });
-                          });
+                            });
+                          } else {
+                            // else serve it
+                            controller.returnFile(req, res, dir, key, path);
+                          }
                         }
-                      });
-                    } else {
-                      // else serve it
-                      controller.returnFile(req, res, dir, key, path);
-                    }
+                      } else {
+                        // check the koop status table to see if we have a job running 
+                          // if we do then return 
+                          // else proceed 
+                        req.query.format = req.params.format;
+                        _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
+                          controller.requestNewFile( req, res, dir, key, err, itemJson );
+                        });
+                      }
                   });
-
-                } else {
-
-                  // if expired -> remove the data and request
-                  if ( is_expired ){
-                    var d = [dir, key ].join( '/' );
-                    agol.dropItem( '', req.params.item, req.query, function( err, success ){
-                     //agol.files.removeDir( 'files/' + d, function(err, result){
-                     //  agol.files.removeDir( 'tiles/'+ d, function(err, result){
-                     //    agol.files.removeDir( 'thumbs/'+ d, function(err, result){
-                          req.query.format = req.params.format;
-                          _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
-                            controller.requestNewFile( req, res, dir, key, err, itemJson );
-                          });
-                     //    });
-                     //  });
-                     //});
-                    });
-                  } else {
-                    // else serve it
-                    controller.returnFile(req, res, dir, key, path);
-                  }
-
-                }
-                
-              } else {
-                // check the koop status table to see if we have a job running 
-                  // if we do then return 
-                  // else proceed 
-                req.query.format = req.params.format;
-                _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
-                  controller.requestNewFile( req, res, dir, key, err, itemJson );
-                });
-              }
+                } 
+              });
             });
           }
         } else {
