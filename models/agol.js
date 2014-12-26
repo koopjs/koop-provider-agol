@@ -174,6 +174,7 @@ var AGOL = function( koop ){
         self.getInfo( qKey, function(err, info){
 
           var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
+            console.log(is_expired, info);
 
           // in order to correctly expire hosted services we need to ping the server
           self.getFeatureServiceLayerInfo( itemJson.url, (options.layer || 0), function(err, serviceInfo){
@@ -187,9 +188,7 @@ var AGOL = function( koop ){
                 is_expired = true;        
               } 
             }
-
-            console.log(is_expired);
-
+         
 
             if ( is_expired ) {
               koop.Cache.remove('agol', itemId, options, function(err, res){

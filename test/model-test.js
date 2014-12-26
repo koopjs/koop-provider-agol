@@ -594,8 +594,8 @@ describe('AGOL Model', function(){
         var options = {layer:1};
         var reqs = agol.buildObjectIDPages( url, min, max, maxCount, options);
         reqs.length.should.equal( 4 );
-        reqs[0].req.should.equal( url + '/1/query?outSR=4326&where=objectId<=1000+AND+objectId>=1&f=json&outFields=*&geometry=&returnGeometry=true' );
-        reqs[1].req.should.equal( url + '/1/query?outSR=4326&where=objectId<=2000+AND+objectId>=1001&f=json&outFields=*&geometry=&returnGeometry=true' );
+        reqs[0].req.should.equal( url + '/1/query?outSR=4326&where=objectId<=1000+AND+objectId>=1&f=json&outFields=*&geometry=&returnGeometry=true&geometryPrecision=6' );
+        reqs[1].req.should.equal( url + '/1/query?outSR=4326&where=objectId<=2000+AND+objectId>=1001&f=json&outFields=*&geometry=&returnGeometry=true&geometryPrecision=6' );
         done();
       });
 

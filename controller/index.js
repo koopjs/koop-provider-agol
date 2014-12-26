@@ -253,16 +253,16 @@ var Controller = function( agol ){
             // does the data export already exist? 
             agol.files.exists( path, fileName, function( exists, path ){
               // get the item data before we check for 
-              agol.find( id, function( err, data ){
+              agol.find( req.params.id, function( err, data ){
                 if (err) {
                   res.send( err, 500 );
                   return;
                 } else {
                   // Get the item
-                  req.query.layer = ( !parseInt(req.params.layer) ? 0 : req.params.layer;
+                  req.query.layer = ( !parseInt(req.params.layer)) ? 0 : req.params.layer;
 
-                  agol.getItem(data.host, item, options, function( err, itemJson ){
-                    agol.getItemData( data.host, item, key, options, function(error, itemJson){
+                  agol.getItem(data.host, req.params.item, req.query, function( err, itemJson ){
+                    agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
                       if ( exists ){
                         // check if the cache is expired
                         var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
@@ -319,6 +319,7 @@ var Controller = function( agol ){
                           controller.requestNewFile( req, res, dir, key, err, itemJson );
                         });
                       }
+                    });
                   });
                 } 
               });
