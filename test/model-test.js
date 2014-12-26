@@ -581,8 +581,8 @@ describe('AGOL Model', function(){
         var options = {layer:1};
         var reqs = agol.buildOffsetPages( pages, url, max, options);
         reqs.length.should.equal( 4 );
-        reqs[0].req.should.equal( url+'/1/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=0&resultRecordCount=1000&geometry=&returnGeometry=true' );
-        reqs[1].req.should.equal( url+'/1/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=1000&resultRecordCount=1000&geometry=&returnGeometry=true' );
+        reqs[0].req.should.equal( url+'/1/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=0&resultRecordCount=1000&geometry=&returnGeometry=true&geometryPrecision=6' );
+        reqs[1].req.should.equal( url+'/1/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=1000&resultRecordCount=1000&geometry=&returnGeometry=true&geometryPrecision=6' );
         done();
       });
 
