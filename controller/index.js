@@ -5,11 +5,10 @@ var request = require('request'),
   merc = new sm({size:256}),
   crypto = require('crypto'),
   _ = require('lodash'),
-  fs = require('fs'),
-  BaseController = require('koop-server/lib/BaseController.js');
+  fs = require('fs');
 
 // inherit from base controller
-var Controller = function( agol ){
+var Controller = function( agol, BaseController ){
 
   var controller = {};
   controller.__proto__ = BaseController( );

@@ -2,13 +2,12 @@ var request = require('request'),
   kue = require('kue'),
   csv = require('csv'),
   crypto = require('crypto'),
-  BaseModel = require('koop-server/lib/BaseModel.js'),
   async = require('async');
 
 var AGOL = function( koop ){
 
   var agol = {};
-  agol.__proto__ = BaseModel( koop );
+  agol.__proto__ = koop.BaseModel( koop );
 
   // create a request Q if configured to page large data sets  
   if (koop.config.agol && koop.config.agol.request_workers){
