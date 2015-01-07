@@ -1,6 +1,6 @@
 var kue = require('kue'),
   cluster = require('cluster'),
-  koop = require('koop-server/lib'),
+  koop = require('koop/lib'),
   request = require('request'),
   http = require('http'),
   https = require('https'),
@@ -188,7 +188,7 @@ function makeRequest(job, done){
       return callback();
     } else if (task.retry && task.retry == 3 ){
       koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
-      done('Failed to request a page of features' + url);
+      done('Failed to request a page of features' + url + e);
       return;
     } else {
       task.retry = 1;

@@ -888,7 +888,12 @@ var AGOL = function( koop ){
               info.paging_failed = { error: jobErr };
               agol.log('error', 'Request worker job failed ' + jobErr );
               info.generating = {
-                error: 'Failed to cache the data'
+                error: {
+                  code: null,
+                  request: null,
+                  response: jobErr,
+                  message: 'Failed to cache the data'
+                }
               };
               koop.Cache.updateInfo(key, info, function(err, success){
                 kue.Job.get( job.id, function( err, job ) {
