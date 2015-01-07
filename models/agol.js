@@ -20,6 +20,15 @@ var AGOL = function( koop ){
       }
     });
 
+/*    agol.worker_q.on('job failed', function(id) {
+      console.log('FAILED ON QUEUE', id);
+      kue.Job.get( id, function( err, job ) {
+        if (err) return;
+        console.log(job);
+      });
+    });
+*/
+
     // remove completed jobs from the queue 
     agol.worker_q.on('job complete', function(id) {
       kue.Job.get( id, function( err, job ) {
@@ -158,7 +167,7 @@ var AGOL = function( koop ){
   };
 
   // got the service and get the item
-  agol.getItemData = function( host, itemId, hash, options, callback ){
+  agol.getItemData = function( host, hostId, itemId, hash, options, callback ){
     var self = this;
     this.getItem(host, itemId, options, function( err, itemJson ){
       
@@ -190,10 +199,10 @@ var AGOL = function( koop ){
 
             if ( is_expired ) {
               koop.Cache.remove('agol', itemId, options, function(err, res){
-                self.getData(itemJson, host, itemId, hash, options, callback);
+                self.getData(itemJson, host, hostId, itemId, hash, options, callback);
               });
             } else {
-              self.getData(itemJson, host, itemId, hash, options, callback);
+              self.getData(itemJson, host, hostId, itemId, hash, options, callback);
             }
           });
 
@@ -257,13 +266,13 @@ var AGOL = function( koop ){
     });
   };
 
-  agol.getData = function(itemJson, host, itemId, hash, options, callback){
+  agol.getData = function(itemJson, host, hostId, itemId, hash, options, callback){
     if ( itemJson.type == 'CSV' ){
-      agol.getCSV( host + agol.agol_path, itemId, itemJson, options, callback );
+      agol.getCSV( host + agol.agol_path, hostId, itemId, itemJson, options, callback );
     } else if ( itemJson.type == 'Feature Collection' ){
-      agol.getFeatureCollection( host + agol.agol_path, itemId, itemJson, options, callback );
+      agol.getFeatureCollection( host + agol.agol_path, hostId, itemId, itemJson, options, callback );
     } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
-      agol.getFeatureService( itemId, itemJson, hash, options, callback );
+      agol.getFeatureService( hostId, itemId, itemJson, hash, options, callback );
     } else {
       callback('item must be a Feature Collection, Feature Service, or CSV', itemJson);
     }
@@ -286,6 +295,9 @@ var AGOL = function( koop ){
             json.expires_at = task.expires_at;
             json.retrieved_at = Date.now();
             json.info = { name: json.name };
+            json.host = {
+              id: task.hostId
+            };
             json.features = [];
 
             var dir = [ task.id, (task.options.layer || 0) ].join('_');
@@ -315,7 +327,7 @@ var AGOL = function( koop ){
     });
   },1);
 
-  agol.getCSV = function(base_url, id, itemJson, options, callback){
+  agol.getCSV = function(base_url, hostId, id, itemJson, options, callback){
     var self = this, task = {};
     var qKey = ['agol', id, (options.layer || 0)].join(':');
 
@@ -331,6 +343,7 @@ var AGOL = function( koop ){
             task.url = base_url + '/' + id + '/data?f=json';
             task.itemJson = itemJson;
             task.id = id;
+            task.hostId = hostId;
             task.options = options;
             task.expires_at = Date.now() + self.cacheLife;
             task.callback = callback;
@@ -352,7 +365,7 @@ var AGOL = function( koop ){
     });
   };
 
-  agol.getFeatureCollection = function(base_url, id, itemJson, options, callback){
+  agol.getFeatureCollection = function(base_url, hostId, id, itemJson, options, callback){
     koop.Cache.get( 'agol', id, options, function(err, entry ){
       if ( err ){
         var url = base_url + '/' + id + '/data?f=json'; 
@@ -362,6 +375,11 @@ var AGOL = function( koop ){
           } else {
             var json = JSON.parse( data.body ).featureCollection.layers[0].featureSet;
             koop.GeoJSON.fromEsri( [], json, function(err, geojson){
+              geojson.name = itemJson.name || itemJson.title;
+              geojson.updated_at = itemJson.modified;
+              geojson.host = {
+                id: hostId
+              };
               koop.Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
                 if ( success ) {
                   itemJson.data = [geojson];
@@ -380,7 +398,7 @@ var AGOL = function( koop ){
     });
   };
 
-  agol.getFeatureService = function( id, itemJson, hash, options, callback){
+  agol.getFeatureService = function( hostId, id, itemJson, hash, options, callback){
     var self = this;
     if ( !itemJson.url ){
       callback( 'Missing url parameter for Feature Service Item', null );
@@ -389,7 +407,7 @@ var AGOL = function( koop ){
       koop.Cache.get( 'agol', id, options, function(err, entry ){
         if ( err ){
           // no data in the cache; request new data 
-          self.makeFeatureServiceRequest( id, itemJson, hash, options, callback );
+          self.makeFeatureServiceRequest( hostId, id, itemJson, hash, options, callback );
         } else if ( entry && entry[0] && entry[0].status == 'processing' ){
           itemJson.data = [{
             features:[],
@@ -419,7 +437,7 @@ var AGOL = function( koop ){
 
   // makes a request to the feature service 
   // checks the count and determines if koop should make one or many requests  
-  agol.makeFeatureServiceRequest = function( id, itemJson, hash, options, callback ){
+  agol.makeFeatureServiceRequest = function( hostId, id, itemJson, hash, options, callback ){
     var self = this;
 
     // check the last char on the url
@@ -459,10 +477,10 @@ var AGOL = function( koop ){
 
           // Count is low 
           } else if ( count < 1000 ){
-            agol.singlePageFeatureService( id, itemJson, options, callback );
+            agol.singlePageFeatureService( hostId, id, itemJson, options, callback );
           // We HAVE to page 
           } else if ( count >= 1000 ){
-            agol.pageFeatureService( id, itemJson, count, hash, options, callback );
+            agol.pageFeatureService( hostId, id, itemJson, count, hash, options, callback );
           } else {
             callback( 'Unable to count features, make sure the layer you requested exists', null );
           }
@@ -475,7 +493,7 @@ var AGOL = function( koop ){
 
 
   // make a request to a single page feature service 
-  agol.singlePageFeatureService = function( id, itemJson, options, callback ){
+  agol.singlePageFeatureService = function( hostId, id, itemJson, options, callback ){
     var self = this;
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
@@ -508,6 +526,9 @@ var AGOL = function( koop ){
                 geojson.expires_at = Date.now() + self.cacheLife;
                 geojson.info = serviceInfo;
                 geojson.retrieved_at = Date.now(); 
+                geojson.host = {
+                  id: hostId
+                };
 
                 // save the data 
                 koop.Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
@@ -551,7 +572,7 @@ var AGOL = function( koop ){
 
 
   // handles pagin over the feature service 
-  agol.pageFeatureService = function( id, itemJson, count, hash, options, callback ){
+  agol.pageFeatureService = function( hostId, id, itemJson, count, hash, options, callback ){
     var self = this;
     var geomType;
 
@@ -595,7 +616,10 @@ var AGOL = function( koop ){
           name: options.name,
           geomType: self.geomTypes[itemJson.geometryType],
           info: serviceInfo || {},
-          features:[]
+          features:[],
+          host: {
+            id: hostId
+          }
         };
 
         if ( options.format ){
@@ -885,18 +909,19 @@ var AGOL = function( koop ){
       job.on('failed', function(jobErr){
           koop.Cache.getInfo(key, function(err, info){
             if (info){
-              info.paging_failed = { error: jobErr };
               agol.log('error', 'Request worker job failed ' + jobErr );
-              info.generating = {
-                error: {
-                  code: null,
-                  request: null,
-                  response: jobErr,
-                  message: 'Failed to cache the data'
-                }
-              };
-              koop.Cache.updateInfo(key, info, function(err, success){
-                kue.Job.get( job.id, function( err, job ) {
+              kue.Job.get( job.id, function( err, job ) {
+                console.log('FAILED JOB', job._error);
+                info.paging_failed = { error: job._error };
+                info.generating = {
+                  error: {
+                    code: job._error.code,
+                    request: null,
+                    response: job._error.response,
+                    message: 'Failed to cache the data'
+                  }
+                };
+                koop.Cache.updateInfo(key, info, function(err, success){
                   if (err) return;
                   job.remove(function( err ){
                     if (err) {

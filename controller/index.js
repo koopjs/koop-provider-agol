@@ -128,7 +128,7 @@ var Controller = function( agol, BaseController ){
             options.layer = 0;
           }
 
-          agol.getItemData( data.host, item, key, options, function(error, itemJson){
+          agol.getItemData( data.host, id, item, key, options, function(error, itemJson){
             if (error) {
               callback( error, null);
             // if we have status return right away
@@ -261,7 +261,7 @@ var Controller = function( agol, BaseController ){
                   req.query.layer = ( !parseInt(req.params.layer)) ? 0 : req.params.layer;
 
                   agol.getItem(data.host, req.params.item, req.query, function( err, itemJson ){
-                    agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
+                    agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
                       if ( exists ){
                         // check if the cache is expired
                         var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
@@ -489,7 +489,7 @@ var Controller = function( agol, BaseController ){
 
         // set a really high limit so large datasets can be turned into feature services 
         req.query.limit = 1000000000;
-        agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
+        agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
           if (error) {
             if (error.code && error.error){
               res.send( error.error, error.code);
@@ -545,7 +545,7 @@ var Controller = function( agol, BaseController ){
             key = crypto.createHash('md5').update(toHash).digest('hex');
 
             // Get the item 
-            agol.getItemData( data.host, req.params.item, key, req.query, function(error, itemJson){
+            agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
               if (error) {
                 res.send( error, 500);
               } else {
@@ -672,7 +672,7 @@ var Controller = function( agol, BaseController ){
           //req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
 
           // Get the item
-          agol.getItemData( data.host, req.params.item, hash, req.query, function(error, itemJson){
+          agol.getItemData( data.host, req.params.id, req.params.item, hash, req.query, function(error, itemJson){
             if (error) {
               if ( itemJson && itemJson.type == 'Image Service' && req.params.format == 'png' ){
                 agol.getImageServiceTile( req.params, function(err, newFile){

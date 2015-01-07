@@ -188,7 +188,22 @@ function makeRequest(job, done){
       return callback();
     } else if (task.retry && task.retry == 3 ){
       koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
-      done('Failed to request a page of features' + url + e);
+      try {
+        var jsonErr = JSON.parse(e);
+        done({
+          message: 'Failed to request a page of features',
+          request: url,
+          response: jsonErr.error.message,
+          code: jsonErr.error.code
+        });
+      } catch(parseErr){
+        done({
+          message: 'Failed to request a page of features',
+          request: url,
+          response: e,
+          code: null
+        });
+      }
       return;
     } else {
       task.retry = 1;
