@@ -157,11 +157,9 @@ function makeRequest(job, done){
       });
 
       request.on('error', function(err){
-         console.log('caught error', err, task);
-         done('url returned an econnreset, not trying again');
+        catchErrors(task, err, url, cb);
       });
     } catch(e){
-      console.log('error requesting page', e);
       catchErrors(task, e, url, cb);
     } 
   };

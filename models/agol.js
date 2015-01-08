@@ -902,7 +902,14 @@ var AGOL = function( koop ){
             if (info){
               agol.log('error', 'Request worker job failed ' + jobErr );
               kue.Job.get( job.id, function( err, job ) {
-                var errJson = JSON.parse(job._error);
+                var errJson;
+                try {
+                  errJson = JSON.parse(job._error);
+                  info.paging_failed = { error: errJson };
+                } catch(e){
+                  console.log('Could not parse error json', e);
+                  errJson = {response:job._error};
+                }
                 info.paging_failed = { error: errJson };
                 info.generating = {
                   error: {
