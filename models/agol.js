@@ -20,15 +20,6 @@ var AGOL = function( koop ){
       }
     });
 
-/*    agol.worker_q.on('job failed', function(id) {
-      console.log('FAILED ON QUEUE', id);
-      kue.Job.get( id, function( err, job ) {
-        if (err) return;
-        console.log(job);
-      });
-    });
-*/
-
     // remove completed jobs from the queue 
     agol.worker_q.on('job complete', function(id) {
       kue.Job.get( id, function( err, job ) {
@@ -911,13 +902,13 @@ var AGOL = function( koop ){
             if (info){
               agol.log('error', 'Request worker job failed ' + jobErr );
               kue.Job.get( job.id, function( err, job ) {
-                console.log('FAILED JOB', job._error);
-                info.paging_failed = { error: job._error };
+                var errJson = JSON.parse(job._error);
+                info.paging_failed = { error: errJson };
                 info.generating = {
                   error: {
-                    code: job._error.code,
-                    request: null,
-                    response: job._error.response,
+                    code: errJson.code,
+                    request: errJson.request,
+                    response: errJson.response,
                     message: 'Failed to cache the data'
                   }
                 };

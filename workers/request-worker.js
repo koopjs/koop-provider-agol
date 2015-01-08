@@ -190,19 +190,19 @@ function makeRequest(job, done){
       koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
       try {
         var jsonErr = JSON.parse(e);
-        done({
+        done(JSON.stringify({
           message: 'Failed to request a page of features',
           request: url,
-          response: jsonErr.error.message,
-          code: jsonErr.error.code
-        });
+          response: jsonErr.message,
+          code: jsonErr.code
+        }));
       } catch(parseErr){
-        done({
+        done(JSON.stringify({
           message: 'Failed to request a page of features',
           request: url,
           response: e,
           code: null
-        });
+        }));
       }
       return;
     } else {
