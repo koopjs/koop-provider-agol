@@ -1,13 +1,14 @@
 var should = require('should'),
   request = require('supertest'),
-  config = require('config'),
-  koop = require('koop-server')(config),
-  kooplib = require('koop-server/lib');
+  fs = require('fs'),
+  kooplib = require('koop/lib');
+
+var koop = require('koop')(JSON.parse(fs.readFileSync(__dirname+'/config/default.json')));
 
 before(function(done){
   var provider = require('../index.js');
   agol = new provider.model( kooplib );
-  controller = new provider.controller( agol );
+  controller = new provider.controller( agol, kooplib.BaseController );
   koop._bindRoutes( provider.routes, controller ); 
   done();
 });       

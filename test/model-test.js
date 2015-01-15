@@ -1,8 +1,9 @@
 var should = require('should'),
   sinon = require('sinon'),
-  config = require('config'),
   fs = require('fs');
-  koop = require('koop-server/lib');
+  koop = require('koop/lib');
+
+var config = JSON.parse(fs.readFileSync(__dirname+'/config/default.json'));
 
 var itemJson = require('./fixtures/itemJson.js');
 var largeCSV = fs.readFileSync('./test/fixtures/largeCSV.csv').toString();
@@ -17,9 +18,6 @@ before(function(done){
   koop.Cache.db = koop.PostGIS.connect( config.db.postgis.conn );
   koop.Cache.db.log = koop.log;
 
-  //koop.Cache.data_dir = config.data_dir;
-  //koop.Tiles.data_dir = config.data_dir;
-  //koop.Thumbnail.data_dir = config.data_dir;
   // Need the exporter to have access to the cache so we pass it Koop
   koop.exporter = new koop.Exporter( koop );
   koop.files = new koop.Files( koop );
@@ -166,7 +164,7 @@ describe('AGOL Model', function(){
           callback(null, itemJson);
         });
 
-        sinon.stub(agol, 'getFeatureService', function( itemId, itemJson, hash, options, callback ){
+        sinon.stub(agol, 'getFeatureService', function( itemId, hostId, itemJson, hash, options, callback ){
           callback(null, itemInfo);
         });
 
@@ -186,7 +184,7 @@ describe('AGOL Model', function(){
       });
 
       it('should remove the data from the cache before getting data', function(done){
-        agol.getItemData('host', 'itemid1', 'dummyhash', {}, function(){
+        agol.getItemData('host', 'hostid', 'itemid1', 'dummyhash', {}, function(){
           koop.Cache.getInfo.called.should.equal(true);
           agol.getItem.called.should.equal(true);
           agol.getFeatureService.called.should.equal(true);
@@ -212,7 +210,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call Cache.get', function(done){
-        agol.getItemData('host', 'itemid1', 'dummyhash', {}, function(){
+        agol.getItemData('host', 'hostId', 'itemid1', 'dummyhash', {}, function(){
           koop.Cache.get.called.should.equal(false);
           done();
         });
@@ -236,7 +234,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call Cache.get', function(done){
-        agol.getFeatureService('itemid', {url: 'dummyurl'}, 'dummyhash', {}, function(){
+        agol.getFeatureService('itemid', 'hostId', {url: 'dummyurl'}, 'dummyhash', {}, function(){
           koop.Cache.get.called.should.equal(true);
           done();
         });
@@ -259,7 +257,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call Cache.get and reply with processing state', function(done){
-        agol.getFeatureService('itemid', {url: 'dummyurl'}, 'dummyhash', {}, function(err, json){
+        agol.getFeatureService('itemid', 'hostid', {url: 'dummyurl'}, 'dummyhash', {}, function(err, json){
           should.exist(json.koop_status);
           json.koop_status.should.equal('processing');
           should.exist(json.data);
@@ -284,7 +282,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call Cache.get can return with "too big"', function(done){
-        agol.getFeatureService('itemid', {url: 'dummyurl'}, 'dummyhash', {}, function(err, json){
+        agol.getFeatureService('itemid', 'hostid', {url: 'dummyurl'}, 'dummyhash', {}, function(err, json){
           should.exist(json.data[0].status);
           should.exist(json.data);
           koop.Cache.get.called.should.equal(true);
@@ -299,7 +297,7 @@ describe('AGOL Model', function(){
           callback(true, [{}]);
         });
 
-        sinon.stub(agol, 'makeFeatureServiceRequest', function( id, itemJson, hash, options, callback ){
+        sinon.stub(agol, 'makeFeatureServiceRequest', function( hostid, id, itemJson, hash, options, callback ){
           callback(null, []);
         });
 
@@ -313,7 +311,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call Cache.get', function(done){
-        agol.getFeatureService('itemid', {url: 'dummyurl'}, 'dummyhash', {}, function(err, json){
+        agol.getFeatureService('itemid', 'hostid', {url: 'dummyurl'}, 'dummyhash', {}, function(err, json){
           koop.Cache.get.called.should.equal(true);
           agol.makeFeatureServiceRequest.called.should.equal(true);
           done();
@@ -335,7 +333,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call Cache.get', function(done){
-        agol.makeFeatureServiceRequest('itemid', itemJson, 'dummyhash', {}, function(err, json){
+        agol.makeFeatureServiceRequest('hostid', 'itemid', itemJson, 'dummyhash', {}, function(err, json){
           should.exist(err);
           //json.data[0].features.length.should.equal(0);
           done();
@@ -349,7 +347,7 @@ describe('AGOL Model', function(){
         sinon.stub(agol, 'req', function( url, callback ){
           callback(null, {body: '{"count":100}' });
         });
-        sinon.stub(agol, 'singlePageFeatureService', function( id, itemJson, options, callback ){
+        sinon.stub(agol, 'singlePageFeatureService', function( hostId, id, itemJson, options, callback ){
           callback(null, {});
         });
         done();
@@ -362,7 +360,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call singlePageFeatureService', function(done){
-        agol.makeFeatureServiceRequest('itemid', itemJson, 'dummyhash', {}, function(err, json){
+        agol.makeFeatureServiceRequest('hostid', 'itemid', itemJson, 'dummyhash', {}, function(err, json){
           agol.singlePageFeatureService.called.should.equal(true);
           done();
         });
@@ -374,7 +372,7 @@ describe('AGOL Model', function(){
         sinon.stub(agol, 'req', function( url, callback ){
           callback(null, {body: '{"count":1001}' });
         });
-        sinon.stub(agol, 'pageFeatureService', function( id, itemJson, options, callback ){
+        sinon.stub(agol, 'pageFeatureService', function( hostid, id, itemJson, options, callback ){
           callback(null, {});
         });
         done();
@@ -387,7 +385,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call pageFeatureService', function(done){
-        agol.makeFeatureServiceRequest('itemid', itemJson, 'dummyhash', {}, function(err, json){
+        agol.makeFeatureServiceRequest('hostid', 'itemid', itemJson, 'dummyhash', {}, function(err, json){
           agol.pageFeatureService.called.should.equal(true);
           done();
         });
@@ -422,7 +420,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call Cache.insert', function(done){
-        agol.singlePageFeatureService('itemid', itemJson, {}, function(err, json){
+        agol.singlePageFeatureService('hostid', 'itemid', itemJson, {}, function(err, json){
           agol.getFeatureServiceLayerInfo.called.should.equal(true);
           koop.Cache.insert.called.should.equal(true);
           done();
@@ -463,7 +461,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call _page', function(done){ 
-        agol.pageFeatureService('itemid', itemJson, 1001, 'dummyhash', {}, function(err, json){
+        agol.pageFeatureService('itemid', 'hostid', itemJson, 1001, 'dummyhash', {}, function(err, json){
           agol.getFeatureServiceLayerInfo.called.should.equal(true);
           koop.Cache.insert.called.should.equal(true);
           agol.buildOffsetPages.called.should.equal(true);
@@ -512,7 +510,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call _page and buildIDPages', function(done){
-        agol.pageFeatureService('itemid', itemJson, 1001, 'dummyhash', {}, function(err, json){
+        agol.pageFeatureService('itemid', 'hostid', itemJson, 1001, 'dummyhash', {}, function(err, json){
           agol.getFeatureServiceLayerInfo.called.should.equal(true);
           koop.Cache.insert.called.should.equal(true);
           agol.buildIDPages.called.should.equal(true);
@@ -561,7 +559,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call _page', function(done){
-        agol.pageFeatureService('itemid', itemJson, 1001, 'dummyhash', {}, function(err, json){
+        agol.pageFeatureService('test', 'itemid', itemJson, 1001, 'dummyhash', {}, function(err, json){
           agol.getFeatureServiceLayerInfo.called.should.equal(true);
           koop.Cache.insert.called.should.equal(true);
           agol.buildObjectIDPages.called.should.equal(true);
@@ -603,7 +601,10 @@ describe('AGOL Model', function(){
         var url = 'http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
         var max = 1000;
         var pages = 4;
-        var options = {layer:1};
+        var options = {
+          layer: 1, 
+          bypass_limit: true
+        };
         var id = '123test';  
         var info = {
           updated_at: null,
@@ -701,7 +702,7 @@ describe('AGOL Model', function(){
       });
 
       it('should call cache.get and cache.insert, and should return GeoJSON', function(done){
-        agol.getCSV('base-url', 'itemid1', {}, {}, function(err, data){
+        agol.getCSV('base-url', 'hostid', 'itemid1', {}, {}, function(err, data){
           //koop.Cache.get.called.should.equal(true);
           //agol.req.called.should.equal(true);
           //Cache.insert.called.should.equal(true);
@@ -731,7 +732,7 @@ describe('AGOL Model', function(){
 
       
       it('should call cache.get and cache.insert, and should return GeoJSON', function(done){
-        agol.getCSV('base-url', 'itemid1', {}, {}, function(err, entry){
+        agol.getCSV('base-url', 'hostId', 'itemid1', {}, {}, function(err, entry){
           entry.data.info.status.should.equal('too big');
           koop.Cache.get.called.should.equal(true);
           //agol.req.called.should.equal(true);
