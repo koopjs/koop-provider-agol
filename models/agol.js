@@ -548,16 +548,41 @@ var AGOL = function( koop ){
     });
   };
 
+  agol._throttleQ = async.queue(function(key, cb){
+    setTimeout(function(){
+      koop.Cache.getInfo(key, function(err, info){
+        if (!info) {
+          info = {};
+        }
+        if ( !info.locked ){
+          //console.log('NOT LOCKED, Locking');
+          info.locked = true;
+          koop.Cache.updateInfo(key, info, function(err, success){
+            cb( false );
+          }); 
+        } else {
+          //console.log('LOCKED');
+          cb( info.locked );
+        }
+      });
+    }, Math.floor((Math.random() * 750) + 200) );
+  },1);
 
   agol._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
-    agol.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
-      koop.exporter.taskQueue.push( {
-        id: id,
-        type: 'agol',
-        hash: hash,
-        options: options,
-        geomType: options.geomType
-      }, function(){});
+    // add to a separate queue that we can use to add jobs one at a time
+    // this prevents the case when we get 2 requests at the same time
+    agol._throttleQ.push( [ 'agol', id, layerId].join(':'), function( locked ){
+      if ( !locked ){
+        agol.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
+          koop.exporter.taskQueue.push( {
+            id: id,
+            type: 'agol',
+            hash: hash,
+            options: options,
+            geomType: options.geomType
+          }, function(){});
+        });
+      }
     });
   };
 
@@ -593,124 +618,133 @@ var AGOL = function( koop ){
         options.objectIdField = agol.getObjectIDField(serviceInfo);
       }
          
+      var layerId = (options.layer || 0);
+      var key = [ 'agol', id, layerId].join(':');
 
-      // creates the empty table
-      koop.Cache.remove('agol', id, {layer: (options.layer || 0)}, function(){
+      koop.Cache.getInfo(key, function(err, info){
 
-        var expiration = Date.now() + self.cacheLife;
+        if (!info){
+          // creates the empty table
+          // WHY ARE WE REMOVING THE TABLE FIRST
+          koop.Cache.remove('agol', id, {layer: layerId}, function(){
 
-        var info = {
-          status: 'processing',
-          updated_at: itemJson.modified,
-          expires_at: expiration,
-          retrieved_at: Date.now(), 
-          name: options.name,
-          geomType: self.geomTypes[itemJson.geometryType],
-          info: serviceInfo || {},
-          features:[],
-          host: {
-            id: hostId
-          }
-        };
+            var expiration = Date.now() + self.cacheLife;
 
-        if ( options.format ){
-          info.format = options.format;
-        }
+            var info = {
+              status: 'processing',
+              updated_at: itemJson.modified,
+              expires_at: expiration,
+              retrieved_at: Date.now(), 
+              name: options.name,
+              geomType: self.geomTypes[itemJson.geometryType],
+              info: serviceInfo || {},
+              features:[],
+              host: {
+                id: hostId
+              }
+            };
 
-        koop.Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
+            if ( options.format ){
+              info.format = options.format;
+            }
 
-          // return in a processing state, but continue on
-          itemJson.data = [{ features:[] }];
-          itemJson.koop_status = 'processing';
-          itemJson.cache_save = false;
-          itemJson.expires_at = expiration;
+            koop.Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
 
-          var maxCount = 1000, //parseInt(serviceInfo.maxRecordCount) || 1000,
-            pageRequests;
-          
+              // return in a processing state, but continue on
+              itemJson.data = [{ features:[] }];
+              itemJson.koop_status = 'processing';
+              itemJson.cache_save = false;
+              itemJson.expires_at = expiration;
 
-          // build legit offset based page requests 
-          if ( serviceInfo && serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
-            var nPages = Math.ceil(count / maxCount);
-            pageRequests = agol.buildOffsetPages( nPages, itemJson.url, maxCount, options );
-            self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+              var maxCount = 1000, //parseInt(serviceInfo.maxRecordCount) || 1000,
+                pageRequests;
 
-          } else if ( serviceInfo && serviceInfo.supportsStatistics ) {
-            // build where clause based pages 
-            var statsUrl = agol.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
-            var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&f=json';
-            agol.req( statsUrl, function( err, res ){
-              try {
-                var statsJson = JSON.parse( res.body );
-                koop.log.info( 'statsUrl %s %s', id, statsUrl );
-                console.log( statsJson );
-                if ( statsJson.error ){
-                  try{
-                    //DMF: if stats fail, try to grab all the object IDs
-                    agol.req( idUrl , function( err, res ){
-                        var idJson = JSON.parse( res.body );
-                        koop.log.info( 'oidURL %s %s', id, idUrl );
-                        var minID, maxID;
-                        if ( idJson.error ){
-                          //DMF: if grabbing objectIDs fails fall back to guessing based on 0 and count
-                          minID = 0;
-                          maxID = count;
-                        } else{
-                          idJson.objectIds.sort(function(a, b){return a-b;});
-                          minID = idJson.objectIds[0];
-                          maxID = idJson.objectIds[idJson.objectIds.length - 1];
+              // build legit offset based page requests 
+              if ( serviceInfo && serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
+                var nPages = Math.ceil(count / maxCount);
+                pageRequests = agol.buildOffsetPages( nPages, itemJson.url, maxCount, options );
+                self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+
+              } else if ( serviceInfo && serviceInfo.supportsStatistics ) {
+                // build where clause based pages 
+                var statsUrl = agol.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
+                var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&f=json';
+                agol.req( statsUrl, function( err, res ){
+                  try {
+                    var statsJson = JSON.parse( res.body );
+                    koop.log.info( 'statsUrl %s %s', id, statsUrl );
+                    //console.log( statsJson );
+                    if ( statsJson.error ){
+                      try{
+                        //DMF: if stats fail, try to grab all the object IDs
+                        agol.req( idUrl , function( err, res ){
+                            var idJson = JSON.parse( res.body );
+                            koop.log.info( 'oidURL %s %s', id, idUrl );
+                            var minID, maxID;
+                            if ( idJson.error ){
+                              //DMF: if grabbing objectIDs fails fall back to guessing based on 0 and count
+                              minID = 0;
+                              maxID = count;
+                            } else{
+                              idJson.objectIds.sort(function(a, b){return a-b;});
+                              minID = idJson.objectIds[0];
+                              maxID = idJson.objectIds[idJson.objectIds.length - 1];
+                            }
+                            pageRequests = agol.buildObjectIDPages(itemJson.url, minID, maxID, maxCount, options);
+                            agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);        
                         }
-                        pageRequests = agol.buildObjectIDPages(itemJson.url, minID, maxID, maxCount, options);
-                        agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);        
+                      );} catch (e){
+                        agol.log('error', 'Error parsing ObjectIds '+id+' '+e+' - '+idUrl);
+                      }  
+                    } else {
+                        var names;
+                        if ( statsJson && statsJson.fieldAliases ) {
+                          names = Object.keys(statsJson.fieldAliases);
+                        }
+                        pageRequests = agol.buildObjectIDPages(
+                          itemJson.url,
+                          statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID || statsJson.features[0].attributes[names[0]],
+                          statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID || statsJson.features[0].attributes[names[1]],
+                          maxCount,
+                          options
+                        );
+                        agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
                     }
-                  );} catch (e){
-                    agol.log('error', 'Error parsing ObjectIds '+id+' '+e+' - '+idUrl);
-                  }  
-                } else {
-                    var names;
-                    if ( statsJson && statsJson.fieldAliases ) {
-                      names = Object.keys(statsJson.fieldAliases);
-                    }
-                    pageRequests = agol.buildObjectIDPages(
+                  } catch (e){
+                    agol.log('error', 'Error parsing stats '+id+' '+e+' - '+statsUrl);
+                  }
+                });
+
+              } else {
+                if ( count < 50000 ){
+                  agol.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
+                    pageRequests = agol.buildIDPages(
                       itemJson.url,
-                      statsJson.features[0].attributes.min_oid || statsJson.features[0].attributes.MIN_OID || statsJson.features[0].attributes[names[0]],
-                      statsJson.features[0].attributes.max_oid || statsJson.features[0].attributes.MAX_OID || statsJson.features[0].attributes[names[1]],
-                      maxCount,
+                      ids,
+                      250,
                       options
                     );
                     agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
-                }
-              } catch (e){
-                agol.log('error', 'Error parsing stats '+id+' '+e+' - '+statsUrl);
-              }
-            });
-
-          } else {
-            if ( count < 50000 ){
-              agol.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
-                pageRequests = agol.buildIDPages(
-                  itemJson.url,
-                  ids,
-                  250,
-                  options
+                  });
+                } else {
+                // default to sequential objectID paging
+                pageRequests = agol.buildObjectIDPages(
+                    itemJson.url,
+                    0,
+                    count,
+                    maxCount,
+                    options
                 );
-                agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
-              });
-            } else {
-            // default to sequential objectID paging
-            pageRequests = agol.buildObjectIDPages(
-                itemJson.url,
-                0,
-                count,
-                maxCount,
-                options
-            );
-            self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
-            }
-          }
-          callback(null, itemJson);
+                self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                }
+              }
+              callback(null, itemJson);
 
-        });
+            });
+          });
+        } else {
+          callback(null, itemJson);
+        }
       });
     });
 
@@ -807,7 +841,6 @@ var AGOL = function( koop ){
     return reqs;
   };
 
-
   // make requests for feature pages 
   // execute done when we have all features 
   agol.requestQueue = function(max, reqs, id, itemJson, layerId, options, done){
@@ -889,13 +922,15 @@ var AGOL = function( koop ){
         concurrency: concurrency, 
         fields: options.fields || []
       };
+      
+      // info key - used to look item info in the cache 
+      var key = [ 'agol', id, layerId ].join(':');
 
-      // add the job to the distributed worker pool 
+      // add the job to the distributed worker pool
       var job = agol.worker_q.create( 'agol', jobData ).save( function(err){
         agol.log('debug', 'added page requests to job-queue ' + job.id );
       });
 
-      var key = [ 'agol', id, layerId ].join(':');
       // track failed jobs and flag them 
       job.on('failed', function(jobErr){
           koop.Cache.getInfo(key, function(err, info){
