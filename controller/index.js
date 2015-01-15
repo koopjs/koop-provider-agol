@@ -17,11 +17,11 @@ var Controller = function( agol, BaseController ){
   // this inserts a record into the db for an ArcGIS instances ie: id -> hostname :: arcgis -> arcgis.com 
   controller.register = function(req, res){
     if ( !req.body.host ){
-      res.send('Must provide a host to register:', 500); 
+      res.status(500).send('Must provide a host to register'); 
     } else { 
       agol.register( req.body.id, req.body.host, function(err, id){
         if (err) {
-          res.send( err, 500);
+          res.status(500).send( err );
         } else {
           res.json({ 'serviceId': id });
         }
@@ -33,11 +33,12 @@ var Controller = function( agol, BaseController ){
   // handles a DELETE to remove a registered host from the DB
   controller.del = function(req, res){
     if ( !req.params.id ){
-      res.send( 'Must specify a service id', 500 );
+      res.status(500).send( 'Must specify a service id');
+      
     } else {
       agol.remove(req.params.id, function(err, data){
         if (err) {
-          res.send( err, 500);
+          res.status(500).send( err );
         } else {
           res.json( data );
         }
@@ -50,7 +51,7 @@ var Controller = function( agol, BaseController ){
   controller.list = function(req, res){
     agol.find(null, function(err, data){
       if (err) {
-        res.send( err, 500);
+        res.status(500).send( err );
       } else {
         res.json( data );
       }
@@ -61,7 +62,7 @@ var Controller = function( agol, BaseController ){
   controller.find = function(req, res){
     agol.find(req.params.id, function(err, data){
       if (err) {
-        res.send( err, 500);
+        res.status(500).send( err );
       } else {
         res.json( data );
       }
@@ -75,12 +76,12 @@ var Controller = function( agol, BaseController ){
     } else {
       agol.find(req.params.id, function(err, data){
         if (err) {
-          res.send( err, 500);
+          res.status(500).send( err );
         } else {
           // Get the item 
           agol.getItem( data.host, req.params.item, req.query, function(error, itemJson){
             if (error) {
-              res.send( error, 500);
+              res.status(500).send( error);
             } else {
               res.contentType('text'); 
               res.json( itemJson );
@@ -100,12 +101,12 @@ var Controller = function( agol, BaseController ){
 
     agol.find(req.params.id, function(err, data){
       if (err) {
-        res.send( err, 500);
+        res.status(500).send( err );
       } else {
         // Get the item 
         agol.dropItem( data.host, req.params.item, req.query, function(error, itemJson){
           if (error) {
-            res.send( error, 500);
+            res.status(500).send( error );
           } else {
             res.json( itemJson );
           }
@@ -143,7 +144,7 @@ var Controller = function( agol, BaseController ){
                 if ( itemJson.generating ){
                   response.generating = itemJson.generating;
                 }
-                res.json( response, 202);
+                res.status(202).json( response );
               }); 
             } else {
               callback( null, itemJson );
@@ -181,7 +182,7 @@ var Controller = function( agol, BaseController ){
             if ( info.generating ){
               response.generating = info.generating;
             }
-            res.json( response, 202);
+            res.status(202).json( response );
           });
       };
 
@@ -254,7 +255,7 @@ var Controller = function( agol, BaseController ){
               // get the item data before we check for 
               agol.find( req.params.id, function( err, data ){
                 if (err) {
-                  res.send( err, 500 );
+                  res.status(500).send( err );
                   return;
                 } else {
                   // Get the item
@@ -333,9 +334,9 @@ var Controller = function( agol, BaseController ){
           _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
               if (err) {
                 if ( err.code && err.error ){
-                  res.send( err.error, err.code );
+                  res.status(err.code).send( err.error );
                 } else {
-                  res.send( err, 500);
+                  res.status(500).send( err );
                 }
               } else {
                 if ( itemJson && itemJson.data && itemJson.data[0].features.length > 1000){
@@ -352,13 +353,13 @@ var Controller = function( agol, BaseController ){
   controller.requestNewFile = function( req, res, dir, key, err, itemJson ){
     if (err){
       if ( err.code && err.error ){
-        res.send( err.error, err.code );
+        res.status(err.code).send( err.error );
       } else {
-        res.send( err, 500);
+        res.status(500).send( err );
       }
     } else if ( !itemJson.data[0].features.length ){
       agol.log('error', req.url +' No features in data');
-      res.send( 'No features exist for the requested FeatureService layer', 500 );
+      res.status(500).send( 'No features exist for the requested FeatureService layer');
     } else {
       var name = ( itemJson.data[0] && (itemJson.data[0].name || itemJson.data[0].info.name) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
       // cleanze the name
@@ -382,7 +383,7 @@ var Controller = function( agol, BaseController ){
               if ( result.generating ){
                 response.generating = result.generating;
               }
-              res.json( response, 202);
+              res.status(202).json( response );
             });
           } else if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
@@ -391,7 +392,7 @@ var Controller = function( agol, BaseController ){
             res.json({url: newUrl});
            } else {
             if (err) {
-              res.send( err, 500 );
+              res.status(500).send( err );
             } else {
               if (req.params.format == 'json' || req.params.format == 'geojson'){
                 res.contentType('text');
@@ -410,7 +411,7 @@ var Controller = function( agol, BaseController ){
             res.json({url: newUrl});
           } else {
             if (err) {
-              res.send( err, 500 );
+              res.status(500).send( err );
             } else {
               if ( result.substr(0,4) == 'http' ){
                 res.redirect( result );
@@ -473,7 +474,7 @@ var Controller = function( agol, BaseController ){
 
     agol.find(req.params.id, function(err, data){
       if (err) {
-        res.send( err, 500);
+        res.status(500).send( err );
       } else {
         // sort the req.query before we hash so we are consistent 
         var sorted_query = {};
@@ -492,9 +493,9 @@ var Controller = function( agol, BaseController ){
         agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
           if (error) {
             if (error.code && error.error){
-              res.send( error.error, error.code);
+              res.status(error.code).send( error.error );
             } else {
-              res.send( error, 500);
+              res.status(500).send( error );
             }
           } else {
             // pass to the shared logic for FeatureService routing
@@ -512,7 +513,7 @@ var Controller = function( agol, BaseController ){
   controller.thumbnail = function(req, res){
      agol.find(req.params.id, function(err, data){
       if (err) {
-        res.send( err, 500);
+        res.status(500).send( err );
       } else {
         var layer = (req.params.layer || 0);
 
@@ -547,7 +548,7 @@ var Controller = function( agol, BaseController ){
             // Get the item 
             agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
               if (error) {
-                res.send( error, 500);
+                res.status(500).send( error );
               } else {
                   if ( itemJson.extent && itemJson.extent.length ){
                     req.query.extent = {
@@ -562,7 +563,7 @@ var Controller = function( agol, BaseController ){
                   delete itemJson.data[0].info;
                   agol.generateThumbnail( itemJson.data[0], req.params.item+'_'+req.params.layer, req.query, function(err, file){
                     if (err){
-                      res.send(err, 500);
+                      res.status(500).send( err );
                     } else {
                       // send back image
                       res.sendfile( file );
@@ -650,7 +651,7 @@ var Controller = function( agol, BaseController ){
       agol.find(req.params.id, function(err, data){
 
         if (err) {
-          res.send( err, 500);
+          res.status(500).send( err );
         } else {
           // if we have a layer then pass it along
           if ( req.params.layer ) {
@@ -679,7 +680,7 @@ var Controller = function( agol, BaseController ){
                   _sendImmediate( newFile );
                 });
               } else {
-                res.send( error, 500);
+                res.status(500).send( error );
               }
             } else {
               _send(error, itemJson.data);
@@ -728,7 +729,7 @@ var Controller = function( agol, BaseController ){
       req.params.type = 'agol';
       agol.getServiceTile( req.params, info, function(err, tile){
         if ( err ){
-          res.send( err, 401 );
+          res.status(401).send( err );
           return;
         }
         res.sendfile( tile );
@@ -749,7 +750,7 @@ var Controller = function( agol, BaseController ){
     } else  {
       agol.find( req.params.id, function( err, data ){
         if (err) {
-          res.send( err, 500);
+          res.status(500).send( err );
         } else {
 
           // sort the req.query before we hash so we are consistent 
@@ -762,7 +763,7 @@ var Controller = function( agol, BaseController ){
           // Get the item
           agol.getServiceLayerData( data.host, req.params.item, null, req.query, function(error, itemJson){
             if (error) {
-              res.send( error, 500);
+              res.status(500).send( error );
             } else {
               // send the data for the tile to Tiles 
               _send(error, itemJson);
