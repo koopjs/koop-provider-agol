@@ -523,7 +523,10 @@ var AGOL = function( koop ){
               var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
               koop.GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
-                geojson.name = itemJson.name || itemJson.title;
+                geojson.name = (itemJson.name || itemJson.title)
+                  .replace(/\/|,|&|\|/g, '')
+                  .replace(/ /g, '_')
+                  .replace(/\(|\)/g, '');
                 geojson.updated_at = itemJson.modified;
                 geojson.expires_at = Date.now() + self.cacheLife;
                 geojson.info = serviceInfo;
@@ -609,7 +612,8 @@ var AGOL = function( koop ){
       // set the name in options
       if ( (itemJson.name || itemJson.title) && !options.name ){
         options.name = itemJson.name || itemJson.title;
-        options.name = options.name.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+        options.name = options.name.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+        console.log('\n\n REPLACE '+options.name+'\n\n')
       }
 
       // sanitize any single quotes in the service description
@@ -621,7 +625,7 @@ var AGOL = function( koop ){
           serviceInfo.definitionExpression = serviceInfo.definitionExpression.replace(/'/g, '');
         }
         if ( serviceInfo.name ){
-          options.name = serviceInfo.name;
+          options.name = serviceInfo.name.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
         }
         // set the geom type 
         options.geomType = serviceInfo.geometryType;

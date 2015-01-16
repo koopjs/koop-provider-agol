@@ -203,7 +203,7 @@ var Controller = function( agol, BaseController ){
           // get the name of the data; else use the key (md5 hash)
           var name = ( info && info.info ) ? info.info.name || info.info.title || info.name : key;
           var fileName = name + '.' + req.params.format;
-          fileName = fileName.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+          fileName = fileName.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
 
           // if we have a layer then append it to the query params 
           if ( req.params.layer ) {
@@ -243,7 +243,7 @@ var Controller = function( agol, BaseController ){
             // the file name for the export 
             var name = ( info && info.info ) ? info.name || info.info.name || info.info.title : key;
             var fileName = name + '.' + req.params.format;
-            fileName = fileName.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');;
+            fileName = fileName.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');;
 
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
@@ -363,7 +363,7 @@ var Controller = function( agol, BaseController ){
     } else {
       var name = ( itemJson.data[0] && (itemJson.data[0].name || itemJson.data[0].info.name) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
       // cleanze the name
-      name = name.replace(/\/|,|&/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+      name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
 
       if (itemJson.koop_status && itemJson.koop_status == 'too big'){
         // export as a series of small queries/files
