@@ -324,6 +324,9 @@ var AGOL = function( koop ){
 
     var maxSize = 5000000;
 
+    // for large datasets enforce koop's large data limit 
+    options.enforce_limit = true;
+
     koop.Cache.getInfo( qKey, function(err, info){
       koop.Cache.get( 'agol', id, options, function(err, entry ){
         if ( err || (info && info.retrieved_at < itemJson.modified)){
@@ -357,6 +360,9 @@ var AGOL = function( koop ){
   };
 
   agol.getFeatureCollection = function(base_url, hostId, id, itemJson, options, callback){
+    // for large datasets enforce koop's large data limit 
+    options.enforce_limit = true;
+
     koop.Cache.get( 'agol', id, options, function(err, entry ){
       if ( err ){
         var url = base_url + '/' + id + '/data?f=json'; 
@@ -394,7 +400,8 @@ var AGOL = function( koop ){
     if ( !itemJson.url ){
       callback( 'Missing url parameter for Feature Service Item', null );
     } else {
-
+      // for large datasets enforce koop's large data limit 
+      options.enforce_limit = true;
       koop.Cache.get( 'agol', id, options, function(err, entry ){
         if ( err ){
           // no data in the cache; request new data 
@@ -486,6 +493,10 @@ var AGOL = function( koop ){
   // make a request to a single page feature service 
   agol.singlePageFeatureService = function( hostId, id, itemJson, options, callback ){
     var self = this;
+
+    // for large datasets enforce koop's large data limit 
+    options.enforce_limit = true;
+
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
       if ( err ){
