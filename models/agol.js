@@ -428,8 +428,8 @@ var AGOL = function( koop ){
   };
 
   // removes the layer from the end of a url 
-  agol.stripLayerOffUrl = function(url){
-    return url.substring(0, url.length - 2);
+  agol.stripLayerOffUrl = function(url, len){
+    return url.substring(0, url.length - (len || 2));
   };
 
 
@@ -439,12 +439,14 @@ var AGOL = function( koop ){
     var self = this;
 
     // check the last char on the url
-    // protects us from urls registered with layers already in the url 
-    if ( parseInt(itemJson.url.charAt( itemJson.url.length-1 )) >= 0 ){
-      itemJson.url = self.stripLayerOffUrl( itemJson.url );
+    // protects us from urls registered with layers already in the url
+    var url_parts = itemJson.url.split('/');
+    if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
+      var lyrId = url_parts[ url_parts.length-1 ];
+      itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
     }
 
-
+    console.log(itemJson.url);
     // get the ids only
     var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
 
