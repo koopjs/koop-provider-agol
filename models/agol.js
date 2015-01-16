@@ -613,7 +613,6 @@ var AGOL = function( koop ){
       if ( (itemJson.name || itemJson.title) && !options.name ){
         options.name = itemJson.name || itemJson.title;
         options.name = options.name.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
-        console.log('\n\n REPLACE '+options.name+'\n\n')
       }
 
       // sanitize any single quotes in the service description
