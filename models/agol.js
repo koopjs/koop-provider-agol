@@ -175,6 +175,13 @@ var AGOL = function( koop ){
           var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
 
           // in order to correctly expire hosted services we need to ping the server
+          // check the last char on the url
+          // protects us from urls registered with layers already in the url
+          var url_parts = itemJson.url.split('/');
+          if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
+            itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+(options.layer || 0)).split('').length );
+          }
+          console.log('WTF', itemJson.url)
           self.getFeatureServiceLayerInfo( itemJson.url, (options.layer || 0), function(err, serviceInfo){
             
             // check for infon on last edit date 
@@ -431,7 +438,7 @@ var AGOL = function( koop ){
 
   // removes the layer from the end of a url 
   agol.stripLayerOffUrl = function(url, len){
-    return url.substring(0, url.length - (len || 2));
+    return url.substring(0, url.length - ((len || 2)+1));
   };
 
 
@@ -448,13 +455,9 @@ var AGOL = function( koop ){
       itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
     }
 
-    console.log(itemJson.url);
     // get the ids only
-    var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
+    var idUrl = itemJson.url + '/' + (options.layer||0) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
 
-    //if (options.geometry){
-      //idUrl += '&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
-    //}
     // get the id count of the service 
     agol.req(idUrl, function(err, data ){
       // determine if its greater then 1000
@@ -500,6 +503,14 @@ var AGOL = function( koop ){
 
     // for large datasets enforce koop's large data limit 
     options.enforce_limit = true;
+
+    // check the last char on the url
+    // protects us from urls registered with layers already in the url
+    var url_parts = itemJson.url.split('/');
+    if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
+      var lyrId = url_parts[ url_parts.length-1 ];
+      itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
+    }
 
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
@@ -573,13 +584,11 @@ var AGOL = function( koop ){
           info = {};
         }
         if ( !info.locked ){
-          //console.log('NOT LOCKED, Locking');
           info.locked = true;
           koop.Cache.updateInfo(key, info, function(err, success){
             cb( false );
           }); 
         } else {
-          //console.log('LOCKED');
           cb( info.locked );
         }
       });
@@ -609,6 +618,14 @@ var AGOL = function( koop ){
   agol.pageFeatureService = function( hostId, id, itemJson, count, hash, options, callback ){
     var self = this;
     var geomType;
+
+    // check the last char on the url
+    // protects us from urls registered with layers already in the url
+    var url_parts = itemJson.url.split('/');
+    if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
+      var lyrId = url_parts[ url_parts.length-1 ];
+      itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
+    }
 
     // get the featureservice info 
     agol.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
@@ -662,10 +679,6 @@ var AGOL = function( koop ){
               }
             };
 
-            if ( options.format ){
-              info.format = options.format;
-            }
-
             koop.Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
 
               // return in a processing state, but continue on
@@ -691,7 +704,6 @@ var AGOL = function( koop ){
                   try {
                     var statsJson = JSON.parse( res.body );
                     koop.log.info( 'statsUrl %s %s', id, statsUrl );
-                    //console.log( statsJson );
                     if ( statsJson.error ){
                       try{
                         //DMF: if stats fail, try to grab all the object IDs
@@ -996,7 +1008,8 @@ var AGOL = function( koop ){
 
   // Gets the feature service info 
   agol.getFeatureServiceLayerInfo = function( url, layer, callback ){
-    request.get( url +'/'+ layer + '?f=json', function( err, res ){
+    url = url +'/'+ layer + '?f=json'
+    request.get( url, function( err, res ){
       try {
         var json = JSON.parse( res.body );
         json.url = url;
