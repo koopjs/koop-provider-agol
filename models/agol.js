@@ -174,13 +174,14 @@ var AGOL = function( koop ){
 
           var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
 
-          // in order to correctly expire hosted services we need to ping the server
           // check the last char on the url
           // protects us from urls registered with layers already in the url
           var url_parts = itemJson.url.split('/');
           if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
-            itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+(options.layer || 0)).split('').length );
+            var lyrId = url_parts[ url_parts.length-1 ];
+            itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
           }
+
           self.getFeatureServiceLayerInfo( itemJson.url, (options.layer || 0), function(err, serviceInfo){
             
             // check for infon on last edit date 
@@ -503,27 +504,18 @@ var AGOL = function( koop ){
     // for large datasets enforce koop's large data limit 
     options.enforce_limit = true;
 
-    // check the last char on the url
-    // protects us from urls registered with layers already in the url
-    var url_parts = itemJson.url.split('/');
-    if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
-      var lyrId = url_parts[ url_parts.length-1 ];
-      itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
-    }
-
     // get the featureservice info 
     this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
       if ( err ){
         callback(err, null);
       } else {
 
+        // protect koop from back serviceInfo.urls 
+        serviceInfo.url = itemJson.url;
+
         // we can the data in one shot
         var url = itemJson.url + '/' + (options.layer || 0) + '/query?outSR=4326&where=1=1&f=json&outFields=*';
-        //if (options.geometry){
-        //  url += '&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
-        //} else {
-          url += '&geometry=&returnGeometry=true&geometryPrecision=6';
-        //}
+        url += '&geometry=&returnGeometry=true&geometryPrecision=6';
 
         // get the features
         self.req(url, function(err, data ){
@@ -1014,7 +1006,7 @@ var AGOL = function( koop ){
         json.url = url;
         callback( err, json );
       } catch (e) {
-        console.log('failed to get URL, no big deal, most likely this can be ignored', url, e, err, res);
+        console.log('failed to get URL, no big deal, most likely this can be ignored', url, e, err);
         callback( 'failed to parse service info', null );
       }
     });

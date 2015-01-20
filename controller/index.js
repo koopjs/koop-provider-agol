@@ -268,6 +268,7 @@ var Controller = function( agol, BaseController ){
                         var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
                       
                         if ( info.info.url ){
+
                           agol.getFeatureServiceLayerInfo( info.info.url, ( req.params.layer || 0 ), function(err, serviceInfo){
                             // check for info on last edit date (for hosted services dont expired unless changed) 
                             // set is_expired to false if it hasnt changed or if its null
