@@ -181,7 +181,6 @@ var AGOL = function( koop ){
           if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
             itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+(options.layer || 0)).split('').length );
           }
-          console.log('WTF', itemJson.url)
           self.getFeatureServiceLayerInfo( itemJson.url, (options.layer || 0), function(err, serviceInfo){
             
             // check for infon on last edit date 
