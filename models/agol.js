@@ -401,7 +401,9 @@ var AGOL = function( koop ){
       callback( 'Missing url parameter for Feature Service Item', null );
     } else {
       // for large datasets enforce koop's large data limit 
-      options.enforce_limit = true;
+      if (options.enforce_limit !== false){
+        options.enforce_limit = true;
+      }
       koop.Cache.get( 'agol', id, options, function(err, entry ){
         if ( err ){
           // no data in the cache; request new data 

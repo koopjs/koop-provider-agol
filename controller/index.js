@@ -601,6 +601,7 @@ var Controller = function( agol, BaseController ){
 
     // Get the tile and send the response to the client
     var _send = function( err, data ){
+      req.params.name = data[0].name;
       req.params.key = req.params.item + '_' + layer;
       agol.tileGet( req.params, data[0], function(err, tile){
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
@@ -609,7 +610,7 @@ var Controller = function( agol, BaseController ){
           if ( callback ){
             res.send( callback + '(' + fs.readFileSync( JSON.parse( tile ) ) + ')' );
           } else {
-            res.json( fs.readFileSync( JSON.parse( tile ) ) );
+            res.json( JSON.parse( fs.readFileSync( tile ) ) );
           }
         }
       });
@@ -630,9 +631,9 @@ var Controller = function( agol, BaseController ){
         res.sendfile( file );
       } else {
         if ( callback ){
-          res.send( callback + '(' + JSON.parse( fs.readFileSync( tile ) ) + ')' );
+          res.send( callback + '(' + JSON.parse( fs.readFileSync( file ) ) + ')' );
         } else {
-          res.json( JSON.parse( fs.readFileSync( tile ) ) );
+          res.json( JSON.parse( fs.readFileSync( file ) ) );
         }
       }
     }; 
@@ -671,6 +672,9 @@ var Controller = function( agol, BaseController ){
 
           var factor = .1;
           //req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
+
+          // make sure we ignore the query limit of 2k
+          req.query.enforce_limit = false;
 
           // Get the item
           agol.getItemData( data.host, req.params.id, req.params.item, hash, req.query, function(error, itemJson){
