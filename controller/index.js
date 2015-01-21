@@ -270,7 +270,7 @@ var Controller = function( agol, BaseController ){
                       
                         if ( info.info.url ){
 
-                          agol.getFeatureServiceLayerInfo( info.info.url, ( req.params.layer || 0 ), function(err, serviceInfo){
+                          agol.getFeatureServiceLayerInfo( info.info.url.replace('?f=json',''), ( req.params.layer || 0 ), function(err, serviceInfo){
                             // check for info on last edit date (for hosted services dont expired unless changed) 
                             // set is_expired to false if it hasnt changed or if its null
                             if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo){
