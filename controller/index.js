@@ -1,4 +1,5 @@
 var request = require('request'),
+  https = require('https'),
   terraformer = require('terraformer'),
   terraformerParser = require('terraformer-arcgis-parser'),
   sm = require('sphericalmercator'),
@@ -211,7 +212,7 @@ var Controller = function( agol, BaseController ){
           }
           agol.files.exists( path, fileName, function( exists, path ) {
             if ( exists ){ 
-              controller.returnFile(req, res, dir, key, path);
+              controller.returnFile(req, res, dir, key, path, name);
             } else {
               _returnProcessing();
             }
@@ -291,7 +292,7 @@ var Controller = function( agol, BaseController ){
                               });
                             } else {
                               // else serve it
-                              controller.returnFile(req, res, dir, key, path);
+                              controller.returnFile(req, res, dir, key, path, name);
                             }
                           });
 
@@ -308,7 +309,7 @@ var Controller = function( agol, BaseController ){
                             });
                           } else {
                             // else serve it
-                            controller.returnFile(req, res, dir, key, path);
+                            controller.returnFile(req, res, dir, key, path, name);
                           }
                         }
                       } else {
@@ -415,12 +416,17 @@ var Controller = function( agol, BaseController ){
               res.status(500).send( err );
             } else {
               if ( result.substr(0,4) == 'http' ){
-                res.redirect( result );
+                //res.redirect(200, result );
+                // Proxy to s3 urls allows us to not show the URL 
+                https.get(result, function(proxyRes) {
+                  res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+                  proxyRes.pipe(res);
+                });
               } else {
                 if (req.params.format == 'json' || req.params.format == 'geojson'){
                   res.contentType('text');
                 }
-                //res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+                res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
                 res.sendfile(result);
               }
             }
@@ -431,7 +437,7 @@ var Controller = function( agol, BaseController ){
 
   };
 
-  controller.returnFile = function( req, res, dir, key, path ){
+  controller.returnFile = function( req, res, dir, key, path, name ){
     if ( req.query.url_only ){
       var origUrl = req.originalUrl.split('?');
       origUrl[0] = origUrl[0].replace(/json/,req.params.format);
@@ -445,7 +451,12 @@ var Controller = function( agol, BaseController ){
             res.json(JSON.parse(response));
           }); 
         } else {*/
-          res.redirect(path);
+          //res.redirect(200, path);
+          // Proxy to s3 urls allows us to not show the URL 
+          https.get(path, function(proxyRes) {
+            res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+            proxyRes.pipe(res);
+          });
         //}
       } else {
         if (req.params.format == 'json' || req.params.format == 'geojson'){

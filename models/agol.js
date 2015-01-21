@@ -176,10 +176,12 @@ var AGOL = function( koop ){
 
           // check the last char on the url
           // protects us from urls registered with layers already in the url
-          var url_parts = itemJson.url.split('/');
-          if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
-            var lyrId = url_parts[ url_parts.length-1 ];
-            itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
+          if (itemJson && itemJson.url){
+            var url_parts = itemJson.url.split('/');
+            if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
+              var lyrId = url_parts[ url_parts.length-1 ];
+              itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
+            }
           }
 
           self.getFeatureServiceLayerInfo( itemJson.url, (options.layer || 0), function(err, serviceInfo){
