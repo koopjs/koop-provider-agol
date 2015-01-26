@@ -613,9 +613,12 @@ var Controller = function( agol, BaseController ){
 
     // Get the tile and send the response to the client
     var _send = function( err, data ){
-      req.params.name = data[0].name;
+      req.params.name =  (data && data[0]) ? data[0].name : null;
       req.params.key = req.params.item + '_' + layer;
       agol.tileGet( req.params, data[0], function(err, tile){
+        if (req.params.format == 'pbf') {
+          res.setHeader('content-encoding', 'deflate');
+        }
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
           res.sendfile( tile );
         } else {
@@ -639,6 +642,9 @@ var Controller = function( agol, BaseController ){
     };
 
     var _sendImmediate = function( file ){
+      if (req.params.format == 'pbf') {
+        res.setHeader('content-encoding', 'deflate');
+      }
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
         res.sendfile( file );
       } else {
