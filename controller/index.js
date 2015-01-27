@@ -419,14 +419,14 @@ var Controller = function( agol, BaseController ){
                 //res.redirect(200, result );
                 // Proxy to s3 urls allows us to not show the URL 
                 https.get(result, function(proxyRes) {
-                  //res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+                  res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
                   proxyRes.pipe(res);
                 });
               } else {
                 if (req.params.format == 'json' || req.params.format == 'geojson'){
                   res.contentType('text');
                 }
-                //res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+                res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
                 res.sendfile(result);
               }
             }
@@ -454,7 +454,7 @@ var Controller = function( agol, BaseController ){
           //res.redirect(200, path);
           // Proxy to s3 urls allows us to not show the URL 
           https.get(path, function(proxyRes) {
-            //res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+            res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
             proxyRes.pipe(res);
           });
         //}
