@@ -270,7 +270,16 @@ var Controller = function( agol, BaseController ){
                       
                         if ( info.info.url ){
 
-                          agol.getFeatureServiceLayerInfo( info.info.url.replace('?f=json',''), ( req.params.layer || 0 ), function(err, serviceInfo){
+                          // clean up the url; remove layer at the end just in case 
+                          var url = info.info.url.replace('?f=json','');
+                          var url_parts = url.split('/');
+                          var len = url_parts.length - 1;
+                          if ( parseInt(url_parts[ len ]) >= 0 ){
+                            var lyrId = url_parts[ len ];
+                            url = url.substring(0, url.length - ((('' + lyrId ).split('').length || 2)+1));
+                          }
+
+                          agol.getFeatureServiceLayerInfo( url, ( req.params.layer || 0 ), function(err, serviceInfo){
                             // check for info on last edit date (for hosted services dont expired unless changed) 
                             // set is_expired to false if it hasnt changed or if its null
                             if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo){
