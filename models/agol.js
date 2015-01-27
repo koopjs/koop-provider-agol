@@ -1008,7 +1008,7 @@ var AGOL = function( koop ){
         json.url = url;
         callback( err, json );
       } catch (e) {
-        console.log('failed to get URL, no big deal, most likely this can be ignored', url, e, err);
+        //console.log('failed to get URL, no big deal, most likely this can be ignored', url, e, err);
         callback( 'failed to parse service info', null );
       }
     });

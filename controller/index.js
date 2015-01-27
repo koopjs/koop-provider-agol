@@ -415,18 +415,16 @@ var Controller = function( agol, BaseController ){
             if (err) {
               res.status(500).send( err );
             } else {
+              if (req.params.format == 'json' || req.params.format == 'geojson'){
+                res.contentType('application/json');
+              }
+              res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
               if ( result.substr(0,4) == 'http' ){
-                //res.redirect(200, result );
                 // Proxy to s3 urls allows us to not show the URL 
                 https.get(result, function(proxyRes) {
-                  res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
                   proxyRes.pipe(res);
                 });
               } else {
-                if (req.params.format == 'json' || req.params.format == 'geojson'){
-                  res.contentType('text');
-                }
-                res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
                 res.sendfile(result);
               }
             }
@@ -444,27 +442,19 @@ var Controller = function( agol, BaseController ){
       var newUrl = req.protocol +'://'+req.get('host') + origUrl[0] + '?' + origUrl[1].replace(/url_only=true&|url_only=true|/,'').replace('format='+req.params.format,'').replace('&format='+req.params.format,'');
       res.json({url: newUrl});
     } else {
+      // forces browsers to download 
+      res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+      if (req.params.format == 'json' || req.params.format == 'geojson'){
+        res.setHeader('Content-Type', 'attachment/json'); 
+      }
+
       if (path.substr(0,4) == 'http'){
-        /*if (req.params.format == 'json' || req.params.format == 'geojson'){
-          request.get(path, function(err, data, response){
-            res.contentType('text');
-            res.json(JSON.parse(response));
-          }); 
-        } else {*/
-          //res.redirect(200, path);
-          // Proxy to s3 urls allows us to not show the URL 
-          https.get(path, function(proxyRes) {
-            res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
-            proxyRes.pipe(res);
-          });
-        //}
+        // Proxy to s3 urls allows us to not show the URL 
+        https.get(path, function(proxyRes) {
+          proxyRes.pipe(res);
+        });
       } else {
-        if (req.params.format == 'json' || req.params.format == 'geojson'){
-          res.contentType('text');
-          res.json(fs.readFileSync( path ));
-        } else {
-          res.sendfile( path );
-        }
+        res.sendfile( path );
       }
     }
   };
