@@ -615,7 +615,7 @@ var Controller = function( agol, BaseController ){
     var _send = function( err, data ){
       req.params.name =  (data && data[0]) ? data[0].name : null;
       req.params.key = req.params.item + '_' + layer;
-      agol.tileGet( req.params, data[0], function(err, tile){
+      agol.tileGet( req.params, (data && data[0]) ? data[0] : {}, function(err, tile){
         if (req.params.format == 'pbf') {
           res.setHeader('content-encoding', 'deflate');
         }
