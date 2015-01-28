@@ -745,16 +745,17 @@ var AGOL = function( koop ){
               } else {
                 if ( count < 50000 ){
                   agol.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
-                    if (err || !ids){
-                      ids = [];
+                    try {
+                      pageRequests = agol.buildIDPages(
+                        itemJson.url,
+                        ids,
+                        250,
+                        options
+                      );
+                      agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
+                    } catch(e){
+                      agol.log('error', 'error building ID request to page dataset '+id+' error:'+ err);
                     }
-                    pageRequests = agol.buildIDPages(
-                      itemJson.url,
-                      ids,
-                      250,
-                      options
-                    );
-                    agol._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
                   });
                 } else {
                 // default to sequential objectID paging
