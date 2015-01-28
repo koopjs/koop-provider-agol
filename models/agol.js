@@ -193,10 +193,12 @@ var AGOL = function( koop ){
                 is_expired = false;  
               } else if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
                 is_expired = true;        
-              } 
+              } else {
+                // if the retrieved at date is greater than the lastEditDate then the data are still good
+                is_expired = false;
+              }
             }
          
-
             if ( is_expired ) {
               koop.Cache.remove('agol', itemId, options, function(err, res){
                 self.getData(itemJson, host, hostId, itemId, hash, options, callback);
@@ -658,7 +660,7 @@ var AGOL = function( koop ){
         if (!info){
           // creates the empty table
           // WHY ARE WE REMOVING THE TABLE FIRST
-          koop.Cache.remove('agol', id, {layer: layerId}, function(){
+          koop.Cache.remove('agol', id, {layer: layerId}, function(err){
 
             var expiration = Date.now() + self.cacheLife;
 

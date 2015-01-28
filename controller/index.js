@@ -264,7 +264,7 @@ var Controller = function( agol, BaseController ){
                   req.query.layer = ( !parseInt(req.params.layer)) ? 0 : req.params.layer;
 
                   agol.getItem(data.host, req.params.item, req.query, function( err, itemJson ){
-                    agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
+                    //agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
                       if ( exists ){
                         // check if the cache is expired
                         var is_expired = info ? ( new Date().getTime() >= info.expires_at ) : false;
@@ -288,6 +288,9 @@ var Controller = function( agol, BaseController ){
                                 is_expired = false;
                               } else if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
                                 is_expired = true;
+                              } else {
+                                // if the retrieved at date is greater than the lastEditDate then the data are still good
+                                is_expired = false;
                               }
                             }
 
@@ -331,7 +334,7 @@ var Controller = function( agol, BaseController ){
                           controller.requestNewFile( req, res, dir, key, err, itemJson );
                         });
                       }
-                    });
+                    //});
                   });
                 } 
               });
