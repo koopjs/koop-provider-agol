@@ -287,6 +287,10 @@ var AGOL = function( koop ){
         task.callback(err, null);
       } else {
         csv.parse( data.body, function(err, csv_data){
+          if (err){
+            task.callback({ code: 400, error: 'Trouble parsing the CSV data'}, null);
+            return cb();
+          }
           koop.GeoJSON.fromCSV( csv_data, function(err, geojson){
             // store metadata with the data
             var json = {};
@@ -741,6 +745,9 @@ var AGOL = function( koop ){
               } else {
                 if ( count < 50000 ){
                   agol.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
+                    if (err || !ids){
+                      ids = [];
+                    }
                     pageRequests = agol.buildIDPages(
                       itemJson.url,
                       ids,
