@@ -210,6 +210,7 @@ var Controller = function( agol, BaseController ){
           if ( req.params.layer ) {
             req.query.layer = req.params.layer;
           }
+
           agol.files.exists( path, fileName, function( exists, path ) {
             if ( exists ){ 
               controller.returnFile(req, res, dir, key, path, name);
@@ -454,7 +455,7 @@ var Controller = function( agol, BaseController ){
       // forces browsers to download 
       res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
       if (req.params.format == 'json' || req.params.format == 'geojson'){
-        res.setHeader('Content-Type', 'attachment/json'); 
+        res.setHeader('Content-Type', 'application/json'); 
       }
 
       if (path.substr(0,4) == 'http'){
