@@ -203,6 +203,7 @@ var Controller = function( agol, BaseController ){
 
           // get the name of the data; else use the key (md5 hash)
           var name = ( info && info.info ) ? info.info.name || info.info.title || info.name : key;
+          name = (name.length > 150) ? name.substr(0, 150): name;
           var fileName = name + '.' + req.params.format;
           fileName = fileName.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
 
@@ -244,6 +245,7 @@ var Controller = function( agol, BaseController ){
             var path = [ 'files', dir, key ].join( '/' );
             // the file name for the export 
             var name = ( info && info.info ) ? info.name || info.info.name || info.info.title : key;
+            name = (name.length > 150) ? name.substr(0, 150): name;
             var fileName = name + '.' + req.params.format;
             fileName = fileName.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');;
 
@@ -379,6 +381,7 @@ var Controller = function( agol, BaseController ){
       var name = ( itemJson.data[0] && (itemJson.data[0].name || itemJson.data[0].info.name) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
       // cleanze the name
       name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+      name = (name.length > 150) ? name.substr(0, 150): name;
 
       if (itemJson.koop_status && itemJson.koop_status == 'too big'){
         // export as a series of small queries/files

@@ -541,6 +541,7 @@ var AGOL = function( koop ){
                   .replace(/\/|,|&|\|/g, '')
                   .replace(/ /g, '_')
                   .replace(/\(|\)/g, '');
+                geojson.name = (geojson.name.length > 150) ? geojson.name.substr(0, 150) : geojson.name; 
                 geojson.updated_at = itemJson.modified;
                 geojson.expires_at = Date.now() + self.cacheLife;
                 geojson.info = serviceInfo;
@@ -651,6 +652,9 @@ var AGOL = function( koop ){
         options.fields = serviceInfo.fields;
         options.objectIdField = agol.getObjectIDField(serviceInfo);
       }
+      
+      // fix long names; truncate to 150 chars
+      options.name = (options.name.length > 150) ? options.name.substr(0, 150): options.name;
          
       var layerId = (options.layer || 0);
       var key = [ 'agol', id, layerId].join(':');
