@@ -134,7 +134,13 @@ function makeRequest(job, done){
                   if ( completed == len ) {
                     var key = [ 'agol', id, layerId ].join(':');
                     koop.Cache.getInfo(key, function(err, info){
-                      delete info.status;
+                      if (err){
+                        koop.log.error(err);
+                        done();
+                      }
+                      if ( info && info.status ) { 
+                        delete info.status;
+                      }
                       koop.Cache.updateInfo(key, info, function(err, info){
                         done();
                         process.nextTick(cb);
