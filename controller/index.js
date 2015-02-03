@@ -431,10 +431,17 @@ var Controller = function( agol, BaseController ){
             if (err) {
               res.status(500).send( err );
             } else {
+              res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
               if (req.params.format == 'json' || req.params.format == 'geojson'){
                 res.contentType('application/json');
+              } else if (req.params.format == 'kml'){
+                res.contentType('application/vnd.google-earth.kml+xml');
+              } else if ( req.params.format == 'csv'){
+                res.contentType('text/csv');
+              } else if ( req.params.format == 'zip'){
+                res.contentType('application/octet-stream');
               }
-              res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+
               if ( result.substr(0,4) == 'http' ){
                 // Proxy to s3 urls allows us to not show the URL 
                 https.get(result, function(proxyRes) {
@@ -461,7 +468,13 @@ var Controller = function( agol, BaseController ){
       // forces browsers to download 
       res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
       if (req.params.format == 'json' || req.params.format == 'geojson'){
-        res.setHeader('Content-Type', 'application/json'); 
+        res.contentType('application/json');
+      } else if (req.params.format == 'kml'){
+        res.contentType('application/vnd.google-earth.kml+xml');
+      } else if ( req.params.format == 'csv'){
+        res.contentType('text/csv');
+      } else if ( req.params.format == 'zip'){
+        res.contentType('application/octet-stream');
       }
 
       if (path.substr(0,4) == 'http'){
@@ -695,7 +708,9 @@ var Controller = function( agol, BaseController ){
           var hash = crypto.createHash('md5').update(toHash).digest('hex');
 
           var factor = .1;
-          //req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
+          req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
+
+          console.log('simplify factor', req.query.simplify);
 
           // make sure we ignore the query limit of 2k
           req.query.enforce_limit = false;
