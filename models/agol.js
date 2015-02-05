@@ -77,7 +77,7 @@ var AGOL = function( koop ){
   // all ajax requests should use this so it can be tested 
   agol.req = function(url, callback){
     request({
-        url: url, 
+        url: encodeURI( url ), 
         headers: { 'User-Agent': 'esri-koop' }
       }, callback);
   };
@@ -240,7 +240,7 @@ var AGOL = function( koop ){
     };
 
     var q = async.queue(function(task, cb){
-      request.get(task.url +'/'+ task.layer.id + '?f=json', function(err, res){
+      request.get( encodeURI(task.url +'/'+ task.layer.id + '?f=json'), function(err, res){
         lyrInfo = JSON.parse(res.body);
         _collect(lyrInfo, cb);
       });
@@ -464,16 +464,16 @@ var AGOL = function( koop ){
     }
 
     // get the ids only
-    var idUrl = itemJson.url + '/' + (options.layer||0) + '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
+    var countUrl = itemJson.url + '/' + (options.layer||0) 
+    countUrl += '/query?where=1=1&returnIdsOnly=true&returnCountOnly=true&f=json';
 
     // get the id count of the service 
-    agol.req(idUrl, function(err, data ){
-      console.log('ERRROR', err, data.body)
+    agol.req( countUrl, function(err, data ){
       // determine if its greater then 1000
       try { 
         var idJson = JSON.parse( data.body );
         if (idJson.error){
-          callback( idJson.error.message + ': ' + idUrl, null );
+          callback( idJson.error.message + ': ' + countUrl, null );
         } else {
           var count = idJson.count;
           if (!count && idJson.objectIds && idJson.objectIds.length ){
@@ -500,7 +500,7 @@ var AGOL = function( koop ){
           }
         }
       } catch (e) {
-        console.log(e);
+        console.log(e, countUrl);
         callback( 'Unknown layer, make sure the layer you requested exists', null );
       }
     });
@@ -515,7 +515,7 @@ var AGOL = function( koop ){
     options.enforce_limit = true;
 
     // get the featureservice info 
-    this.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
+    this.getFeatureServiceLayerInfo( itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
       if ( err ){
         callback(err, null);
       } else {
@@ -905,7 +905,7 @@ var AGOL = function( koop ){
     var q = async.queue(function (task, callback) {
       // make a request for a page 
       agol.log('info', id + ' get page '+ (i++) + ' : ' +task.req);
-      request.get(task.req, function(err, data, response){
+      request.get( encodeURI( task.req ), function(err, data, response){
         try {
           // so sometimes server returns these crazy asterisks in the coords
           // I do a regex to replace them in both the case that I've found them
@@ -1005,7 +1005,7 @@ var AGOL = function( koop ){
   // Gets the feature service info 
   agol.getFeatureServiceLayerInfo = function( url, layer, callback ){
     url = url +'/'+ layer + '?f=json'
-    request.get( url, function( err, res ){
+    request.get( encodeURI(url), function( err, res ){
       try {
         var json = JSON.parse( res.body );
         json.url = url;
@@ -1019,7 +1019,7 @@ var AGOL = function( koop ){
 
   // Gets the feature service object ids for pagination
   agol.getFeatureServiceLayerIds = function( url, layer, callback ){
-    request.get( url +'/'+ layer + '/query?where=1=1&returnIdsOnly=true&f=json', function( err, res ){
+    request.get( encodeURI( url +'/'+ layer + '/query?where=1=1&returnIdsOnly=true&f=json'), function( err, res ){
       var json = JSON.parse( res.body );
       callback( err, json.objectIds );
     });
