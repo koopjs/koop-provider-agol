@@ -468,6 +468,7 @@ var AGOL = function( koop ){
 
     // get the id count of the service 
     agol.req(idUrl, function(err, data ){
+      console.log('ERRROR', err, data.body)
       // determine if its greater then 1000
       try { 
         var idJson = JSON.parse( data.body );
@@ -499,6 +500,7 @@ var AGOL = function( koop ){
           }
         }
       } catch (e) {
+        console.log(e);
         callback( 'Unknown layer, make sure the layer you requested exists', null );
       }
     });
@@ -805,12 +807,7 @@ var AGOL = function( koop ){
       var pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&f=json&outFields=*&where=1=1';
       pageUrl += '&resultOffset='+resultOffset;
       pageUrl += '&resultRecordCount='+max;
-
-      if ( options.geometry ){
-        pageUrl += '&returnGeometry=true&geometryPrecision=6&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify( options.geometry );
-      } else {
-        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
-      }
+      pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
       reqs.push({req: pageUrl});
     }
 
@@ -841,11 +838,7 @@ var AGOL = function( koop ){
       pageMin = min + (maxCount*i);
       where = objId+'<=' + pageMax + '+AND+' + objId+'>=' + pageMin;
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
-      if ( options.geometry ){
-        pageUrl += '&returnGeometry=true&geometryPrecision=6&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
-      } else {
-        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
-      }
+      pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
       reqs.push({req: pageUrl});
     }
 
@@ -866,11 +859,7 @@ var AGOL = function( koop ){
       if (pageIds.length){
         where = objId+' in (' + pageIds.join(',') + ')';
         pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
-        if ( options.geometry ){
-          pageUrl += '&returnGeometry=true&geometryPrecision=6&spatialRel=esriSpatialRelIntersects&geometry=' + JSON.stringify(options.geometry);
-        } else {
-          pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
-        }
+        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
         reqs.push({req: pageUrl});
       }
     }
