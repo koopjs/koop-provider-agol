@@ -136,7 +136,7 @@ function makeRequest(job, done){
                     koop.Cache.getInfo(key, function(err, info){
                       if (err){
                         koop.log.error(err);
-                        done();
+                        return done();
                       }
                       if ( info && info.status ) { 
                         delete info.status;
