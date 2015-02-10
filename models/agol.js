@@ -959,6 +959,16 @@ var AGOL = function( koop ){
 
       // track failed jobs and flag them 
       job.on('failed', function(jobErr){
+          var _remove = function(job){
+            job.remove(function( err ){
+              if (err) {
+                agol.log('debug', 'could not remove failed job #' + job.id +' Error: '+ err);
+                return;
+              }
+              agol.log('debug', 'removed failed request job #' + job.id + ' - ' + id);
+            });
+          };
+
           koop.Cache.getInfo(key, function(err, info){
             if (info){
               agol.log('error', 'Request worker job failed ' + jobErr );
@@ -982,15 +992,11 @@ var AGOL = function( koop ){
                 };
                 koop.Cache.updateInfo(key, info, function(err, success){
                   if (err) return;
-                  job.remove(function( err ){
-                    if (err) {
-                      agol.log('debug', 'could not remove failed job #' + job.id +' Error: '+ err);
-                      return;
-                    }
-                    agol.log('debug', 'removed failed job #' + job.id + ' - ' + id);
-                  });
+                  _remove( job );
                 });
               });
+            } else {
+              _remove( job );
             }
           });
       });

@@ -118,8 +118,12 @@ function makeRequest(job, done){
               // insert a partial
               koop.GeoJSON.fromEsri( job.data.fields || [], json, function(err, geojson){
                 koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
+                  // when we gets errors on insert the whole job needs to stop
+                  // most often this error means the cache was dropped
                   if (err) {
-                    catchErrors(task, err, url, cb);
+                    done(err);
+                    requestQ.tasks = [];
+                    requestQ.kill();
                   }
                   completed++;
                   console.log(completed, len);
