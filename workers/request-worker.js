@@ -4,6 +4,7 @@ var kue = require('kue'),
   request = require('request'),
   http = require('http'),
   https = require('https'),
+  url = require('url'),
   async = require('async'),
   config = require('config');
 
@@ -89,16 +90,27 @@ function makeRequest(job, done){
     completed = 0;
 
   var requestFeatures = function(task, cb){
-    var url = task.req;
+    var uri = task.req;
     try { 
-      var request = ((url.substr(0,5) == 'https') ? protocols.https : protocols.http ).get(url, function(response) {
+
+      var url_parts = url.parse( uri );
+      var opts = {
+        method: 'GET',
+        port: 80,
+        hostname: url_parts.host,
+        path: url_parts.path,
+        headers: { 'User-Agent': 'esri-koop' }
+      };
+
+      // make an http or https request based on the protocol
+      var req = ((url_parts.protocol == 'https') ? protocols.https : protocols.http ).request(opts, function(response) {
         var data = '';
         response.on('data', function (chunk) {
           data += chunk;
         });
 
         response.on('error', function(err){
-           catchErrors(task, err, url, cb);
+           catchErrors(task, err, uri, cb);
         });
 
         response.on('end', function () {
@@ -112,7 +124,7 @@ function makeRequest(job, done){
 
             if ( json.error ){
 
-              catchErrors(task, JSON.stringify(json.error), url, cb);
+              catchErrors(task, JSON.stringify(json.error), uri, cb);
 
             } else {
               // insert a partial
@@ -161,16 +173,18 @@ function makeRequest(job, done){
               });
             }
           } catch(e){
-            catchErrors(task, e, url, cb);
+            catchErrors(task, e, uri, cb);
           }
         });
       });
 
-      request.on('error', function(err){
-        catchErrors(task, err, url, cb);
+      req.on('error', function(err){
+        catchErrors(task, err, uri, cb);
       });
+
+      req.end();
     } catch(e){
-      catchErrors(task, e, url, cb);
+      catchErrors(task, e, uri, cb);
     } 
   };
 

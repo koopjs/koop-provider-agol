@@ -240,7 +240,7 @@ var AGOL = function( koop ){
     };
 
     var q = async.queue(function(task, cb){
-      request.get( encodeURI(task.url +'/'+ task.layer.id + '?f=json'), function(err, res){
+      agol.req( task.url +'/'+ task.layer.id + '?f=json', function(err, res){
         lyrInfo = JSON.parse(res.body);
         _collect(lyrInfo, cb);
       });
@@ -284,7 +284,7 @@ var AGOL = function( koop ){
   // if we get many requests for a new CSV they insert multiple times
   // here we handle removing the data cache before we insert
   agol.csvQueue = async.queue(function(task, cb){
-    request.get(task.url, function(err, data ){
+    agol.req(task.url, function(err, data ){
       if (err) {
         task.callback(err, null);
       } else {
@@ -381,7 +381,7 @@ var AGOL = function( koop ){
     koop.Cache.get( 'agol', id, options, function(err, entry ){
       if ( err ){
         var url = base_url + '/' + id + '/data?f=json'; 
-        request.get(url, function(err, data ){
+        agol.req(url, function(err, data ){
           if (err) {
             callback(err, null);
           } else {
@@ -905,7 +905,7 @@ var AGOL = function( koop ){
     var q = async.queue(function (task, callback) {
       // make a request for a page 
       agol.log('info', id + ' get page '+ (i++) + ' : ' +task.req);
-      request.get( encodeURI( task.req ), function(err, data, response){
+      agol.req( task.req, function(err, data, response){
         try {
           // so sometimes server returns these crazy asterisks in the coords
           // I do a regex to replace them in both the case that I've found them
@@ -1011,7 +1011,7 @@ var AGOL = function( koop ){
   // Gets the feature service info 
   agol.getFeatureServiceLayerInfo = function( url, layer, callback ){
     url = url +'/'+ layer + '?f=json'
-    request.get( encodeURI(url), function( err, res ){
+    agol.req( url, function( err, res ){
       try {
         var json = JSON.parse( res.body );
         json.url = url;
@@ -1025,7 +1025,7 @@ var AGOL = function( koop ){
 
   // Gets the feature service object ids for pagination
   agol.getFeatureServiceLayerIds = function( url, layer, callback ){
-    request.get( encodeURI( url +'/'+ layer + '/query?where=1=1&returnIdsOnly=true&f=json'), function( err, res ){
+    agol.req( url +'/'+ layer + '/query?where=1=1&returnIdsOnly=true&f=json', function( err, res ){
       var json = JSON.parse( res.body );
       callback( err, json.objectIds );
     });
