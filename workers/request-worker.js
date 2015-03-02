@@ -90,20 +90,20 @@ function makeRequest(job, done){
     completed = 0;
 
   var requestFeatures = function(task, cb){
-    var uri = task.req;
+    var uri = encodeURI(task.req);
     try { 
 
       var url_parts = url.parse( uri );
       var opts = {
         method: 'GET',
-        port: 80,
+        port: (url_parts.protocol === 'https:') ? 443 : 80,
         hostname: url_parts.host,
         path: url_parts.path,
         headers: { 'User-Agent': 'esri-koop' }
       };
 
       // make an http or https request based on the protocol
-      var req = ((url_parts.protocol == 'https') ? protocols.https : protocols.http ).request(opts, function(response) {
+      var req = ((url_parts.protocol === 'https:') ? protocols.https : protocols.http ).request(opts, function(response) {
         var data = '';
         response.on('data', function (chunk) {
           data += chunk;
