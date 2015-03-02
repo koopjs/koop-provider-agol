@@ -1,6 +1,7 @@
 var kue = require('kue'),
   cluster = require('cluster'),
   koop = require('koop/lib'),
+  pgcache = require('koop-pgcache'),
   request = require('request'),
   http = require('http'),
   https = require('https'),
@@ -20,18 +21,8 @@ var protocols = {
 koop.log = new koop.Logger( config );
 koop.Cache = new koop.DataCache( koop );
 
-// Start the Cache DB with the conn string from config
-// the workers connect to the same DB as their corresponding koop
-if ( config && config.db ) {
-  if ( config.db.postgis ) {
-    koop.Cache.db = koop.PostGIS.connect( config.db.postgis.conn );
-  } else if ( config && config.db.sqlite ) {
-    koop.Cache.db = koop.SQLite.connect( config.db.sqlite );
-  }
-  koop.Cache.db.log = koop.log;
-} else if (config && !config.db){
-  process.exit();
-}
+// registers a DB modules  
+koop.Cache.db = pgcache.connect( config.db.conn, koop );
 
 
 // Create the job queue for this worker process

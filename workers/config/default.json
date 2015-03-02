@@ -1,8 +1,6 @@
 {
     "db": {
-        "postgis": {
-            "conn": "postgres://localhost/koopdev"
-        }
+      "conn": "postgres://localhost/koopdev"
     },
     "redis":{
         "prefix":"q",
