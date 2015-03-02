@@ -539,7 +539,7 @@ var AGOL = function( koop ){
               var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
               koop.GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
-                geojson.name = (itemJson.name || itemJson.title)
+                geojson.name = (serviceInfo.name || serviceInfo.title || itemJson.name || itemJson.title)
                   .replace(/\/|,|&|\|/g, '')
                   .replace(/ /g, '_')
                   .replace(/\(|\)/g, '');
@@ -647,8 +647,12 @@ var AGOL = function( koop ){
           serviceInfo.definitionExpression = serviceInfo.definitionExpression.replace(/'/g, '');
         }
         if ( serviceInfo.name ){
-          options.name = serviceInfo.name.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+          options.name = serviceInfo.name;
+        } else if ( serviceInfo.title ) {
+          options.name = serviceInfo.title;
         }
+        options.name = options.name.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+
         // set the geom type 
         options.geomType = serviceInfo.geometryType;
         options.fields = serviceInfo.fields;
