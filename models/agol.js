@@ -77,7 +77,7 @@ var AGOL = function( koop ){
   // all ajax requests should use this so it can be tested 
   agol.req = function(url, callback){
     request({
-        url: encodeURI( url ), 
+        url: encodeURI( decodeURI(url) ), 
         headers: { 'User-Agent': 'esri-koop' }
       }, callback);
   };
@@ -471,7 +471,6 @@ var AGOL = function( koop ){
     agol.req( countUrl, function(err, data ){
       // determine if its greater then 1000
       try {
-        console.log( data.body ); 
         var idJson = JSON.parse( data.body );
         if (idJson.error){
           callback( idJson.error.message + ': ' + countUrl, null );
