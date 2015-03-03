@@ -374,7 +374,7 @@ var Controller = function( agol, BaseController ){
       } else {
         res.status(500).send( err );
       }
-    } else if ( !itemJson.data[0].features.length ){
+    } else if ( itemJson && itemJson.data && itemJson.data[0] && !itemJson.data[0].features.length ){
       agol.log('error', req.url +' No features in data');
       res.status(500).send( 'No features exist for the requested FeatureService layer');
     } else {
