@@ -378,7 +378,7 @@ var Controller = function( agol, BaseController ){
       agol.log('error', req.url +' No features in data');
       res.status(500).send( 'No features exist for the requested FeatureService layer');
     } else {
-      var name = ( itemJson.data[0] && (itemJson.data[0].name || (itemJson.data[0].info && itemJson.data[0].info.name) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
+      var name = ( itemJson.data[0] && (itemJson.data[0].name || (itemJson.data[0].info && itemJson.data[0].info.name) ) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
       // cleanze the name
       name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
       name = (name.length > 150) ? name.substr(0, 150): name;

@@ -470,7 +470,8 @@ var AGOL = function( koop ){
     // get the id count of the service 
     agol.req( countUrl, function(err, data ){
       // determine if its greater then 1000
-      try { 
+      try {
+        console.log( data.body ); 
         var idJson = JSON.parse( data.body );
         if (idJson.error){
           callback( idJson.error.message + ': ' + countUrl, null );
