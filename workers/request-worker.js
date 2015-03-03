@@ -81,7 +81,7 @@ function makeRequest(job, done){
     completed = 0;
 
   var requestFeatures = function(task, cb){
-    var uri = encodeURI(task.req);
+    var uri = encodeURI( decodeURI(task.req) );
     try { 
 
       var url_parts = url.parse( uri );
