@@ -389,7 +389,9 @@ var Controller = function( agol, BaseController ){
 
         req.query.name = name;
         // set the geometry type so the exporter can do its thing for csv points (add x,y)
-        req.query.geomType = itemJson.data[0].info.geometryType;
+        if (itemJson.data && itemJson.data[0] && itemJson.data[0].info && itemJson.data[0].info.geometryType){
+          req.query.geomType = itemJson.data[0].info.geometryType;
+        }
         agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
           if (result && result.status && result.status == 'processing'){
             agol.getCount(table, {}, function(err, count){
