@@ -82,7 +82,7 @@ var Controller = function( agol, BaseController ){
           // Get the item 
           agol.getItem( data.host, req.params.item, req.query, function(error, itemJson){
             if (error) {
-              res.status(500).send( error);
+              res.status(404).send( error);
             } else {
               res.contentType('text'); 
               res.json( itemJson );
