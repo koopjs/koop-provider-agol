@@ -471,6 +471,11 @@ var AGOL = function( koop ){
     agol.req( countUrl, function(err, data ){
       // determine if its greater then 1000
       try {
+
+        if (!data || !data.body){
+          return callback( 'Unknown layer, make sure the layer you requested exists', null );
+        }
+
         var idJson = JSON.parse( data.body );
         if (idJson.error){
           callback( idJson.error.message + ': ' + countUrl, null );
