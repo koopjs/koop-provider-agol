@@ -637,6 +637,10 @@ var Controller = function( agol, BaseController ){
       req.params.name =  (data && data[0]) ? data[0].name : null;
       req.params.key = req.params.item + '_' + layer;
       agol.tileGet( req.params, (data && data[0]) ? data[0] : {}, function(err, tile){
+        if ( err ){
+          return res.status(err.code || 500).send( err.message || 'Unknown error while creating the tile' );
+        }
+
         if (req.params.format == 'pbf') {
           res.setHeader('content-encoding', 'deflate');
         }
