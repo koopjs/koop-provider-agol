@@ -38,6 +38,14 @@ var AGOL = function( koop ){
       agol.log('debug', 'progress ' + id + ' - ' + progress + '%');
     });
 
+    
+
+  }
+    
+
+  // check to see if koop is configured to force workers on all data
+  if ( koop.config.export_workers && koop.config.export_workers.force){
+    agol.forceExportWorker = true;
   }
 
   // how to long to persist the cache of data 
@@ -479,7 +487,8 @@ var AGOL = function( koop ){
         var idJson = JSON.parse( data.body );
         if (idJson.error){
           callback( idJson.error.message + ': ' + countUrl, null );
-        } else {
+        } 
+        else {
           var count = idJson.count;
           if (!count && idJson.objectIds && idJson.objectIds.length ){
             count = idJson.objectIds.length;
@@ -495,12 +504,21 @@ var AGOL = function( koop ){
             callback( null, itemJson );
 
           // Count is low 
-          } else if ( count < 1000 ){
-            agol.singlePageFeatureService( hostId, id, itemJson, options, callback );
+          } 
+          else if ( count < 1000 ){
+            // use workers when koop is configured to force all requests to use workers
+            if ( koop.config.agol && koop.config.agol.request_workers && koop.config.agol.request_workers.force ){
+              agol.pageFeatureService( hostId, id, itemJson, count, hash, options, callback );
+            } 
+            else {
+              agol.singlePageFeatureService( hostId, id, itemJson, options, callback );
+            }
+          } 
           // We HAVE to page 
-          } else if ( count >= 1000 ){
+          else if ( count >= 1000 ){
             agol.pageFeatureService( hostId, id, itemJson, count, hash, options, callback );
-          } else {
+          } 
+          else {
             callback( 'Unable to count features, make sure the layer you requested exists', null );
           }
         }
@@ -703,9 +721,9 @@ var AGOL = function( koop ){
 
               var maxCount = 1000, //parseInt(serviceInfo.maxRecordCount) || 1000,
                 pageRequests;
-
               // build legit offset based page requests 
               if ( serviceInfo && serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
+
                 var nPages = Math.ceil(count / maxCount);
                 pageRequests = agol.buildOffsetPages( nPages, itemJson.url, maxCount, options );
                 self._page( count, pageRequests, id, itemJson, (options.layer || 0), options, hash);
@@ -713,7 +731,9 @@ var AGOL = function( koop ){
               } else if ( serviceInfo && serviceInfo.supportsStatistics ) {
                 // build where clause based pages 
                 var statsUrl = agol.buildStatsUrl( itemJson.url, ( options.layer || 0 ), serviceInfo.objectIdField || options.objectIdField );
+
                 var idUrl = itemJson.url + '/' + ( options.layer || 0 ) + '/query?where=1=1&returnIdsOnly=true&f=json';
+
                 agol.req( statsUrl, function( err, res ){
                   try {
                     var statsJson = JSON.parse( res.body );
@@ -760,7 +780,7 @@ var AGOL = function( koop ){
                 });
 
               } else {
-                if ( count < 50000 ){
+                if ( count < 500000 ){
                   agol.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
                     try {
                       pageRequests = agol.buildIDPages(
