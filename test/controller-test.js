@@ -54,7 +54,7 @@ describe('AGOL Controller', function(){
             'id': 'tester'
           })
           .end(function(err, res){
-            res.should.have.status(500);
+            res.should.have.status(400);
             agol.register.called.should.equal(false);
             done();
         }); 
