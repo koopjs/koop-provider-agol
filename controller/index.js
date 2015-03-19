@@ -383,7 +383,7 @@ var Controller = function( agol, BaseController ){
       name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
       name = (name.length > 150) ? name.substr(0, 150): name;
 
-      if (itemJson.koop_status && itemJson.koop_status == 'too big'){
+      if ((itemJson.koop_status && itemJson.koop_status == 'too big') || agol.forceExportWorker ){
         // export as a series of small queries/files
         var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
 
@@ -421,7 +421,7 @@ var Controller = function( agol, BaseController ){
             }
           }
         });
-      } else {
+      } else if (itemJson && itemJson.data && itemJson.data[0]) {
         agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
           if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
@@ -455,6 +455,8 @@ var Controller = function( agol, BaseController ){
             }
           }
         });
+      } else {
+        res.status(400).send( 'Could not create export, missing data' );
       }
     }
 
