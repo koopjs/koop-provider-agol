@@ -87,7 +87,7 @@ function makeRequest(job, done){
       var url_parts = url.parse( uri );
       var opts = {
         method: 'GET',
-        port: (url_parts.protocol === 'https:') ? 443 : 80,
+        port: (url_parts.protocol === 'https:') ? 443 : url_parts.port || 80,
         hostname: url_parts.host,
         path: url_parts.path,
         headers: { 'User-Agent': 'esri-koop' }
