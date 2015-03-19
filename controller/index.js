@@ -417,7 +417,7 @@ var Controller = function( agol, BaseController ){
               if (req.params.format == 'json' || req.params.format == 'geojson'){
                 res.contentType('text');
               } 
-              res.sendfile(result);
+              res.sendFile(result);
             }
           }
         });
@@ -450,7 +450,7 @@ var Controller = function( agol, BaseController ){
                   proxyRes.pipe(res);
                 });
               } else {
-                res.sendfile(result);
+                res.sendFile(result);
               }
             }
           }
@@ -487,7 +487,7 @@ var Controller = function( agol, BaseController ){
           proxyRes.pipe(res);
         });
       } else {
-        res.sendfile( path );
+        res.sendFile( path );
       }
     }
   };
@@ -562,7 +562,7 @@ var Controller = function( agol, BaseController ){
 
         agol.files.exists( null, png, function( exists ){
           if ( exists ){
-            res.sendfile( png );
+            res.sendFile( png );
           } else {
 
             // if we have a layer then pass it along
@@ -601,7 +601,7 @@ var Controller = function( agol, BaseController ){
                       res.status(500).send( err );
                     } else {
                       // send back image
-                      res.sendfile( file );
+                      res.sendFile( file );
                     }
                   });
                   
@@ -647,7 +647,7 @@ var Controller = function( agol, BaseController ){
           res.setHeader('content-encoding', 'deflate');
         }
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
-          res.sendfile( tile );
+          res.sendFile( tile );
         } else {
           if ( callback ){
             res.send( callback + '(' + fs.readFileSync( JSON.parse( tile ) ) + ')' );
@@ -673,7 +673,7 @@ var Controller = function( agol, BaseController ){
         res.setHeader('content-encoding', 'deflate');
       }
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
-        res.sendfile( file );
+        res.sendFile( file );
       } else {
         if ( callback ){
           res.send( callback + '(' + JSON.parse( fs.readFileSync( file ) ) + ')' );
@@ -783,7 +783,7 @@ var Controller = function( agol, BaseController ){
           res.status(401).send( err );
           return;
         }
-        res.sendfile( tile );
+        res.sendFile( tile );
       });
     };
 
@@ -797,7 +797,7 @@ var Controller = function( agol, BaseController ){
 
     // if the json file alreadty exists, dont hit the db, just send the data
     if ( fs.existsSync( file ) ){
-      res.sendfile( file );
+      res.sendFile( file );
     } else  {
       agol.find( req.params.id, function( err, data ){
         if (err) {
