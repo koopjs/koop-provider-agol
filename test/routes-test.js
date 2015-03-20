@@ -134,11 +134,11 @@ describe('FeatureService Proxy Provider', function(){
           });
       });
 
-      it('should return 400 when a missing/unknown feature service layer', function(done) {
+      it('should return 404 when a missing/unknown feature service layer', function(done) {
           request(koop)
             .get('/agol/arcgis/000915053fad47cfa0a2dca9d3d4e76a/100')
             .end(function(err, res){
-              res.status.should.equal(400);
+              res.status.should.equal(404);
               done();
           }); 
       });

@@ -77,12 +77,12 @@ var Controller = function( agol, BaseController ){
     } else {
       agol.find(req.params.id, function(err, data){
         if (err) {
-          res.status(err.code || 400).send( err );
+          res.status(err.code || 404).send( err );
         } else {
           // Get the item 
           agol.getItem( data.host, req.params.item, req.query, function(error, itemJson){
             if (error) {
-              res.status(error.code || 404).send( error);
+              res.status(404).send( error);
             } else {
               res.contentType('text'); 
               res.json( itemJson );
@@ -102,7 +102,7 @@ var Controller = function( agol, BaseController ){
 
     agol.find(req.params.id, function(err, data){
       if (err) {
-        res.status(err.code || 400).send( err );
+        res.status(err.code || 404).send( err );
       } else {
         // Get the item 
         agol.dropItem( data.host, req.params.item, req.query, function(error, itemJson){
@@ -353,7 +353,7 @@ var Controller = function( agol, BaseController ){
                 if ( err.code && err.error ){
                   res.status(err.code).send( err.error );
                 } else {
-                  res.status(400).send( err );
+                  res.status(404).send( err );
                 }
               } else {
                 if ( itemJson && itemJson.data && itemJson.data[0].features.length > 1000){
@@ -417,7 +417,7 @@ var Controller = function( agol, BaseController ){
               if (req.params.format == 'json' || req.params.format == 'geojson'){
                 res.contentType('text');
               } 
-              res.sendFile(result);
+              res.sendfile(result);
             }
           }
         });
@@ -450,7 +450,7 @@ var Controller = function( agol, BaseController ){
                   proxyRes.pipe(res);
                 });
               } else {
-                res.sendFile(result);
+                res.sendfile(result);
               }
             }
           }
@@ -487,7 +487,7 @@ var Controller = function( agol, BaseController ){
           proxyRes.pipe(res);
         });
       } else {
-        res.sendFile( path );
+        res.sendfile( path );
       }
     }
   };
@@ -562,7 +562,7 @@ var Controller = function( agol, BaseController ){
 
         agol.files.exists( null, png, function( exists ){
           if ( exists ){
-            res.sendFile( png );
+            res.sendfile( png );
           } else {
 
             // if we have a layer then pass it along
@@ -601,7 +601,7 @@ var Controller = function( agol, BaseController ){
                       res.status(500).send( err );
                     } else {
                       // send back image
-                      res.sendFile( file );
+                      res.sendfile( file );
                     }
                   });
                   
@@ -647,7 +647,7 @@ var Controller = function( agol, BaseController ){
           res.setHeader('content-encoding', 'deflate');
         }
         if ( req.params.format == 'png' || req.params.format == 'pbf'){
-          res.sendFile( tile );
+          res.sendfile( tile );
         } else {
           if ( callback ){
             res.send( callback + '(' + fs.readFileSync( JSON.parse( tile ) ) + ')' );
@@ -673,7 +673,7 @@ var Controller = function( agol, BaseController ){
         res.setHeader('content-encoding', 'deflate');
       }
       if ( req.params.format == 'png' || req.params.format == 'pbf'){
-        res.sendFile( file );
+        res.sendfile( file );
       } else {
         if ( callback ){
           res.send( callback + '(' + JSON.parse( fs.readFileSync( file ) ) + ')' );
@@ -783,7 +783,7 @@ var Controller = function( agol, BaseController ){
           res.status(401).send( err );
           return;
         }
-        res.sendFile( tile );
+        res.sendfile( tile );
       });
     };
 
@@ -797,7 +797,7 @@ var Controller = function( agol, BaseController ){
 
     // if the json file alreadty exists, dont hit the db, just send the data
     if ( fs.existsSync( file ) ){
-      res.sendFile( file );
+      res.sendfile( file );
     } else  {
       agol.find( req.params.id, function( err, data ){
         if (err) {
