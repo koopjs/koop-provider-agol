@@ -137,6 +137,7 @@ var Controller = function( agol, BaseController ){
             } else if ( itemJson.koop_status == 'processing'){
               // return w/202
               agol.getCount(['agol', item, options.layer].join(':'), {}, function(err, count){
+                var code = 202;
                 var response = {
                   status: 'processing',
                   processing_time: ( Date.now() - itemJson.retrieved_at)/1000 || 0, 
@@ -144,8 +145,12 @@ var Controller = function( agol, BaseController ){
                 };
                 if ( itemJson.generating ){
                   response.generating = itemJson.generating;
+                  // we received an error from the server
+                  if (info.generating.error){
+                    code = 502;
+                  }
                 }
-                res.status(202).json( response );
+                res.status( code ).json( response );
               }); 
             } else {
               callback( null, itemJson );
@@ -173,17 +178,27 @@ var Controller = function( agol, BaseController ){
       var key = crypto.createHash('md5').update(toHash).digest('hex');
 
       var _returnProcessing = function( ){
-          agol.log('debug',JSON.stringify({status: 202, item: req.params.item, layer: ( req.params.layer || 0 )})); 
           agol.getCount(table_key, {}, function(err, count){
+            var code = 202;
+
+            // we need some logic around handling long standing processing times
+            var processingTime = ( Date.now() - info.retrieved_at)/1000 || 0;
+
             var response = {
               status: 'processing',
-              processing_time: ( Date.now() - info.retrieved_at)/1000 || 0, 
+              processing_time: processingTime, 
               count: count
             };
             if ( info.generating ){
               response.generating = info.generating;
+              // we received an error from the server
+              if (info.generating.error){
+                code = 502;
+              }
             }
-            res.status(202).json( response );
+            
+            agol.log('debug',JSON.stringify({status: code, item: req.params.item, layer: ( req.params.layer || 0 )})); 
+            res.status( code ).json( response );
           });
       };
 
@@ -395,6 +410,7 @@ var Controller = function( agol, BaseController ){
         agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
           if (result && result.status && result.status == 'processing'){
             agol.getCount(table, {}, function(err, count){
+              var code = 202;
               var response = {
                 status: 'processing',
                 processing_time: ( Date.now() - result.retrieved_at)/1000 || 0, 
@@ -402,8 +418,12 @@ var Controller = function( agol, BaseController ){
               };
               if ( result.generating ){
                 response.generating = result.generating;
+                // we received an error from the server
+                if (info.generating.error){
+                  code = 502;
+                }
               }
-              res.status(202).json( response );
+              res.status(code).json( response );
             });
           } else if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
