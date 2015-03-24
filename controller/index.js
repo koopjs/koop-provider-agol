@@ -146,7 +146,7 @@ var Controller = function( agol, BaseController ){
                 if ( itemJson.generating ){
                   response.generating = itemJson.generating;
                   // we received an error from the server
-                  if (info.generating.error){
+                  if (itemJson.generating.error){
                     code = 502;
                   }
                 }
@@ -173,6 +173,10 @@ var Controller = function( agol, BaseController ){
           sorted_query[key] = req.query[key];
         }
       });
+
+      // determine if this request is for a filtered dataset
+      req.query.isFiltered = (req.query.where || req.query.geometry) ? true : false;
+
       // build the file key as an MD5 hash that's a join on the paams and look for the file 
       var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
       var key = crypto.createHash('md5').update(toHash).digest('hex');
@@ -387,16 +391,28 @@ var Controller = function( agol, BaseController ){
       if ( err.code && err.error ){
         res.status(err.code).send( err.error );
       } else {
-        res.status(500).send( err );
+        res.status(400).send( err );
       }
-    } else if ( itemJson && itemJson.data && itemJson.data[0] && !itemJson.data[0].features.length ){
+    } 
+    else if ( itemJson && itemJson.data && itemJson.data[0] && !itemJson.data[0].features.length ){
+
       agol.log('error', req.url +' No features in data');
-      res.status(400).send( 'No features exist for the requested FeatureService layer');
-    } else {
+      res.status(404).send( 'No features exist for the requested FeatureService layer');
+
+    } 
+    else {
+
       var name = ( itemJson && itemJson.data && itemJson.data[0] && (itemJson.data[0].name || (itemJson.data[0].info && itemJson.data[0].info.name) ) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
       // cleanze the name
       name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
       name = (name.length > 150) ? name.substr(0, 150): name;
+
+      if (itemJson && itemJson.data && itemJson.data[0] && itemJson.data[0].info && itemJson.data[0].info.extent.spatialReference.latestWkid ) {
+        var wkid = itemJson.data[0].info.extent.spatialReference.latestWkid;
+        if ( req.query.wkid !== 3857 || req.query.wkid !== 4326 ){
+          req.query.wkid = wkid;
+        }
+      }
 
       if ((itemJson.koop_status && itemJson.koop_status == 'too big') || agol.forceExportWorker ){
         // export as a series of small queries/files
@@ -419,7 +435,7 @@ var Controller = function( agol, BaseController ){
               if ( result.generating ){
                 response.generating = result.generating;
                 // we received an error from the server
-                if (info.generating.error){
+                if (result.generating.error){
                   code = 502;
                 }
               }
@@ -442,7 +458,18 @@ var Controller = function( agol, BaseController ){
           }
         });
       } else if (itemJson && itemJson.data && itemJson.data[0]) {
-        agol.exportToFormat( req.params.format, dir, key, itemJson.data[0], { name: name }, function(err, result){
+
+        agol.exportToFormat( 
+          req.params.format, 
+          dir, 
+          key, 
+          itemJson.data[0], 
+          { 
+            isFiltered: req.query.isFiltered, 
+            name: name, 
+            wkid: req.query.wkid 
+          }, 
+          function(err, result){
           if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
             origUrl[0] = origUrl[0].replace(/json/,req.params.format);
