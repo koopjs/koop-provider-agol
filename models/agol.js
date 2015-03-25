@@ -97,7 +97,8 @@ var AGOL = function( koop ){
   agol.dropItem = function( host, itemId, options, callback ){
     var layerId = (options.layer || 0);
 
-    if ( koop.exporter.export_q ){
+    if ( koop.Exporter.export_q ){
+
       var jobData = {
         itemId: itemId,
         layerId: layerId,
@@ -105,7 +106,7 @@ var AGOL = function( koop ){
       };
 
       // add the job to the distributed worker pool 
-      var job = koop.exporter.export_q.create( 'exports', jobData ).save( function(err){
+      var job = koop.Exporter.export_q.create( 'exports', jobData ).save( function(err){
           agol.log('debug', 'added a remove job to the export_q' + job.id );
           var dir = [ itemId, layerId ].join('_');
           koop.Cache.remove('agol', itemId, options, function(err, res){
@@ -623,16 +624,15 @@ var AGOL = function( koop ){
   agol._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
     // add to a separate queue that we can use to add jobs one at a time
     // this prevents the case when we get 2 requests at the same time
-    agol._throttleQ.push( [ 'agol', id, layerId].join(':'), function( locked ){
+    var key = [ 'agol', id, layerId].join(':');
+    agol._throttleQ.push( key, function( locked ){
       if ( !locked ){
         agol.requestQueue( count, pageRequests, id, itemJson, layerId, options, function(err,data){
-          koop.exporter.taskQueue.push( {
-            id: id,
-            type: 'agol',
-            hash: hash,
-            options: options,
-            geomType: options.geomType
-          }, function(){});
+          // get info 
+          koop.Cache.getInfo(key, function(err, info){
+            delete info.status;
+            koop.Cache.updateInfo( key, info, function(){});
+          });
         });
       }
     });
@@ -853,7 +853,7 @@ var AGOL = function( koop ){
     var objId = options.objectIdField || 'objectId';
 
 
-    var pages = ( max == maxCount ) ? max : Math.ceil((max-min) / maxCount);
+    var pages = Math.max(( max == maxCount ) ? max : Math.ceil((max-min) / maxCount), 1);
 
     for (i=0; i < pages; i++){
       //there is a bug in server where queries fail if the max value queried is higher than the actual max

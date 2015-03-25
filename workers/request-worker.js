@@ -79,7 +79,7 @@ function makeRequest(job, done){
     layerId = job.data.layerId,
     len = job.data.pages.length,
     completed = 0;
-
+      
   var requestFeatures = function(task, cb){
     var uri = encodeURI( decodeURI(task.req) );
     try { 
@@ -92,6 +92,7 @@ function makeRequest(job, done){
         path: url_parts.path,
         headers: { 'User-Agent': 'esri-koop' }
       };
+
 
       // make an http or https request based on the protocol
       var req = ((url_parts.protocol === 'https:') ? protocols.https : protocols.http ).request(opts, function(response) {
