@@ -93,7 +93,6 @@ function makeRequest(job, done){
         headers: { 'User-Agent': 'esri-koop' }
       };
 
-
       // make an http or https request based on the protocol
       var req = ((url_parts.protocol === 'https:') ? protocols.https : protocols.http ).request(opts, function(response) {
         var data = '';

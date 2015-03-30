@@ -407,11 +407,21 @@ var Controller = function( agol, BaseController ){
       name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
       name = (name.length > 150) ? name.substr(0, 150): name;
 
-      if (itemJson && itemJson.data && itemJson.data[0] && itemJson.data[0].info && itemJson.data[0].info.extent.spatialReference.latestWkid ) {
+      if (itemJson && 
+          itemJson.data && 
+          itemJson.data[0] && 
+          itemJson.data[0].info && 
+          itemJson.data[0].info && 
+          itemJson.data[0].info.extent &&
+          itemJson.data[0].info.extent.spatialReference ){
+
         var wkid = itemJson.data[0].info.extent.spatialReference.latestWkid;
-        if ( req.query.wkid !== 3857 || req.query.wkid !== 4326 ){
+        if ( wkid && (req.query.wkid !== 3857 || req.query.wkid !== 4326) ){
           req.query.wkid = wkid;
+        } else if ( itemJson.data[0].info.extent.spatialReference.wkt ){
+          req.query.wkt = wkt;
         }
+
       }
 
       if ((itemJson.koop_status && itemJson.koop_status == 'too big') || agol.forceExportWorker ){

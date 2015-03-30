@@ -125,11 +125,11 @@ describe('FeatureService Proxy Provider', function(){
           });
       });
   
-      it('should return 400 when exporting an empty layer', function(done) {
+      it('should return 404 when exporting an empty layer', function(done) {
           request(koop)
             .get('/agol/arcgis/000429f808ba404bb6b67e192170a5d7/0.csv')
             .end(function(err, res){
-              res.status.should.equal(400);
+              res.status.should.equal(404);
               done();
           });
       });
