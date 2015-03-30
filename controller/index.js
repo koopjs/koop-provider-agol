@@ -419,7 +419,7 @@ var Controller = function( agol, BaseController ){
         if ( wkid && (req.query.wkid !== 3857 || req.query.wkid !== 4326) ){
           req.query.wkid = wkid;
         } else if ( itemJson.data[0].info.extent.spatialReference.wkt ){
-          req.query.wkt = wkt;
+          req.query.wkt = itemJson.data[0].info.extent.spatialReference.wkt;
         }
 
       }
