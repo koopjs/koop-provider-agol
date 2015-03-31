@@ -883,6 +883,12 @@ var Controller = function( agol, BaseController ){
 
   };
 
+  // drops the cache for an item and DELETEs all known files
+  controller.deleteItemData = function(req, res){
+    req.query.forceDelete = true;
+    controller.dropItem(req, res);
+  };
+
   return controller;
 
 };

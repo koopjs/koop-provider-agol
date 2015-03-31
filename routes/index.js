@@ -3,6 +3,7 @@ module.exports = {
   'get /agol': 'list',
   'get /agol/:id': 'find',
   'delete /agol/:id': 'del',
+  'delete /agol/:id/:item/:layer': 'deleteItemData',
   'get /agol/:id/:item.:format': 'findItemData',
   'get /agol/:id/:item/:layer.:format': 'findItemData',
   'get /agol/:id/:item/:layer': 'findItemData',

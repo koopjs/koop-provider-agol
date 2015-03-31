@@ -113,7 +113,14 @@ var AGOL = function( koop ){
             koop.files.removeDir( 'files/' + dir, function(err, res){
               koop.files.removeDir( 'tiles/'+ dir, function(err, res){
                 koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
-                  callback(err, true);
+                  if (options.forceDelete){
+                    koop.files.removeDir( 'latest/files/'+ dir, function(err, res){
+                      callback(err, true);
+                    });
+                  } 
+                  else {
+                    callback(err, true);
+                  }
                 });
               });
             });
