@@ -490,7 +490,7 @@ var Controller = function( agol, BaseController ){
             if (err) {
               res.status(err.code || 400).send( err );
             } else {
-              res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+              res.setHeader('Content-disposition', 'attachment; filename='+(encodeURIComponent(name)+'.'+req.params.format));
               if (req.params.format == 'json' || req.params.format == 'geojson'){
                 res.contentType('application/json');
               } else if (req.params.format == 'kml'){
@@ -527,7 +527,7 @@ var Controller = function( agol, BaseController ){
       res.json({url: newUrl});
     } else {
       // forces browsers to download 
-      res.setHeader('Content-disposition', 'attachment; filename='+(name+'.'+req.params.format));
+      res.setHeader('Content-disposition', 'attachment; filename='+(encodeURIComponent(name)+'.'+req.params.format));
       if (req.params.format == 'json' || req.params.format == 'geojson'){
         res.contentType('application/json');
       } else if (req.params.format == 'kml'){
