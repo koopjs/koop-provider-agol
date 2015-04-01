@@ -415,8 +415,8 @@ var Controller = function( agol, BaseController ){
           itemJson.data[0].info.extent &&
           itemJson.data[0].info.extent.spatialReference ){
 
-        var wkid = itemJson.data[0].info.extent.spatialReference.latestWkid;
-        if ( wkid && (wkid !== 3857 || wkid !== 4326 || wkid !== 102100 ) ){
+        var wkid = parseInt(itemJson.data[0].info.extent.spatialReference.latestWkid);
+        if ( wkid && (wkid !== 3857 && wkid !== 4326 && wkid !== 102100 ) ){
           req.query.wkid = wkid;
         } else if ( itemJson.data[0].info.extent.spatialReference.wkt ){
           req.query.wkt = itemJson.data[0].info.extent.spatialReference.wkt;
