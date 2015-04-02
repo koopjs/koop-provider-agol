@@ -81,9 +81,18 @@ var AGOL = function( koop ){
     });
   };
 
+  agol.forceHttps = function (url){
+    if (url && url.split('//').length > 1){
+      url = url.split('//')[1].match(/^service/) ? url.replace('http:', 'https:') : url;
+    }
+    return url;
+  };
+
   // Centralized request method 
   // all ajax requests should use this so it can be tested 
   agol.req = function(url, callback){
+    // force hosted service requests to use ssl
+    url = agol.forceHttps(url);
     request({
         url: encodeURI( decodeURI(url) ), 
         headers: { 'User-Agent': 'esri-koop' }
@@ -837,6 +846,10 @@ var AGOL = function( koop ){
   agol.buildOffsetPages = function( pages, url, max, options ){
     var reqs = [], 
       resultOffset;
+    
+    // force hosted services to use https
+    url = agol.forceHttps(url);
+
     for (var i=0; i < pages; i++){
 
       resultOffset = i*max; 
@@ -859,6 +872,8 @@ var AGOL = function( koop ){
 
     var objId = options.objectIdField || 'objectId';
 
+    // force hosted services to use https
+    url = agol.forceHttps(url);
 
     var pages = Math.max(( max == maxCount ) ? max : Math.ceil((max-min) / maxCount), 1);
 
@@ -885,6 +900,9 @@ var AGOL = function( koop ){
   agol.buildIDPages = function( url, ids, maxCount, options ){
     var reqs = [],
       pageMax;
+    
+    // force hosted services to use https
+    url = agol.forceHttps(url);
     
     var objId = options.objectIdField || 'objectId';
 

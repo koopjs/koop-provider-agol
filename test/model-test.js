@@ -573,7 +573,7 @@ describe('AGOL Model', function(){
     describe('when building pages for requests', function() {
     
       it('should build offset based request pages', function(done){
-        var url = 'http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
+        var url = 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
         var max = 1000;
         var pages = 4;
         var options = {layer:1};
@@ -585,7 +585,7 @@ describe('AGOL Model', function(){
       });
 
       it('should build where clause based request pages', function(done){
-        var url = 'http://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
+        var url = 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
         var maxCount = 1000;
         var min = 1;
         var max = 3143;
