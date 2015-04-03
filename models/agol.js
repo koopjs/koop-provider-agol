@@ -205,6 +205,7 @@ var AGOL = function( koop ){
             var url_parts = itemJson.url.split('/');
             if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
               var lyrId = url_parts[ url_parts.length-1 ];
+              itemJson.hasLayerURL = true;
               itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
             }
           }
@@ -485,6 +486,7 @@ var AGOL = function( koop ){
     var url_parts = itemJson.url.split('/');
     if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
       var lyrId = url_parts[ url_parts.length-1 ];
+      itemJson.hasLayerURL = true;
       itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
     }
 
@@ -565,7 +567,7 @@ var AGOL = function( koop ){
 
         // we can the data in one shot
         var url = itemJson.url + '/' + (options.layer || 0) + '/query?outSR=4326&where=1=1&f=json&outFields=*';
-        url += '&geometry=&returnGeometry=true&geometryPrecision=6';
+        url += '&geometry=&returnGeometry=true&geometryPrecision=';
 
         // get the features
         self.req(url, function(err, data ){
@@ -579,7 +581,7 @@ var AGOL = function( koop ){
               var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
               koop.GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
-                geojson.name = (serviceInfo.name || serviceInfo.title || itemJson.name || itemJson.title)
+                geojson.name = ((serviceInfo.name && !itemJson.hasLayerURL) || serviceInfo.title || itemJson.name || itemJson.title)
                   .replace(/\/|,|&|\|/g, '')
                   .replace(/ /g, '_')
                   .replace(/\(|\)/g, '');
@@ -665,6 +667,7 @@ var AGOL = function( koop ){
     var url_parts = itemJson.url.split('/');
     if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
       var lyrId = url_parts[ url_parts.length-1 ];
+      itemJson.hasLayerURL = true;
       itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
     }
 
@@ -685,7 +688,7 @@ var AGOL = function( koop ){
         if ( serviceInfo.definitionExpression ){
           serviceInfo.definitionExpression = serviceInfo.definitionExpression.replace(/'/g, '');
         }
-        if ( serviceInfo.name ){
+        if ( serviceInfo.name && !itemJson.hasLayerURL ){
           options.name = serviceInfo.name;
         } else if ( serviceInfo.title ) {
           options.name = serviceInfo.title;
@@ -856,7 +859,7 @@ var AGOL = function( koop ){
       var pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&f=json&outFields=*&where=1=1';
       pageUrl += '&resultOffset='+resultOffset;
       pageUrl += '&resultRecordCount='+max;
-      pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
+      pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=';
       reqs.push({req: pageUrl});
     }
 
@@ -889,7 +892,7 @@ var AGOL = function( koop ){
       pageMin = min + (maxCount*i);
       where = objId+'<=' + pageMax + '+AND+' + objId+'>=' + pageMin;
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
-      pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
+      pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=';
       reqs.push({req: pageUrl});
     }
 
@@ -913,7 +916,7 @@ var AGOL = function( koop ){
       if (pageIds.length){
         where = objId+' in (' + pageIds.join(',') + ')';
         pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
-        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=6';
+        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=';
         reqs.push({req: pageUrl});
       }
     }
