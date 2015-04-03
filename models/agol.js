@@ -437,7 +437,6 @@ var AGOL = function( koop ){
   };
 
   agol.getFeatureService = function( hostId, id, itemJson, hash, options, callback){
-    var self = this;
     if ( !itemJson.url ){
       callback( 'Missing url parameter for Feature Service Item', null );
     } else {
@@ -445,29 +444,52 @@ var AGOL = function( koop ){
       if (options.enforce_limit !== false){
         options.enforce_limit = true;
       }
-      koop.Cache.get( 'agol', id, options, function(err, entry ){
-        if ( err ){
-          // no data in the cache; request new data 
-          self.makeFeatureServiceRequest( hostId, id, itemJson, hash, options, callback );
-        } else if ( entry && entry[0] && entry[0].status == 'processing' ){
-          itemJson.data = [{
-            features:[],
-            name: ( itemJson.info ) ? itemJson.info.name : itemJson.name,
-            geomType: self.geomTypes[itemJson.geometryType],
-            info: itemJson.info
-          }];
-          itemJson.koop_status = 'processing';
-          callback(null, itemJson);
-        } else if ( entry && entry[0] && entry[0].exceeds_limit ){
-          itemJson.data = entry;
-          itemJson.koop_status = 'too big';
-          callback(null, itemJson);
-        } else {
-          itemJson.data = entry;
-          callback( null, itemJson );
-        }            
-      });
+
+      // if our request has a where clause we need to search for Coded Values Domain
+      if (options && options.where){
+        // get service layer info 
+        this.getFeatureServiceLayerInfo( itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
+          if (err){
+            return callback(err);
+          }
+          // add fields to options 
+          options.fields = serviceInfo.fields;
+          // get data from cache 
+          agol.getDataFromCache(hostId, id, itemJson, hash, options, callback);
+        });
+      } else {
+        agol.getDataFromCache(hostId, id, itemJson, hash, options, callback);
+      }
     }
+  };
+
+
+  // checks the chache
+  agol.getDataFromCache = function( hostId, id, itemJson, hash, options, callback ){
+    var self = this;
+    //search the cache for this data
+    koop.Cache.get( 'agol', id, options, function(err, entry ){
+      if ( err ){
+        // no data in the cache; request new data 
+        self.makeFeatureServiceRequest( hostId, id, itemJson, hash, options, callback );
+      } else if ( entry && entry[0] && entry[0].status == 'processing' ){
+        itemJson.data = [{
+          features:[],
+          name: ( itemJson.info ) ? itemJson.info.name : itemJson.name,
+          geomType: self.geomTypes[itemJson.geometryType],
+          info: itemJson.info
+        }];
+        itemJson.koop_status = 'processing';
+        callback(null, itemJson);
+      } else if ( entry && entry[0] && entry[0].exceeds_limit ){
+        itemJson.data = entry;
+        itemJson.koop_status = 'too big';
+        callback(null, itemJson);
+      } else {
+        itemJson.data = entry;
+        callback( null, itemJson );
+      }            
+    });
   };
 
   // removes the layer from the end of a url 
