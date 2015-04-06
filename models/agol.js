@@ -603,7 +603,7 @@ var AGOL = function( koop ){
               var json = {features: JSON.parse( data.body ).features};
               // convert to GeoJSON 
               koop.GeoJSON.fromEsri( serviceInfo.fields, json, function(err, geojson){
-                geojson.name = ((serviceInfo.name && !itemJson.hasLayerURL) || serviceInfo.title || itemJson.name || itemJson.title)
+                geojson.name = (serviceInfo.name || serviceInfo.title || itemJson.name || itemJson.title)
                   .replace(/\/|,|&|\|/g, '')
                   .replace(/ /g, '_')
                   .replace(/\(|\)/g, '');
