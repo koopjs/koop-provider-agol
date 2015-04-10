@@ -1,6 +1,7 @@
 module.exports = {
   'post /agol': 'register',
   'get /agol': 'list',
+  'get /agolworkers': 'getQueueCounts',
   'get /agol/:id': 'find',
   'delete /agol/:id': 'del',
   'delete /agol/:id/:item/:layer': 'deleteItemData',
