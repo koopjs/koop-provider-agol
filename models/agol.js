@@ -50,6 +50,7 @@ var AGOL = function( koop ){
 
   // how to long to persist the cache of data 
   // after which data will be dropped and re-fetched
+  // epoch = days * hours * minutes * secs * millisecs
   agol.cacheLife = (24*60*60*1000);  
 
   // adds a service to the Cache.db
@@ -1126,6 +1127,37 @@ var AGOL = function( koop ){
       }
     });
     return field;
+  };
+
+
+  agol.getQueueCounts = function(callback){
+    var response = {}, error, count = 0;
+    var jobTypes = ['inactiveCount', 'activeCount', 'completeCount', 'failedCount', 'delayedCount'];
+    //for (var type in jobTypes){
+    function getJobCounts(type){
+      koop.collectQStats(agol.worker_q, response, type, function(err, json){
+        count++;
+        if (err){
+          error = err;
+        }
+        // save the response
+        response = json;
+
+        // get more if there are more types
+        if (jobTypes[count]){
+          getJobCounts( jobTypes[count] );
+        } else {
+          // return the response
+          if (error){
+            callback(error);
+          } else {
+            callback(null, response);
+          }
+        }
+      });
+    };
+
+    getJobCounts( jobTypes[count] );
   };
 
   return agol;
