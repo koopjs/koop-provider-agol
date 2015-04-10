@@ -416,7 +416,7 @@ var Controller = function( agol, BaseController ){
           itemJson.data[0].info.extent.spatialReference ){
 
         var wkid = parseInt(itemJson.data[0].info.extent.spatialReference.latestWkid);
-        if ( wkid && (wkid !== 3857 && wkid !== 4326 && wkid !== 102100 ) ){
+        if ( wkid && (wkid !== 3785 && wkid !== 3857 && wkid !== 4326 && wkid !== 102100 ) ){
           req.query.wkid = wkid;
         } else if ( itemJson.data[0].info.extent.spatialReference.wkt ){
           req.query.wkt = itemJson.data[0].info.extent.spatialReference.wkt;
@@ -887,6 +887,16 @@ var Controller = function( agol, BaseController ){
   controller.deleteItemData = function(req, res){
     req.query.forceDelete = true;
     controller.dropItem(req, res);
+  };
+
+  controller.getQueueCounts = function(req, res){
+    agol.getQueueCounts(function(err, response){
+      if (err){
+        res.status(500).send(err);
+      } else {
+        res.json(response);
+      }
+    });
   };
 
   return controller;
