@@ -74,7 +74,7 @@ setInterval(function () {
 
 // makes the request to the feature service and inserts the Features
 function makeRequest(job, done){
-  console.log( 'starting job', job.id );
+  console.log( 'starting job', job.id);
   var id = job.data.id,
     layerId = job.data.layerId,
     len = job.data.pages.length,
@@ -105,7 +105,6 @@ function makeRequest(job, done){
         });
 
         response.on('end', function () {
-
           try {
             // so sometimes server returns these crazy asterisks in the coords
             // I do a regex to replace them in both the case that I've found them
@@ -129,7 +128,7 @@ function makeRequest(job, done){
                     requestQ.kill();
                   }
                   completed++;
-                  console.log(completed, len);
+                  console.log(completed, len, id);
                   job.progress( completed, len );
                   
                   // clean up our big vars            
@@ -197,7 +196,7 @@ function makeRequest(job, done){
   var catchErrors = function( task, e, url, callback){
     if ( task.retry && task.retry < 3 ){
       task.retry++;
-      requestQ.push( task, noOp );
+      requestQ.push( task, function(err){ if (err) { koop.log.error(err); } });
       return callback();
     } else if (task.retry && task.retry == 3 ){
       koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
@@ -221,7 +220,7 @@ function makeRequest(job, done){
     } else {
       task.retry = 1;
       koop.log.info('Re-requesting page '+ task.req +' '+ e);
-      requestQ.push(task, noOp);
+      requestQ.push( task, function(err){ if (err) { koop.log.error(err); } });
       return callback();
     }
   };
