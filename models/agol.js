@@ -4,11 +4,22 @@ var request = require('request'),
   crypto = require('crypto'),
   async = require('async');
 
+var csv
+
 var AGOL = function( koop ){
 
   var agol = {};
   agol.__proto__ = koop.BaseModel( koop );
+  
+  // base path to use for every host 
+  agol.agol_path = '/sharing/rest/content/items/';
+  
+  // how to long to persist the cache of data 
+  // after which data will be dropped and re-fetched
+  // epoch = days * hours * minutes * secs * millisecs
+  agol.cacheLife = (24*60*60*1000);  
 
+  // REQUEST WORKERS
   // create a request Q if configured to page large data sets  
   if (koop.config.agol && koop.config.agol.request_workers){
     agol.worker_q = kue.createQueue({
@@ -38,28 +49,20 @@ var AGOL = function( koop ){
       agol.log('debug', 'progress ' + id + ' - ' + progress + '%');
     });
 
-    
-
   }
     
-
   // check to see if koop is configured to force workers on all data
   if ( koop.config.export_workers && koop.config.export_workers.force){
     agol.forceExportWorker = true;
   }
 
-  // how to long to persist the cache of data 
-  // after which data will be dropped and re-fetched
-  // epoch = days * hours * minutes * secs * millisecs
-  agol.cacheLife = (24*60*60*1000);  
-
   // adds a service to the Cache.db
   // needs a host, generates an id 
-  agol.register = function( id, host, callback ){
+  agol.register = function (id, host, callback) {
     var type = 'agol:services';
-    koop.Cache.db.serviceCount( type, function(error, count){
+    koop.Cache.db.serviceCount( type, function (error, count) {
       id = id || count++;
-      koop.Cache.db.serviceRegister( type, {'id': id, 'host': host},  function( err, success ){
+      koop.Cache.db.serviceRegister( type, {'id': id, 'host': host},  function (err, success) {
         callback( err, id );
       });
     });
@@ -100,8 +103,6 @@ var AGOL = function( koop ){
       }, callback);
   };
 
-  // base path to use for every host 
-  agol.agol_path = '/sharing/rest/content/items/';
 
   // drops the item from the cache
   agol.dropItem = function( host, itemId, options, callback ){
@@ -117,40 +118,42 @@ var AGOL = function( koop ){
 
       // add the job to the distributed worker pool 
       var job = koop.Exporter.export_q.create( 'exports', jobData ).save( function(err){
-          agol.log('debug', 'added a remove job to the export_q' + job.id );
-          var dir = [ itemId, layerId ].join('_');
-          koop.Cache.remove('agol', itemId, options, function(err, res){
-            koop.files.removeDir( 'files/' + dir, function(err, res){
-              koop.files.removeDir( 'tiles/'+ dir, function(err, res){
-                koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
-                  if (options.forceDelete){
-                    koop.files.removeDir( 'latest/files/'+ dir, function(err, res){
-                      callback(err, true);
-                    });
-                  } 
-                  else {
-                    callback(err, true);
-                  }
-                });
+        agol.log('debug', 'added a remove job to the export_q' + job.id );
+        var dir = [ itemId, layerId ].join('_');
+        koop.Cache.remove('agol', itemId, options, function(err, res){
+          agol.removeExportDirs( dir, function(err, success){
+            if (options.forceDelete){
+              koop.files.removeDir( 'latest/files/'+ dir, function(err, res){
+                callback(err, true);
               });
-            });
+            } 
+            else {
+              callback(err, true);
+            }
           });
+        });
       });
       
     } else {
 
       var dir = [ itemId, layerId ].join('_');
       koop.Cache.remove('agol', itemId, options, function(err, res){
-        koop.files.removeDir( 'files/' + dir, function(err, res){
-          koop.files.removeDir( 'tiles/'+ dir, function(err, res){
-            koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
-              callback(err, true);
-            });
-          });
-        });
+        agol.removeExportDirs( dir, callback );
       });
 
     }
+  };
+
+  // method to remove all the data in each export dir
+  // this logic is being used in 4 places 
+  agol.removeExportDirs = function(dir, callback){
+    koop.files.removeDir('files/' + dir, function (err, res) {
+      koop.files.removeDir('tiles/' + dir, function (err, res) {
+        koop.files.removeDir('thumbs/' + dir, function (err, res) {
+          callback(err, true);
+        });
+      });
+    });
   };
 
   // got the service and get the item
@@ -241,6 +244,8 @@ var AGOL = function( koop ){
     });
   };
 
+  // Collects metadata for every layer in a service
+  // this is only used in server level tiles creation where we need all the layers
   agol.getServiceLayerData = function( host, itemId, hash, options, callback ){
     var self = this;
     var reqCount = 0, nlayers, serviceInfo, serviceUrl;
@@ -295,6 +300,8 @@ var AGOL = function( koop ){
     });
   };
 
+  // This is really the main entry point to this model
+  // here we route to the correct data type method based on the item type
   agol.getData = function(itemJson, host, hostId, itemId, hash, options, callback){
     if ( itemJson.type == 'CSV' ){
       agol.getCSV( host + agol.agol_path, hostId, itemId, itemJson, options, callback );
@@ -336,20 +343,16 @@ var AGOL = function( koop ){
             var dir = [ task.id, (task.options.layer || 0) ].join('_');
 
             koop.Cache.remove('agol', task.id, task.options, function(err, res){
-              koop.files.removeDir( 'files/' + dir, function(err, res){
-                koop.files.removeDir( 'tiles/'+ dir, function(err, res){
-                  koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
-                    koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
-                      koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
-                        if ( success ) {
-                          task.itemJson.data = [geojson];
-                          task.callback( null, task.itemJson );
-                        } else {
-                          task.callback( err, null );
-                        }
-                        cb();
-                      });
-                    });
+              agol.removeExportDirs( dir, function(err, success){
+                koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
+                  koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
+                      if ( success ) {
+                        task.itemJson.data = [geojson];
+                        task.callback( null, task.itemJson );
+                      } else {
+                        task.callback( err, null );
+                      }
+                      cb();
                   });
                 });
               });
