@@ -68,7 +68,6 @@ setInterval(function () {
     if (typeof gc === 'function') {
         gc();
     }
-    //console.log('Memory Usage', process.memoryUsage());
 }, 5000);
 
 
@@ -101,7 +100,6 @@ function makeRequest(job, done){
         });
 
         response.on('error', function(err){
-            console.log('catch errors 0')
            catchErrors(task, err, uri, cb);
         });
 
@@ -115,7 +113,6 @@ function makeRequest(job, done){
 
             if ( json.error ){
             
-              console.log('catch errors 1')
               catchErrors(task, JSON.stringify(json.error), uri, cb);
 
             } else {
@@ -165,7 +162,6 @@ function makeRequest(job, done){
               });
             }
           } catch(e){
-            console.log('catch errors 2')
             catchErrors(task, e, uri, cb);
           }
         });
@@ -173,13 +169,11 @@ function makeRequest(job, done){
 
       // we need this error catch to handle ECONNRESET
       req.on('error', function(err){
-        console.log('catch errors 3')
         catchErrors(task, err, uri, cb);
       });
 
       req.end();
     } catch(e){
-      console.log('catch errors 4')
       catchErrors(task, e, uri, cb);
     } 
   };
