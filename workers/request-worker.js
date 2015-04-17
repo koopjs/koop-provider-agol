@@ -113,7 +113,7 @@ function makeRequest(job, done){
             var json = JSON.parse(data.replace(/NaN/g, 'null'));
 
             if ( json.error ){
-
+              console.log('json.error???')
               catchErrors(task, JSON.stringify(json.error), uri, cb);
 
             } else {
@@ -168,6 +168,7 @@ function makeRequest(job, done){
         });
       });
 
+      // we need this error catch to handle ECONNRESET
       req.on('error', function(err){
         catchErrors(task, err, uri, cb);
       });
@@ -194,11 +195,7 @@ function makeRequest(job, done){
   // puts back on the queue if < 3 retries
   // errors the entire job if if fails  
   var catchErrors = function( task, e, url, callback){
-    if ( task.retry && task.retry < 3 ){
-      task.retry++;
-      requestQ.push( task, function(err){ if (err) { koop.log.error(err); } });
-      return callback();
-    } else if (task.retry && task.retry == 3 ){
+    if (task.retry && task.retry == 3 ){
       koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
       try {
         var jsonErr = JSON.parse(e);
@@ -218,10 +215,18 @@ function makeRequest(job, done){
       }
       return;
     } else {
-      task.retry = 1;
+      if (!task.retry){
+        task.retry = 1;
+      } else {
+        task.retry++;
+      }
       koop.log.info('Re-requesting page '+ task.req +' '+ e);
       requestQ.push( task, function(err){ if (err) { koop.log.error(err); } });
-      return callback();
+      try {
+        return callback();
+      } catch (e) {
+        koop.log.error( 'failed to call a callback in catch errors '+ task.req +' '+ e);
+      }
     }
   };
 
