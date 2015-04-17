@@ -330,7 +330,7 @@ var AGOL = function( koop ){
           koop.GeoJSON.fromCSV( csv_data, function(err, geojson){
             // store metadata with the data
             var json = {};
-            json.name = task.itemJson.title || task.itemJson.name;
+            json.name = task.itemJson.name || task.itemJson.title;
             json.updated_at = task.itemJson.modified;
             json.expires_at = task.expires_at;
             json.retrieved_at = Date.now();
