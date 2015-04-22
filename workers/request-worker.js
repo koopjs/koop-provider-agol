@@ -91,7 +91,6 @@ function makeRequest(job, done){
         path: url_parts.path,
         headers: { 'User-Agent': 'esri-koop' }
       };
-
       // make an http or https request based on the protocol
       var req = ((url_parts.protocol === 'https:') ? protocols.https : protocols.http ).request(opts, function(response) {
         var data = '';
@@ -194,7 +193,7 @@ function makeRequest(job, done){
   // puts back on the queue if < 3 retries
   // errors the entire job if if fails  
   var catchErrors = function( task, e, url, callback){
-    if (task.retry && task.retry == 3 ){
+    if (task.retry && task.retry === 3 ){
       koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
       try {
         var jsonErr = JSON.parse(e);
@@ -208,7 +207,7 @@ function makeRequest(job, done){
         done(JSON.stringify({
           message: 'Failed to request a page of features',
           request: url,
-          response: e,
+          response: parseErr,
           code: null
         }));
       }
@@ -219,7 +218,7 @@ function makeRequest(job, done){
       } else {
         task.retry++;
       }
-      koop.log.info('Re-requesting page '+ task.req +' '+ e);
+      koop.log.info('Re-requesting page '+ task.req +' '+ e + ' - ' + task.retry );
       requestQ.push( task, function(err){ if (err) { koop.log.error(err); } });
       try {
         return callback();
