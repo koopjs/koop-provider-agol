@@ -907,7 +907,7 @@ var Controller = function( agol, BaseController ){
   controller.getGeohash = function(req, res){
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
     agol.getInfo(table_key, function(err, info){
-      if (info && info.status === 'processing'){
+      if (info && (info.status === 'processing' || info.geohashStatus === 'processing')){
         return res.status( 202 ).json( { status: info.status } );  
       } else {
 
@@ -943,6 +943,10 @@ var Controller = function( agol, BaseController ){
             agol.getGeoHash(table_key, req.query, function(err, agg){
               if (err || !agg){
                 return res.status(err.code || 404).send(err.message || err);
+              } else if (agg.status && agg.status === 'exceeds-limit'){
+                agol.pageGeoHash(req.params, filePath, fileName, agg.pages, function(err, result){
+                  return res.status(202).json(result);
+                }); 
               } else {
                 agol.saveFile( filePath, fileName, JSON.stringify(agg), function(err){
                   if (err) {
