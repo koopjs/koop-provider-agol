@@ -900,6 +900,64 @@ var Controller = function( agol, BaseController ){
     });
   };
 
+   /** 
+   * Get the geohash for an item/layer
+   *
+   */
+  controller.getGeohash = function(req, res){
+    var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
+    agol.getInfo(table_key, function(err, info){
+      if (info && info.status === 'processing'){
+        return res.status( 202 ).json( { status: info.status } );  
+      } else {
+
+        
+        // sort the req.query before we hash so we are consistent 
+        var sorted_query = {};
+        _(req.query).keys().sort().each(function (key) {
+          sorted_query[key] = req.query[key];
+        });
+
+        var key = req.params.item +'_'+ req.params.layer;
+
+        // build the file key as an MD5 hash that's a join on the paams and look for the file 
+        var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+        var fileKey = crypto.createHash('md5').update(toHash).digest('hex');
+        var filePath = ['files', key].join('/');
+        // get the name of the data; else use the key (md5 hash)
+        var fileName = fileKey + '.geohash.json';
+              
+        agol.files.exists( filePath, fileName, function( exists, path ) {
+          if (exists) {
+            // serve the file 
+            res.contentType('application/json');
+            if ( path.substr(0,4) == 'http' ){
+              // Proxy to s3 urls allows us to not show the URL 
+              https.get(path, function(proxyRes) {
+                proxyRes.pipe(res);
+              });
+            } else {
+              res.sendfile(result);
+            }
+          } else {
+            agol.getGeoHash(table_key, req.query, function(err, agg){
+              if (err || !agg){
+                return res.status(err.code || 404).send(err.message || err);
+              } else {
+                agol.saveFile( filePath, fileName, JSON.stringify(agg), function(err){
+                  if (err) {
+                    return res.status(500).send(err);
+                  }
+                  return res.json(agg);
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  };
+
   return controller;
 
 };
