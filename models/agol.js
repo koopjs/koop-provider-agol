@@ -825,7 +825,7 @@ var AGOL = function( koop ){
                 });
 
               } else {
-                if ( count < 500000 ){
+                if ( count < 1000000 ){
                   agol.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
                     try {
                       pageRequests = agol.buildIDPages(
@@ -1163,46 +1163,27 @@ var AGOL = function( koop ){
     getJobCounts( jobTypes[count] );
   };
 
-  agol.pageGeoHash = function(params, filePath, fileName, agg, callback){
-
+  // Puts the dataset into a state of processes and makes async call to create the geohash
+  // saves the geohash agg into the file given
+  agol.buildGeoHash = function(params, filePath, fileName, options, callback){
     var key = [ 'agol', params.item, params.layer ].join(':');
-    var finalAgg = {};
+    var agg = {};
 
-    var q = async.queue(function(task, cb){
-      console.log('Processing geohash page', task);
-      // get the geohash page from the DB
-      koop.Cache.db.getGeoHashPage(task, function(err, pageAgg){
-        // fold the into the finalAgg;
-        for (var hash in pageAgg) {
-          if (!finalAgg[hash]){
-            finalAgg[hash] = 0;
-          }
-          finalAgg[hash] += parseInt(pageAgg[hash], 0);
-        }
-        cb();
-      });
-    },1);
-
-    q.drain = function(){
-      // all done 
-      // save the file 
-      console.log('saving geohash', filePath, fileName);
-      agol.saveFile( filePath, fileName, JSON.stringify(finalAgg), function(err){
-        // remove status processing 
-        delete itemInfo.geohashStatus;
-        koop.Cache.updateInfo(key, itemInfo, function(err, success){});
-      });
-    };
-
-    var itemInfo;
     agol.getInfo(key, function(err, info){
-      itemInfo = info;
       // put the dataset into a state of process via update info
       info.geohashStatus = 'processing';
       koop.Cache.updateInfo(key, info, function(err, success){
-        callback(null, { status: 'processing' });
-        // loop over the agg page SQL 
-        q.push(agg, function(){});
+        // trigger the callback right away so we can return 202 until it done
+        callback();
+        // get the geohash page from the DB
+        agol.getGeoHash(key, options, function(err, agg){
+          // save the file 
+          agol.saveFile( filePath, fileName, JSON.stringify(agg), function(err){
+            // remove status processing 
+            delete info.geohashStatus;
+            koop.Cache.updateInfo(key, info, function(err, success){});
+          });
+        });
       });
     });
   };

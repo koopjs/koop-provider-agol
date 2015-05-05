@@ -908,10 +908,11 @@ var Controller = function( agol, BaseController ){
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
     agol.getInfo(table_key, function(err, info){
       if (info && (info.status === 'processing' || info.geohashStatus === 'processing')){
-        return res.status( 202 ).json( { status: info.status } );  
-      } else {
-
-        
+        return res.status( 202 ).json( { status: 'processing' } ); 
+      } else if (!info) {
+        // redirect to findItemData if we dont have any data in the cache
+        controller.findItemData(req,res); 
+      } else {    
         // sort the req.query before we hash so we are consistent 
         var sorted_query = {};
         _(req.query).keys().sort().each(function (key) {
@@ -940,21 +941,8 @@ var Controller = function( agol, BaseController ){
               res.sendfile(result);
             }
           } else {
-            agol.getGeoHash(table_key, req.query, function(err, agg){
-              if (err || !agg){
-                return res.status(err.code || 404).send(err.message || err);
-              } else if (agg.status && agg.status === 'exceeds-limit'){
-                agol.pageGeoHash(req.params, filePath, fileName, agg.pages, function(err, result){
-                  return res.status(202).json(result);
-                }); 
-              } else {
-                agol.saveFile( filePath, fileName, JSON.stringify(agg), function(err){
-                  if (err) {
-                    return res.status(500).send(err);
-                  }
-                  return res.json(agg);
-                });
-              }
+            agol.buildGeoHash(req.params, filePath, fileName, req.query, function(){
+              return res.status( 202 ).json( { status: 'processing' } );
             });
           }
         });
