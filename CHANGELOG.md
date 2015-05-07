@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.2.1] - 2015-05-07
+### Changed 
+* Changed the way geohashes are requested and processed by removing the paging and returning 202 while still processing
+* Geohash routes now request the data to be cached if its not already
+* Geohash requests now check the expiration of the data in the cache 
+
+### Added 
+* the agol model now has an `isExpired` method to easily check if the data in the cache are expired
+
+
 ## [0.2.0] - 2015-04-28
 ### Added 
 * support for requesting geohash aggregations
@@ -190,4 +200,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
-[0.2.0]: https://github.com/Esri/koop/compare/tag/v0.2.0
+[0.2.1]: https://github.com/Esri/koop/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/Esri/koop/tags/v0.2.0

@@ -1188,6 +1188,44 @@ var AGOL = function( koop ){
     });
   };
 
+  /**
+   * Checks to see if an item is expired or not
+   */
+  agol.isExpired = function(info, layerId, callback){
+
+    var isExpired = info ? ( new Date().getTime() >= info.expires_at ) : false;
+
+    if ( info && info.info && info.info.url ){
+      // clean up the url; remove layer at the end just in case 
+      var url = info.info.url.replace('?f=json','');
+      var urlParts = url.split('/');
+      var len = urlParts.length - 1;
+      if ( parseInt(urlParts[ len ]) >= 0 ){
+        var lyrId = urlParts[ len ];
+        url = url.substring(0, url.length - ((('' + lyrId ).split('').length || 2)+1));
+      }
+
+      agol.getFeatureServiceLayerInfo( url, layerId, function(err, serviceInfo){
+        // check for info on last edit date (for hosted services dont expired unless changed) 
+        // set isExpired to false if it hasnt changed or if its null
+        if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo){
+          if (!serviceInfo.editingInfo.lastEditDate && (info.retrieved_at > itemJson.modified)) {
+            isExpired = false;
+          } else if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
+            isExpired = true;
+          } else {
+            // if the retrieved at date is greater than the lastEditDate then the data are still good
+            isExpired = false;
+          }
+        }
+        callback(null, isExpired);
+      });
+    } else {
+      callback(null, isExpired);
+    }
+
+  };
+
   return agol;
 
 };
