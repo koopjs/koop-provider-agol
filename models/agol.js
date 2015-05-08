@@ -764,7 +764,7 @@ var AGOL = function( koop ){
               itemJson.cache_save = false;
               itemJson.expires_at = expiration;
 
-              var maxCount = 1000, //parseInt(serviceInfo.maxRecordCount) || 1000,
+              var maxCount = Math.min(parseInt(serviceInfo.maxRecordCount), 1000) || 1000,
                 pageRequests;
               // build legit offset based page requests 
               if ( serviceInfo && serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){
@@ -825,7 +825,7 @@ var AGOL = function( koop ){
                 });
 
               } else {
-                if ( count < 500000 ){
+                if ( count < 1000000 ){
                   agol.getFeatureServiceLayerIds(itemJson.url, (options.layer || 0), function(err, ids){
                     try {
                       pageRequests = agol.buildIDPages(
@@ -1161,6 +1161,31 @@ var AGOL = function( koop ){
     };
 
     getJobCounts( jobTypes[count] );
+  };
+
+  // Puts the dataset into a state of processes and makes async call to create the geohash
+  // saves the geohash agg into the file given
+  agol.buildGeoHash = function(params, filePath, fileName, options, callback){
+    var key = [ 'agol', params.item, params.layer ].join(':');
+    var agg = {};
+
+    agol.getInfo(key, function(err, info){
+      // put the dataset into a state of process via update info
+      info.geohashStatus = 'processing';
+      koop.Cache.updateInfo(key, info, function(err, success){
+        // trigger the callback right away so we can return 202 until it done
+        callback();
+        // get the geohash page from the DB
+        agol.getGeoHash(key, options, function(err, agg){
+          // save the file 
+          agol.saveFile( filePath, fileName, JSON.stringify(agg), function(err){
+            // remove status processing 
+            delete info.geohashStatus;
+            koop.Cache.updateInfo(key, info, function(err, success){});
+          });
+        });
+      });
+    });
   };
 
   return agol;
