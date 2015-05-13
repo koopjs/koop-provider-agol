@@ -582,7 +582,8 @@ var Controller = function( agol, BaseController ){
         // Get the item 
 
         // set a really high limit so large datasets can be turned into feature services 
-        req.query.limit = 1000000000;
+        req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000;
+        req.query.offset = req.query.resultOffset || null;
         agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
           if (error) {
             if (error.code && error.error){

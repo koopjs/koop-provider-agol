@@ -942,7 +942,7 @@ var AGOL = function( koop ){
       if (pageIds.length){
         where = objId+' in (' + pageIds.join(',') + ')';
         pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
-        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=';
+        pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=10';
         reqs.push({req: pageUrl});
       }
     }

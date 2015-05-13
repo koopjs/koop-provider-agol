@@ -5,6 +5,7 @@ var kue = require('kue'),
   request = require('request'),
   http = require('http'),
   https = require('https'),
+  zlib = require('zlib'),
   url = require('url'),
   async = require('async'),
   config = require('config');
@@ -89,13 +90,16 @@ function makeRequest(job, done){
         port: (url_parts.protocol === 'https:') ? 443 : url_parts.port || 80,
         hostname: url_parts.hostname,
         path: url_parts.path,
-        headers: { 'User-Agent': 'esri-koop' }
+        headers: { 
+          'User-Agent': 'esri-koop', 
+          'Accept-Encoding': 'gzip, deflate' 
+        }
       };
       // make an http or https request based on the protocol
       var req = ((url_parts.protocol === 'https:') ? protocols.https : protocols.http ).request(opts, function(response) {
-        var data = '';
+        var data = [];
         response.on('data', function (chunk) {
-          data += chunk;
+          data.push(chunk);
         });
 
         response.on('error', function(err){
@@ -104,62 +108,26 @@ function makeRequest(job, done){
 
         response.on('end', function () {
           try {
+            var json;
             // so sometimes server returns these crazy asterisks in the coords
             // I do a regex to replace them in both the case that I've found them
-            data = data.replace(/\*+/g,'null');
-            data = data.replace(/\.null/g, '');
-            var json = JSON.parse(data.replace(/NaN/g, 'null'));
+            //data = data.replace(/\*+/g,'null');
+            //data = data.replace(/\.null/g, '');
 
-            if ( json.error ){
-            
-              catchErrors(task, JSON.stringify(json.error), uri, cb);
+            var buffer = Buffer.concat(data);
+            var encoding = response.headers['content-encoding'];
 
-            } else {
-              // insert a partial
-              koop.GeoJSON.fromEsri( job.data.fields || [], json, function(err, geojson){
-                koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
-                  // when we gets errors on insert the whole job needs to stop
-                  // most often this error means the cache was dropped
-                  if (err) {
-                    done(err);
-                    requestQ.tasks = [];
-                    requestQ.kill();
-                  }
-                  completed++;
-                  console.log(completed, len, id);
-                  job.progress( completed, len );
-                  
-                  // clean up our big vars            
-                  json = null;
-                  geojson = null;
-                  response = null;
-                  data = null;
-
-                  if ( completed == len ) {
-                    var key = [ 'agol', id, layerId ].join(':');
-                    koop.Cache.getInfo(key, function(err, info){
-                      if (err){
-                        koop.log.error(err);
-                        return done();
-                      }
-                      if ( info && info.status ) { 
-                        delete info.status;
-                      }
-                      koop.Cache.updateInfo(key, info, function(err, info){
-                        done();
-                        process.nextTick(cb);
-                        return;
-                      });
-                      return;
-                    });
-                  } else {
-                    process.nextTick(cb);
-                    return;
-                  }
-
-                });
+            if (encoding == 'gzip') {
+              var buff = zlib.gunzip(buffer, function(e, result){
+                processJSON(JSON.parse(result.toString()), task, uri, job, cb);
               });
+            } else if (encoding == 'deflate') {
+              json = JSON.parse(zlib.inflateSync(buffer).toString());
+            } else {
+              json = JSON.parse(buffer.toString().replace(/NaN/g, 'null'));
+              processJSON(json, task, uri, job, cb);
             }
+            //var json = JSON.parse(data.replace(/NaN/g, 'null'));
           } catch(e){
             catchErrors(task, e, uri, cb);
           }
@@ -177,6 +145,57 @@ function makeRequest(job, done){
     } 
   };
 
+  var processJSON = function(json, task, uri, job, cb){
+    
+    if ( json.error ){
+      catchErrors(task, JSON.stringify(json.error), uri, cb);
+    } else {
+      // insert a partial
+      koop.GeoJSON.fromEsri( job.data.fields || [], json, function(err, geojson){
+        koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
+          // when we gets errors on insert the whole job needs to stop
+          // most often this error means the cache was dropped
+          if (err) {
+            done(err);
+            requestQ.tasks = [];
+            requestQ.kill();
+          }
+          completed++;
+          console.log(completed, len, id);
+          job.progress( completed, len );
+
+          // clean up our big vars            
+          json = null;
+          geojson = null;
+          response = null;
+          data = null;
+
+          if ( completed == len ) {
+            var key = [ 'agol', id, layerId ].join(':');
+            koop.Cache.getInfo(key, function(err, info){
+              if (err){
+                koop.log.error(err);
+                return done();
+              }
+              if ( info && info.status ) {
+                delete info.status;
+              }
+              koop.Cache.updateInfo(key, info, function(err, info){
+                done();
+                process.nextTick(cb);
+                return;
+              });
+              return;
+            });
+          } else {
+            process.nextTick(cb);
+            return;
+          }
+
+        });
+      });
+    }
+  };
 
   var requestQ = async.queue(function(task, callback){
     requestFeatures(task, callback);
