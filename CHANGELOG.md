@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.2.3] - 2015-05-14
+### Changed 
+* Forcing CSV data to remove each directory individually
+
 ## [0.2.2] - 2015-05-13
 ### Changed
 * Fixed worker requests for gzip responses causing strange asterisks in responses
@@ -205,6 +209,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.2.3]: https://github.com/Esri/koop/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/Esri/koop/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/Esri/koop/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Esri/koop/tags/v0.2.0

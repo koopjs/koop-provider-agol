@@ -341,18 +341,21 @@ var AGOL = function( koop ){
             json.features = [];
 
             var dir = [ task.id, (task.options.layer || 0) ].join('_');
-
             koop.Cache.remove('agol', task.id, task.options, function(err, res){
-              agol.removeExportDirs( dir, function(err, success){
-                koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
-                  koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
-                      if ( success ) {
-                        task.itemJson.data = [geojson];
-                        task.callback( null, task.itemJson );
-                      } else {
-                        task.callback( err, null );
-                      }
-                      cb();
+              koop.files.removeDir( 'files/' + dir, function(err, res){
+                koop.files.removeDir( 'tiles/'+ dir, function(err, res){
+                  koop.files.removeDir( 'thumbs/'+ dir, function(err, res){
+                    koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
+                      koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
+                        if ( success ) {
+                          task.itemJson.data = [geojson];
+                          task.callback( null, task.itemJson );
+                        } else {
+                          task.callback( err, null );
+                        }
+                        cb();
+                      });
+                    });
                   });
                 });
               });
