@@ -14,12 +14,10 @@ before(function(done){
   koop.config = config;
   koop.log = new koop.Logger({});
 
-  koop.Cache = new koop.DataCache( koop ); 
-  koop.Cache.db = koop.PostGIS.connect( config.db.postgis.conn );
+  koop.Cache = new koop.DataCache( koop );
+  koop.Cache.db = koop.LocalDB; 
   koop.Cache.db.log = koop.log;
 
-  // Need the exporter to have access to the cache so we pass it Koop
-  koop.exporter = new koop.Exporter( koop );
   koop.files = new koop.Files( koop );
   agol = new require('../models/agol.js')( koop );
   done();
@@ -434,13 +432,15 @@ describe('AGOL Model', function(){
         var features = require('./fixtures/esriJson.js');
 
         sinon.stub(agol, 'buildOffsetPages');
-
         sinon.stub(agol, '_page', function(count, pageRequests, id, itemJson, layerId){
           
         });
         sinon.stub(agol, 'getFeatureServiceLayerInfo', function( url, layer, callback ){
           serviceInfo.advancedQueryCapabilities = {supportsPagination:true};
           callback(null, serviceInfo);
+        });
+        sinon.stub(koop.Cache, 'getInfo', function( key, callback ){
+          callback(null, false);
         });
         sinon.stub(koop.Cache, 'insert', function( type, id, geojson, layer, callback ){
           callback(null, true);
@@ -454,6 +454,7 @@ describe('AGOL Model', function(){
       after(function(done){
         koop.Cache.insert.restore();
         koop.Cache.remove.restore();
+        koop.Cache.getInfo.restore();
         agol.buildOffsetPages.restore();
         agol._page.restore();
         agol.getFeatureServiceLayerInfo.restore();
