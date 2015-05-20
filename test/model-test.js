@@ -12,7 +12,7 @@ before(function(done){
   // setup koop
   config.data_dir = __dirname + '/output/';
   koop.config = config;
-  koop.log = new koop.Logger({});
+  koop.log = new koop.Logger({logfile:'./test.log'});
 
   koop.Cache = new koop.DataCache( koop );
   koop.Cache.db = koop.LocalDB; 
@@ -492,6 +492,9 @@ describe('AGOL Model', function(){
         sinon.stub(agol, 'getFeatureServiceLayerIds', function( url, layer, callback ){
           callback(null, [1,2,3]);
         });
+        sinon.stub(koop.Cache, 'getInfo', function( key, callback ){
+          callback(null, false);
+        });
         sinon.stub(koop.Cache, 'insert', function( type, id, geojson, layer, callback ){
           callback(null, true);
         });
@@ -504,6 +507,7 @@ describe('AGOL Model', function(){
       after(function(done){
         koop.Cache.insert.restore();
         koop.Cache.remove.restore();
+        koop.Cache.getInfo.restore();
         agol.buildIDPages.restore();
         agol._page.restore();
         agol.getFeatureServiceLayerInfo.restore();
@@ -546,12 +550,16 @@ describe('AGOL Model', function(){
         sinon.stub(koop.Cache, 'remove', function( type, id, layer, callback ){
           callback(null, true);
         });
+        sinon.stub(koop.Cache, 'getInfo', function( key, callback ){
+          callback(null, false);
+        });
         done();
       });
 
       after(function(done){
         koop.Cache.insert.restore();
         koop.Cache.remove.restore();
+        koop.Cache.getInfo.restore();
         agol.buildObjectIDPages.restore();
         agol._page.restore();
         agol.req.restore();
@@ -687,7 +695,11 @@ describe('AGOL Model', function(){
         sinon.stub(koop.Cache, 'insertPartial', function(type, id, data, options, callback){
           callback(null, true);
         });
-         sinon.stub(koop.GeoJSON, 'fromCSV', function( data, callback){
+        var itemInfo = require('./fixtures/itemInfo.js');
+        sinon.stub(koop.Cache, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
+        sinon.stub(koop.GeoJSON, 'fromCSV', function( data, callback){
           callback(null, {});
         });
         done();
@@ -696,6 +708,7 @@ describe('AGOL Model', function(){
       after(function(done){
         koop.Cache.get.restore();
         koop.Cache.insert.restore();
+        koop.Cache.getInfo.restore();
         koop.Cache.insertPartial.restore();
         agol.req.restore();
         koop.GeoJSON.fromCSV.restore();
@@ -722,11 +735,16 @@ describe('AGOL Model', function(){
         sinon.stub(koop.Cache, 'get', function(type, id, options, callback){
           callback(null, {info:{status: 'too big'}});
         });
+        var itemInfo = require('./fixtures/itemInfo.js');
+        sinon.stub(koop.Cache, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
         done();
       });
 
       after(function(done){
         koop.Cache.get.restore();
+        koop.Cache.getInfo.restore();
         agol.req.restore();
         done();
       });

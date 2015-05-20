@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.2.5] - 2015-05-20
+### Changed
+* found an issue with logic around exporting data when there are no features in the DB yet. Added better logic.
+
 ## [0.2.4] - 2015-05-19
 ### Changed
 * Protecting against CSV data duplication by preventing inserts that fail to create tables from inserting data.
@@ -213,6 +217,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.2.5]: https://github.com/Esri/koop/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/Esri/koop/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/Esri/koop/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/Esri/koop/compare/v0.2.1...v0.2.2

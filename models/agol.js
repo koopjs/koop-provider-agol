@@ -342,9 +342,9 @@ var AGOL = function( koop ){
 
             var dir = [ task.id, (task.options.layer || 0) ].join('_');
             koop.Cache.remove('agol', task.id, task.options, function(err, res){
-              if (!err && res) {
-                agol.removeExportDirs(dir, function(err, res){
-                  koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
+              agol.removeExportDirs(dir, function(err, res){
+                koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
+                  if (!err && res) {
                     koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
                       if ( success ) {
                         task.itemJson.data = [geojson];
@@ -354,13 +354,14 @@ var AGOL = function( koop ){
                       }
                       cb();
                     });
-                  });
+                  } else {
+                    // the table create failed which is fine, just do nothing
+                    task.itemJson.data = [geojson];
+                    task.callback( null, task.itemJson );
+                    cb();
+                  }
                 });
-              } else {
-                // the table create failed which is fine, just do nothing
-                task.callback(null, json);
-                cb();
-              }
+              });
             });
           });
         });
