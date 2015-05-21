@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.2.6] - 2015-05-21
+### Changed
+* Saving CSV headers in the metadata to support order fields in featureservices
+
 ## [0.2.5] - 2015-05-20
 ### Changed
 * found an issue with logic around exporting data when there are no features in the DB yet. Added better logic.
@@ -217,6 +221,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.2.6]: https://github.com/Esri/koop/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/Esri/koop/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/Esri/koop/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/Esri/koop/compare/v0.2.2...v0.2.3

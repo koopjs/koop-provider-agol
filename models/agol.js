@@ -334,7 +334,7 @@ var AGOL = function( koop ){
             json.updated_at = task.itemJson.modified;
             json.expires_at = task.expires_at;
             json.retrieved_at = Date.now();
-            json.info = { name: json.name };
+            json.info = { name: json.name, fields: csv_data[0]};
             json.host = {
               id: task.hostId
             };
