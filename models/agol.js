@@ -625,6 +625,8 @@ var AGOL = function( koop ){
                 geojson.host = {
                   id: hostId
                 };
+                // save a fields array
+                geojson.info.fields = Object.keys(geojson.features[0].properties);
 
                 // save the data 
                 koop.Cache.insert( 'agol', id, geojson, (options.layer || 0), function( err, success){
@@ -761,6 +763,8 @@ var AGOL = function( koop ){
                 id: hostId
               }
             };
+            // save the fields as an array of the names
+            info.info.fields = serviceInfo.fields.map(function (f) { return f.name; });
 
             koop.Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
 
