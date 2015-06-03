@@ -1175,7 +1175,7 @@ var AGOL = function( koop ){
 
   // Puts the dataset into a state of processes and makes async call to create the geohash
   // saves the geohash agg into the file given
-  agol.buildGeoHash = function(params, filePath, fileName, options, callback){
+  agol.buildGeohash = function(params, filePath, fileName, options, callback){
     var key = [ 'agol', params.item, params.layer ].join(':');
     var agg = {};
 
@@ -1184,14 +1184,22 @@ var AGOL = function( koop ){
       info.geohashStatus = 'processing';
       koop.Cache.updateInfo(key, info, function(err, success){
         // trigger the callback right away so we can return 202 until it done
-        callback();
+        // if we dont have a where filter then we return with processes (async)
+        if (!options.where){
+          callback();
+        }
         // get the geohash page from the DB
         agol.getGeoHash(key, options, function(err, agg){
           // save the file 
           agol.saveFile( filePath, fileName, JSON.stringify(agg), function(err){
             // remove status processing 
             delete info.geohashStatus;
-            koop.Cache.updateInfo(key, info, function(err, success){});
+            koop.Cache.updateInfo(key, info, function(err, success){
+              // if we DO have a where filter then we can return the agg right away
+              if (options.where){
+                callback(null, agg);
+              }
+            });
           });
         });
       });

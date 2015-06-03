@@ -906,55 +906,83 @@ var Controller = function( agol, BaseController ){
    *
    */
   controller.getGeohash = function(req, res){
+    // used for asking if we have the data already
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
-    agol.getInfo(table_key, function(err, info){
-      if (info && (info.status === 'processing' || info.geohashStatus === 'processing')){
-        return res.status( 202 ).json( { status: 'processing' } ); 
-      } else if (!info) {
-        // redirect to findItemData if we dont have any data in the cache
-        controller.findItemData(req,res); 
-      } else {    
-        // need to know if the data are expired or not
-        agol.isExpired(info, (req.params.layer || 0), function(err, isExpired) {
 
-          if (isExpired) {
-            controller.findItemData(req,res);
+    // Determine if we have the file first
+    // -------------------------------------
+    // sort the req.query before we hash so we are consistent 
+    var sorted_query = {};
+    _(req.query).keys().sort().each(function (key) {
+      sorted_query[key] = req.query[key];
+    });
+
+    // build the file key as an MD5 hash that's a join on the paams and look for the file 
+    var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
+    var fileKey = crypto.createHash('md5').update(toHash).digest('hex');
+    var key = req.params.item +'_'+ req.params.layer;
+    var filePath = ['latest', 'files', key].join('/');
+    var fileName = fileKey + '.geohash.json';
+
+    // does it exist?
+    agol.files.exists( filePath, fileName, function( exists, path, fileInfo ) {
+
+      agol.getInfo(table_key, function(err, info){
+        if (!info) {
+          // redirect to findItemData if we dont have any data in the cache
+          controller.findItemData(req, res ); 
+        } else if (info && (info.status === 'processing' || info.geohashStatus === 'processing')){
+          // if we have a file send it, else return processing
+          if (exists) {
+            controller.returnGeohash(req, res, path);
           } else {
-            // sort the req.query before we hash so we are consistent 
-            var sorted_query = {};
-            _(req.query).keys().sort().each(function (key) {
-              sorted_query[key] = req.query[key];
-            });
-
-            var key = req.params.item +'_'+ req.params.layer;
-
-            // build the file key as an MD5 hash that's a join on the paams and look for the file 
-            var toHash = req.params.item + '_' + ( req.params.layer || 0 ) + JSON.stringify( sorted_query );
-            var fileKey = crypto.createHash('md5').update(toHash).digest('hex');
-            var filePath = ['files', key].join('/');
-            // get the name of the data; else use the key (md5 hash)
-            var fileName = fileKey + '.geohash.json';
-                  
-            agol.files.exists( filePath, fileName, function( exists, path ) {
-              if (exists) {
-                // serve the file 
-                res.contentType('application/json');
-                if ( path.substr(0,4) == 'http' ){
-                  // Proxy to s3 urls allows us to not show the URL 
-                  https.get(path, function(proxyRes) {
-                    proxyRes.pipe(res);
-                  });
-                } else {
-                  res.sendfile(result);
-                }
-              } else {
-                agol.buildGeoHash(req.params, filePath, fileName, req.query, function(){
-                  return res.status( 202 ).json( { status: 'processing' } );
-                });
-              }
-            });
+            return res.status( 202 ).json( { status: 'processing' } ); 
           }
-        });
+        } else {    
+          // need to know if the data are expired or not
+          var isExpired = (info.retrieved_at && fileInfo && fileInfo.LastModified) ? 
+            (new Date(info.retrieved_at) > new Date(fileInfo.LastModified)) : 
+            false;
+  
+          if (!exists) {
+            // doesnt exist; must create the new aggregation file
+            req.params.silent = false;
+            controller.createGeohash(req, res, filePath, fileName);
+          } else if (exists && !isExpired) {
+            controller.returnGeohash(req, res, path);
+          } else { // if (exists && isExpired) {
+            // must create a new one 
+            // a file exists and its NOT expired...
+            controller.returnGeohash(req, res, path); // returns the file 
+            // make we dont try to send a request response again (set silent: true)
+            req.params.silent = true;
+            controller.createGeohash(req, res, filePath, fileName); // creates a new geohash.
+          }
+        }
+      });
+    });
+  };
+
+  controller.returnGeohash = function (req, res, path) {
+    res.contentType('application/json');
+    if ( path.substr(0, 4) === 'http' ){
+      // Proxy to s3 urls allows us to not show the URL 
+      https.get(path, function(proxyRes) {
+        proxyRes.pipe(res);
+      });
+    } else {
+      res.sendfile(path);
+    }
+  };
+
+  controller.createGeohash = function (req, res, filePath, fileName) {
+    agol.buildGeohash(req.params, filePath, fileName, req.query, function (err, agg) {
+      if (!req.params.silent) {
+        if (!agg) {
+          return res.status(202).json( { status: 'processing' } );
+        } else {
+          return res.json(agg);
+        }
       }
     });
   };
