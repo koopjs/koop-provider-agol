@@ -943,17 +943,16 @@ var Controller = function( agol, BaseController ){
           var isExpired = (info.retrieved_at && fileInfo && fileInfo.LastModified) ? 
             (new Date(info.retrieved_at) > new Date(fileInfo.LastModified)) : 
             false;
-  
+
           if (!exists) {
             // doesnt exist; must create the new aggregation file
             req.params.silent = false;
             controller.createGeohash(req, res, filePath, fileName);
           } else if (exists && !isExpired) {
             controller.returnGeohash(req, res, path);
-          } else { // if (exists && isExpired) {
-            // must create a new one 
+          } else { 
             // a file exists and its NOT expired...
-            controller.returnGeohash(req, res, path); // returns the file 
+            controller.returnGeohash(req, res, path, fileInfo); // returns the file 
             // make we dont try to send a request response again (set silent: true)
             req.params.silent = true;
             controller.createGeohash(req, res, filePath, fileName); // creates a new geohash.
@@ -963,10 +962,13 @@ var Controller = function( agol, BaseController ){
     });
   };
 
-  controller.returnGeohash = function (req, res, path) {
+  controller.returnGeohash = function (req, res, path, info) {
     res.contentType('application/json');
+    if (info && info.LastModified) {
+      res.set('Expired', info.LastModified);
+    }
     if ( path.substr(0, 4) === 'http' ){
-      // Proxy to s3 urls allows us to not show the URL 
+      // Proxy to s3 urls allows us to not show the URL
       https.get(path, function(proxyRes) {
         proxyRes.pipe(res);
       });

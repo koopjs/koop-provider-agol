@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.2.9] - 2015-06-05
+## Changed
+* Sending an "Expired" header down with geohash json when the server is creating a new one
+
 ## [0.2.8] - 2015-06-04
 ### Changed
 * Changed the way decaching works. Now we serve geohash until a new file is ready. Once a geohash is created users should always see it.  
@@ -230,6 +234,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.2.9]: https://github.com/Esri/koop/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/Esri/koop/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/Esri/koop/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/Esri/koop/compare/v0.2.5...v0.2.6

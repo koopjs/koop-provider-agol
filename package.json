@@ -1,6 +1,6 @@
 {
   "name": "koop-agol",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "An ArcGIS Online wrapper for koop",
   "main": "index.js",
   "directories": {
