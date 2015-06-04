@@ -486,6 +486,7 @@ describe('AGOL Model', function(){
         sinon.stub(agol, 'getFeatureServiceLayerInfo', function( url, layer, callback ){
           serviceInfo.advancedQueryCapabilities = {supportsPagination:false};
           serviceInfo.supportsStatistics = false;
+          serviceInfo.fields = [{ name: 'OBJECTID', type: 'esriFieldTypeOID'}];
           callback(null, serviceInfo);
         });
 
@@ -539,9 +540,13 @@ describe('AGOL Model', function(){
         sinon.stub(agol, 'req', function(url, callback){
           callback(null, {body: JSON.stringify({features: [{attributes: {min_oid:1, max_oid: 1001}}]})});
         });
+        sinon.stub(agol, 'getObjectIDField', function( info ){
+          return {name: 'id'};
+        });
         sinon.stub(agol, 'getFeatureServiceLayerInfo', function( url, layer, callback ){
           serviceInfo.advancedQueryCapabilities = {supportsPagination:false};
           serviceInfo.supportsStatistics = true;
+          serviceInfo.fields = [{ name: 'OBJECTID', type: 'esriFieldTypeOID'}];
           callback(null, serviceInfo);
         });
         sinon.stub(koop.Cache, 'insert', function( type, id, geojson, layer, callback ){
@@ -564,6 +569,7 @@ describe('AGOL Model', function(){
         agol._page.restore();
         agol.req.restore();
         agol.getFeatureServiceLayerInfo.restore();
+        agol.getObjectIDField.restore();
         done();
       });
 

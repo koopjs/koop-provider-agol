@@ -574,7 +574,7 @@ var AGOL = function( koop ){
           }
         }
       } catch (e) {
-        console.log(e, countUrl);
+        //console.log(e, countUrl);
         callback( 'Unknown layer, make sure the layer you requested exists', null );
       }
     });
@@ -992,7 +992,7 @@ var AGOL = function( koop ){
     var concurrency = ( itemJson && itemJson.url && itemJson.url.split('//')[1].match(/^service/) ) ? 16 : 4;
 
     var i = 0;
-    var logErrorCB = function(err){ if (err) console.log(err); }; 
+    var logErrorCB = function(err){}; 
 
     // concurrent queue for feature pages
     var q = async.queue(function (task, callback) {
@@ -1071,7 +1071,7 @@ var AGOL = function( koop ){
                   errJson = JSON.parse(job._error);
                   info.paging_failed = { error: errJson };
                 } catch(e){
-                  console.log('Could not parse error json', e);
+                  //console.log('Could not parse error json', e);
                   errJson = {response:job._error};
                 }
                 info.paging_failed = { error: errJson };

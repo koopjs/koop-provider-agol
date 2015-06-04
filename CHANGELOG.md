@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.2.9] - 2015-06-05
 ## Changed
+* Approprately sending back the geohash on empty caches when a geohash exists
+
+## [0.2.9] - 2015-06-05
+## Changed
 * Sending an "Expired" header down with geohash json when the server is creating a new one
 
 ## [0.2.8] - 2015-06-04
@@ -234,6 +238,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.2.10]: https://github.com/Esri/koop/compare/v0.2.9...v0.2.10
 [0.2.9]: https://github.com/Esri/koop/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/Esri/koop/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/Esri/koop/compare/v0.2.6...v0.2.7

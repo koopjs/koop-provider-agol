@@ -930,11 +930,18 @@ var Controller = function( agol, BaseController ){
       agol.getInfo(table_key, function(err, info){
         if (!info) {
           // redirect to findItemData if we dont have any data in the cache
-          controller.findItemData(req, res ); 
+          if (exists) {
+            // send back the geohash, but send fileInfo to set the expired header
+            controller.returnGeohash(req, res, path, fileInfo);
+          } else {
+            // re-direct to cache the data
+            controller.findItemData(req, res); 
+          }
         } else if (info && (info.status === 'processing' || info.geohashStatus === 'processing')){
           // if we have a file send it, else return processing
           if (exists) {
-            controller.returnGeohash(req, res, path);
+            // send back the geohash, but send fileInfo to set the expired header
+            controller.returnGeohash(req, res, path, fileInfo);
           } else {
             return res.status( 202 ).json( { status: 'processing' } ); 
           }
