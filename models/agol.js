@@ -8,8 +8,8 @@ var csv
 
 var AGOL = function( koop ){
 
-  var agol = {};
-  agol.__proto__ = koop.BaseModel( koop );
+  // inherits from the base model
+  var agol = new koop.BaseModel( koop );
   
   // base path to use for every host 
   agol.agol_path = '/sharing/rest/content/items/';
@@ -19,8 +19,8 @@ var AGOL = function( koop ){
   // epoch = days * hours * minutes * secs * millisecs
   agol.cacheLife = (24*60*60*1000);  
 
-  // REQUEST WORKERS
-  // create a request Q if configured to page large data sets  
+  // Request Worker Config
+  // create a request queue if configured to page large data sets to workers  
   if (koop.config.agol && koop.config.agol.request_workers){
     agol.worker_q = kue.createQueue({
       prefix: koop.config.agol.request_workers.redis.prefix || 'q',
@@ -92,7 +92,11 @@ var AGOL = function( koop ){
     return url;
   };
 
-  // Centralized request method 
+  /**
+   * Centralized request method that forces URI encoding 
+   * @param {string} url - The url for the request.
+   * @param {string} callback - The callback.
+   */
   // all ajax requests should use this so it can be tested 
   agol.req = function(url, callback){
     // force hosted service requests to use ssl
@@ -104,7 +108,9 @@ var AGOL = function( koop ){
   };
 
 
-  // drops the item from the cache
+  /**
+   * drops the item from the cache
+   */ 
   agol.dropItem = function( host, itemId, options, callback ){
     var layerId = (options.layer || 0);
 

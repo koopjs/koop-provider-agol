@@ -134,7 +134,7 @@ var Controller = function( agol, BaseController ){
             if (error) {
               callback( error, null);
             // if we have status return right away
-            } else if (itemJson.koop_status == 'processing' && typeof req.params.silent === undefined) {
+            } else if (itemJson.koop_status == 'processing' && typeof req.params.silent === 'undefined') {
               // return w/202
               agol.getCount(['agol', item, options.layer].join(':'), {}, function(err, count) {
                 var code = 202;
@@ -182,7 +182,7 @@ var Controller = function( agol, BaseController ){
       var key = crypto.createHash('md5').update(toHash).digest('hex');
 
       var _returnProcessing = function( ){
-        if (typeof req.params.silent === undefined) {
+        if (typeof req.params.silent === 'undefined') {
           agol.getCount(table_key, {}, function(err, count){
             var code = 202;
 
@@ -371,7 +371,7 @@ var Controller = function( agol, BaseController ){
           // get the esri json data for the service
           _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
               // when silent is sent as a param undefined
-              if (typeof req.params.silent === undefined) {
+              if (typeof req.params.silent === 'undefined') {
                 if (err) {
                   if ( err.code && err.error ){
                     res.status(err.code).send( err.error );
@@ -781,8 +781,6 @@ var Controller = function( agol, BaseController ){
 
           var factor = .1;
           req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
-
-          console.log( 'simplify factor', req.query.simplify );
 
           // make sure we ignore the query limit of 2k
           req.query.enforce_limit = false;

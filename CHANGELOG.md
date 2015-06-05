@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Needed to add a couple headers to the geohash response when caches are expired.
 * Added a project ROADMAP.md to lay out what's coming
+* added .travis.yml finally
+* geohash model and controller tests
 ### Changed 
 * renamed "Expired" to "X-Expired" in an attempt to flag it as a custom header.
 
