@@ -4,8 +4,6 @@ var request = require('request'),
   crypto = require('crypto'),
   async = require('async');
 
-var csv
-
 var AGOL = function( koop ){
 
   // inherits from the base model
@@ -56,8 +54,13 @@ var AGOL = function( koop ){
     agol.forceExportWorker = true;
   }
 
-  // adds a service to the Cache.db
-  // needs a host, generates an id 
+  /**
+   * Adds a service to the Cache
+   * needs a host, generates an id 
+   * @param {string} id - the id used to reference this host in the db
+   * @param {string} host - host to request items from
+   * @param {function} callback - The callback.
+   */
   agol.register = function (id, host, callback) {
     var type = 'agol:services';
     koop.Cache.db.serviceCount( type, function (error, count) {
@@ -69,12 +72,23 @@ var AGOL = function( koop ){
   };
 
   // removes the registered host from the list of hosts
+  /**
+   * Adds a service to the Cache
+   * needs a host, generates an id 
+   * @param {string} id - the id used to reference this host in the db
+   * @param {string} host - host to request items from
+   * @param {function} callback - The callback.
+   */
   agol.remove = function( id, callback ){
     koop.Cache.db.serviceRemove( 'agol:services', parseInt(id) || id,  callback);
   }; 
 
-
-  // get service by id, no id == return all
+  /**
+   * Get a service by id
+   * if no id given then return all services
+   * @param {string} id - the id used to reference this host in the db
+   * @param {function} callback - The callback.
+   */
   agol.find = function( id, callback ){
     koop.Cache.db.serviceGet( 'agol:services', parseInt(id) || id, function(err, res){
       if (err){
@@ -85,6 +99,10 @@ var AGOL = function( koop ){
     });
   };
 
+  /**
+   * Force a url to use https vs http  
+   * @param {string} url - The url for the request
+   */
   agol.forceHttps = function (url){
     if (url && url.split('//').length > 1){
       url = url.split('//')[1].match(/^service/) ? url.replace('http:', 'https:') : url;
@@ -94,10 +112,10 @@ var AGOL = function( koop ){
 
   /**
    * Centralized request method that forces URI encoding 
+   * all ajax requests should use this so it can be tested 
    * @param {string} url - The url for the request.
-   * @param {string} callback - The callback.
+   * @param {function} callback - The callback.
    */
-  // all ajax requests should use this so it can be tested 
   agol.req = function(url, callback){
     // force hosted service requests to use ssl
     url = agol.forceHttps(url);
@@ -107,9 +125,14 @@ var AGOL = function( koop ){
       }, callback);
   };
 
-
   /**
-   * drops the item from the cache
+   * Drops the item from the cache
+   * will remove all exported files as well,
+   * but will only remove "latest" files if forceDelete is set
+   * @param {string} host - the host is needed to tell what dataset to remove 
+   * @param {string} itemid - id of the item
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
    */ 
   agol.dropItem = function( host, itemId, options, callback ){
     var layerId = (options.layer || 0);
@@ -127,7 +150,7 @@ var AGOL = function( koop ){
         agol.log('debug', 'added a remove job to the export_q' + job.id );
         var dir = [ itemId, layerId ].join('_');
         koop.Cache.remove('agol', itemId, options, function(err, res){
-          agol.removeExportDirs( dir, function(err, success){
+          agol._removeExportDirs( dir, function(err, success){
             if (options.forceDelete){
               koop.files.removeDir( 'latest/files/'+ dir, function(err, res){
                 callback(err, true);
@@ -144,15 +167,19 @@ var AGOL = function( koop ){
 
       var dir = [ itemId, layerId ].join('_');
       koop.Cache.remove('agol', itemId, options, function(err, res){
-        agol.removeExportDirs( dir, callback );
+        agol._removeExportDirs( dir, callback );
       });
 
     }
   };
 
-  // method to remove all the data in each export dir
-  // this logic is being used in 4 places 
-  agol.removeExportDirs = function(dir, callback){
+  /**
+   * Method to remove all the data in each export dir
+   * this logic is being used in 4 places 
+   * @param {string} dir - The base dir to remove all files
+   * @param {function} callback - The callback.
+   */
+  agol._removeExportDirs = function(dir, callback){
     koop.files.removeDir('files/' + dir, function (err, res) {
       koop.files.removeDir('tiles/' + dir, function (err, res) {
         koop.files.removeDir('thumbs/' + dir, function (err, res) {
@@ -162,7 +189,13 @@ var AGOL = function( koop ){
     });
   };
 
-  // got the service and get the item
+  /**
+   * Get the service then get the item
+   * @param {string} host - the host is needed to tell what dataset to remove 
+   * @param {string} itemid - id of the item
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+   */
   agol.getItem = function( host, itemId, options, callback ){
     var url = host + this.agol_path + itemId+'?f=json';
     this.req(url, function(err, data ){
@@ -183,16 +216,35 @@ var AGOL = function( koop ){
     });
   };
 
+  /**
+   * Get the count of the features in the cache 
+   * wrapper around the Cache.getCount method
+   * @param {string} key - a table name in the db
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+   */
   agol.getCount = function( key, options, callback){
     koop.Cache.getCount( key, options, callback );
   };
 
-  // wraps Cache.getInfo to make testing possible w/o the cache
+  /**
+   * Wraps Cache.getInfo to make testing possible w/o the cache
+   * @param {string} key - a table name in the db
+   * @param {function} callback - the callback for when all is gone
+   */
   agol.getInfo = function(key, callback){
     koop.Cache.getInfo( key, callback);
   };
 
-  // got the service and get the item
+   /**
+   * Get the actual features and metadata from the DB 
+   * @param {string} host - the host is needed to tell what dataset to remove 
+   * @param {string} hostId - the id of the host in the DB 
+   * @param {string} itemid - id of the item
+   * @param {string} hash - the sha1 hash of the params and querystring 
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+   */
   agol.getItemData = function( host, hostId, itemId, hash, options, callback ){
     var self = this;
     this.getItem(host, itemId, options, function( err, itemJson ){
@@ -250,8 +302,15 @@ var AGOL = function( koop ){
     });
   };
 
-  // Collects metadata for every layer in a service
-  // this is only used in server level tiles creation where we need all the layers
+  /**
+   * Collects metadata for every layer in a service
+   * this is only used in server level tiles creation where we need all the layers
+   * @param {string} host - the host is needed to tell what dataset to remove 
+   * @param {string} itemid - id of the item
+   * @param {string} hash - the sha1 hash of the params and querystring 
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+   */
   agol.getServiceLayerData = function( host, itemId, hash, options, callback ){
     var self = this;
     var reqCount = 0, nlayers, serviceInfo, serviceUrl;
@@ -306,8 +365,17 @@ var AGOL = function( koop ){
     });
   };
 
-  // This is really the main entry point to this model
-  // here we route to the correct data type method based on the item type
+  /**
+   * This is really the main entry point to this model
+   * here we route to the correct data type method based on the item type
+   * @param {object} itemJson - json metadata from the item in the host 
+   * @param {string} host - the host is needed to tell what dataset to remove 
+   * @param {string} itemid - id of the item
+   * @param {string} hostId - the id of the host in the DB 
+   * @param {string} hash - the sha1 hash of the params and querystring 
+   * @param {option} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+   */
   agol.getData = function(itemJson, host, hostId, itemId, hash, options, callback){
     if ( itemJson.type == 'CSV' ){
       agol.getCSV( host + agol.agol_path, hostId, itemId, itemJson, options, callback );
@@ -320,9 +388,11 @@ var AGOL = function( koop ){
     }
   };
 
-  // this queue is used to control the flow of the csv inserts 
-  // if we get many requests for a new CSV they insert multiple times
-  // here we handle removing the data cache before we insert
+  /**
+   * A queue used to control the flow of the csv inserts 
+   * if we get many requests for a new CSV they insert multiple times
+   * here we handle removing the data cache before we insert
+  */
   agol.csvQueue = async.queue(function(task, cb){
     agol.req(task.url, function(err, data ){
       if (err) {
@@ -348,7 +418,7 @@ var AGOL = function( koop ){
 
             var dir = [ task.id, (task.options.layer || 0) ].join('_');
             koop.Cache.remove('agol', task.id, task.options, function(err, res){
-              agol.removeExportDirs(dir, function(err, res){
+              agol._removeExportDirs(dir, function(err, res){
                 koop.Cache.insert( 'agol', task.id, json, (task.options.layer || 0), function( err, success){
                   if (!err && res) {
                     koop.Cache.insertPartial( 'agol', task.id, geojson, (task.options.layer || 0), function( err, success){
@@ -374,8 +444,17 @@ var AGOL = function( koop ){
       }
     });
   },1);
-
-  agol.getCSV = function(base_url, hostId, id, itemJson, options, callback){
+  
+  /**
+   * Gets CSV item data from the server and inserts it into the Cache
+   * @param {string} baseUrl - id of the item
+   * @param {string} hostId - the host is needed to tell what dataset to remove 
+   * @param {string} id - id of the item
+   * @param {object} itemJson - json metadata from the item in the host 
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+  */
+  agol.getCSV = function(baseUrl, hostId, id, itemJson, options, callback){
     var self = this, task = {};
     var qKey = ['agol', id, (options.layer || 0)].join(':');
 
@@ -391,7 +470,7 @@ var AGOL = function( koop ){
             // replace .csv in name 
             itemJson.name = itemJson.name.replace('.csv','');
           
-            task.url = base_url + '/' + id + '/data?f=json';
+            task.url = baseUrl + '/' + id + '/data?f=json';
             task.itemJson = itemJson;
             task.id = id;
             task.hostId = hostId;
@@ -415,14 +494,24 @@ var AGOL = function( koop ){
       });
     });
   };
-
-  agol.getFeatureCollection = function(base_url, hostId, id, itemJson, options, callback){
+ 
+  /**
+   * Get a feature collection from the server and inserts it
+   * FeatureCollection are simply JSON features requested in one just (not services)
+   * @param {string} baseUrl - id of the item
+   * @param {string} hostId - the host is needed to tell what dataset to remove 
+   * @param {string} id - id of the item
+   * @param {object} itemJson - json metadata from the item in the host 
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+  */
+  agol.getFeatureCollection = function(baseUrl, hostId, id, itemJson, options, callback){
     // for large datasets enforce koop's large data limit 
     options.enforce_limit = true;
 
     koop.Cache.get( 'agol', id, options, function(err, entry ){
       if ( err ){
-        var url = base_url + '/' + id + '/data?f=json'; 
+        var url = baseUrl + '/' + id + '/data?f=json'; 
         agol.req(url, function(err, data ){
           if (err) {
             callback(err, null);
@@ -452,6 +541,15 @@ var AGOL = function( koop ){
     });
   };
 
+  /**
+   * Gets the service metadata first and adds any fields to request for the actual features
+   * @param {string} hostId - the host is needed to tell what dataset to remove 
+   * @param {string} id - id of the item
+   * @param {object} itemJson - json metadata from the item in the host 
+   * @param {string} hash - the sha1 hash of the params and querystring 
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+  */
   agol.getFeatureService = function( hostId, id, itemJson, hash, options, callback){
     if ( !itemJson.url ){
       callback( 'Missing url parameter for Feature Service Item', null );
@@ -479,15 +577,24 @@ var AGOL = function( koop ){
     }
   };
 
-
-  // checks the chache
+  /**
+   * Determines if the FeatureService is already cached or not
+   * @param {string} hostId - the host is needed to tell what dataset to remove 
+   * @param {string} id - id of the item
+   * @param {object} itemJson - json metadata from the item in the host 
+   * @param {string} hash - the sha1 hash of the params and querystring 
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+  */
   agol.getDataFromCache = function( hostId, id, itemJson, hash, options, callback ){
     var self = this;
     //search the cache for this data
     koop.Cache.get( 'agol', id, options, function(err, entry ){
+
       if ( err ){
         // no data in the cache; request new data 
         self.makeFeatureServiceRequest( hostId, id, itemJson, hash, options, callback );
+
       } else if ( entry && entry[0] && entry[0].status == 'processing' ){
         itemJson.data = [{
           features:[],
@@ -508,14 +615,25 @@ var AGOL = function( koop ){
     });
   };
 
-  // removes the layer from the end of a url 
+  /**
+   * Removes the layer from the end of a url 
+   * @param {string} url - the url to strip the layer from
+   * @param {string} length - length of the layer value to string 
+  */
   agol.stripLayerOffUrl = function(url, len){
     return url.substring(0, url.length - ((len || 2)+1));
   };
 
-
-  // makes a request to the feature service 
-  // checks the count and determines if koop should make one or many requests  
+  /**
+   * Makes a request to the feature service 
+   * first checks the count and determines if koop should make one or many requests  
+   * @param {string} hostId - the host is needed to tell what dataset to remove 
+   * @param {string} id - id of the item
+   * @param {object} itemJson - json metadata from the item in the host 
+   * @param {string} hash - the sha1 hash of the params and querystring 
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+  */
   agol.makeFeatureServiceRequest = function( hostId, id, itemJson, hash, options, callback ){
     var self = this;
 
@@ -586,8 +704,14 @@ var AGOL = function( koop ){
     });
   };
 
-
-  // make a request to a single page feature service 
+  /**
+   * make a request to a single page feature service
+   * @param {string} hostId - the host is needed to tell what dataset to remove 
+   * @param {string} id - id of the item
+   * @param {object} itemJson - json metadata from the item in the host 
+   * @param {object} options - optional params from req.query (the querystring)
+   * @param {function} callback - the callback for when all is gone
+  */ 
   agol.singlePageFeatureService = function( hostId, id, itemJson, options, callback ){
     var self = this;
 
@@ -661,6 +785,11 @@ var AGOL = function( koop ){
     });
   };
 
+  /**
+   * A queue used to throttle requests 
+   * we need this to prevent duplicate paging requests that 
+   * cause features to be inserted twice
+   */
   agol._throttleQ = async.queue(function(key, cb){
     setTimeout(function(){
       koop.Cache.getInfo(key, function(err, info){
@@ -679,6 +808,16 @@ var AGOL = function( koop ){
     }, Math.floor((Math.random() * 750) + 200) );
   },1);
 
+  /**
+   * Add pages of requests through the throttle Q 
+   * @param {number} count - the total number of features in the service 
+   * @param {string} pageRequests - an array of page urls to be requested
+   * @param {string} id - id of the item
+   * @param {object} itemJson - the item json metadata from the server
+   * @param {number} layerId - the numeric id of the layer being requested
+   * @param {object} options - optional params from req.query (the querystring) 
+   * @param {string} hash - the sha1 hash of the params and querystring 
+  */
   agol._page = function( count, pageRequests, id, itemJson, layerId, options, hash){
     // add to a separate queue that we can use to add jobs one at a time
     // this prevents the case when we get 2 requests at the same time
@@ -696,8 +835,16 @@ var AGOL = function( koop ){
     });
   };
 
-
-  // handles pagin over the feature service 
+  /**
+   * Determines how we should page over the feature service 
+   * @param {string} hostId - the id of the host being requested
+   * @param {string} id - id of the item
+   * @param {object} itemJson - the item json metadata from the server
+   * @param {number} count - the total number of features in the service 
+   * @param {number} layerId - the numeric id of the layer being requested
+   * @param {object} options - optional params from req.query (the querystring) 
+   * @param {string} hash - the sha1 hash of the params and querystring 
+  */
   agol.pageFeatureService = function( hostId, id, itemJson, count, hash, options, callback ){
     var self = this;
     var geomType;
@@ -879,15 +1026,23 @@ var AGOL = function( koop ){
 
   };
 
-
+  /**
+   * Mapping between Esri geomTypes and GeoJSON types
+   */
   agol.geomTypes = {
     'esriGeometryPolygon':'Polygon',
     'esriGeometryPoint':'Point',
     'esriGeometryPolyLine':'LineString'
   };
 
-
-  //build resultOffset based page requests 
+  /**
+   * build result Offset based page requests 
+   * these pages use Server's built in paging via resultOffset and resultRecordCount
+   * @param {number} pages - the number of pages we'll create
+   * @param {string} url - the base url of the service to append pages to 
+   * @param {number} max - the max number of feature per page
+   * @param {options} options - optional params for creating pages
+   */
   agol.buildOffsetPages = function( pages, url, max, options ){
     var reqs = [], 
       resultOffset;
@@ -908,10 +1063,17 @@ var AGOL = function( koop ){
     return reqs;
   };
 
-
-
-  //build object id query based page requests 
-  agol.buildObjectIDPages = function( url, min, max, maxCount, options ){
+  /**
+   * build object id query based page requests
+   * these pages use object ids in where clauses via < and > 
+   * you could call this objectId queries 
+   * @param {string} url - the base url of the service to append pages to 
+   * @param {number} min - the max object id in the service
+   * @param {number} max - the max object id in the service
+   * @param {number} maxCount - the max record count for each page
+   * @param {options} options - optional params for creating pages
+   */ 
+  agol.buildObjectIDPages = function( url, min, max, maxRecordCount, options ){
     var reqs = [], 
       pageMax, pageMin;
 
@@ -920,7 +1082,7 @@ var AGOL = function( koop ){
     // force hosted services to use https
     url = agol.forceHttps(url);
 
-    var pages = Math.max(( max == maxCount ) ? max : Math.ceil((max-min) / maxCount), 1);
+    var pages = Math.max(( max == maxRecordCount ) ? max : Math.ceil((max-min) / maxRecordCount), 1);
 
     for (i=0; i < pages; i++){
       //there is a bug in server where queries fail if the max value queried is higher than the actual max
@@ -929,9 +1091,9 @@ var AGOL = function( koop ){
         pageMax = max;
       }
       else {
-        pageMax = min + (maxCount*(i+1))-1;
+        pageMax = min + (maxRecordCount*(i+1))-1;
       }
-      pageMin = min + (maxCount*i);
+      pageMin = min + (maxRecordCount*i);
       where = objId+'<=' + pageMax + '+AND+' + objId+'>=' + pageMin;
       pageUrl = url + '/' + (options.layer || 0) + '/query?outSR=4326&where='+where+'&f=json&outFields=*';
       pageUrl += '&geometry=&returnGeometry=true&geometryPrecision=';
@@ -941,7 +1103,14 @@ var AGOL = function( koop ){
     return reqs;
   };
 
-   //build object id query based page requests 
+  /**
+   * build `id` query based page requests
+   * these pages use object ids in URLs directly
+   * @param {string} url - the base url of the service to append pages to 
+   * @param {array} ids - an array of each object id in the service
+   * @param {number} maxCount - the max record count for each page
+   * @param {options} options - optional params for creating pages
+   */ 
   agol.buildIDPages = function( url, ids, maxCount, options ){
     var reqs = [],
       pageMax;
@@ -966,8 +1135,17 @@ var AGOL = function( koop ){
     return reqs;
   };
 
-  // make requests for feature pages 
-  // execute done when we have all features 
+  /**
+   * Make requests for feature pages 
+   * execute done when we have all features 
+   * @param {number} max - the max number of features in the service
+   * @param {array} reqs - an array of pare URLs to request
+   * @param {string} id - the id of the item
+   * @param {object} itemJson - the metadata from the item
+   * @param {number} layerId - the layer id in the service 
+   * @param {object} options - optional params for creating pages
+   * @param {function} done - callback to call when the requests are done 
+   */
   agol.requestQueue = function(max, reqs, id, itemJson, layerId, options, done){
     var self = this;
     var reqCount = 0;
@@ -1107,7 +1285,12 @@ var AGOL = function( koop ){
 
   };
 
-  // Gets the feature service info 
+  /**
+   * Gets the feature service info
+   * @param {string} url - the max number of features in the service
+   * @param {number} layer - the id of the service layer 
+   * @param {function} callback - called when the service info comes back
+   */ 
   agol.getFeatureServiceLayerInfo = function( url, layer, callback ){
     url = url +'/'+ layer + '?f=json'
     agol.req( url, function( err, res ){
@@ -1122,7 +1305,12 @@ var AGOL = function( koop ){
     });
   };
 
-  // Gets the feature service object ids for pagination
+  /**
+   * Gets the feature service object ids for pagination
+   * @param {string} url - the max number of features in the service
+   * @param {number} layer - the id of the service layer 
+   * @param {object} callback - called when the service info comes back
+   */
   agol.getFeatureServiceLayerIds = function( url, layer, callback ){
     agol.req( url +'/'+ layer + '/query?where=1=1&returnIdsOnly=true&f=json', function( err, res ){
       var json = JSON.parse( res.body );
@@ -1130,14 +1318,22 @@ var AGOL = function( koop ){
     });
   };
 
-  // builds a url for querying the min/max values of the object id 
+  /**
+   * Builds a url for querying the min/max values of the object id
+   * @param {string} url - the max number of features in the service
+   * @param {number} layer - the id of the service layer 
+   * @param {string} field - the name of a field to build a stat request for 
+   */
   agol.buildStatsUrl = function( url, layer, field ){
     var json = [{"statisticType":"min","onStatisticField":field,"outStatisticFieldName":"min_oid"},
       {"statisticType":"max","onStatisticField":field,"outStatisticFieldName":"max_oid"}];
     return url+'/'+layer+'/query?f=json&outFields=&outStatistics='+JSON.stringify(json);
   };
 
-  // find and return the OID field from the list of fields
+  /**
+   * Find and return the OID field from the list of fields on metadata
+   * @param {object} info - metadata from the service 
+   */
   agol.getObjectIDField = function(info){
     var field;
     info.fields.forEach(function(f,i){
@@ -1148,7 +1344,10 @@ var AGOL = function( koop ){
     return field;
   };
 
-
+  /**
+   * Returns the count of jobs on each Kue queue
+   * @param {function} callback - a function to call when all counts have returns  
+   */
   agol.getQueueCounts = function(callback){
     var response = {}, error, count = 0;
     var jobTypes = ['inactiveCount', 'activeCount', 'completeCount', 'failedCount', 'delayedCount'];
@@ -1175,12 +1374,19 @@ var AGOL = function( koop ){
         }
       });
     };
-
     getJobCounts( jobTypes[count] );
   };
 
-  // Puts the dataset into a state of processes and makes async call to create the geohash
-  // saves the geohash agg into the file given
+  /**
+   * Puts the dataset into a state of processes
+   * makes async call to create the geohash
+   * saves the geohash agg into the file given
+   * @param {string} params - request params from the url
+   * @param {string} filePath - the path of the file to be saved 
+   * @param {string} fileName - the name of the file to save, determined by request params
+   * @param {object} options - optional params from the url querystring
+   * @param {function} callback - callback to call when the requests are done 
+   */
   agol.buildGeohash = function(params, filePath, fileName, options, callback){
     var key = [ 'agol', params.item, params.layer ].join(':');
     var agg = {};
@@ -1214,6 +1420,9 @@ var AGOL = function( koop ){
 
   /**
    * Checks to see if an item is expired or not
+   * @param {object} info - metadata from the service
+   * @param {number} layerId - the number of the layer in the request
+   * @param {function} callback - callback to call when the requests are done 
    */
   agol.isExpired = function(info, layerId, callback){
 
@@ -1247,12 +1456,9 @@ var AGOL = function( koop ){
     } else {
       callback(null, isExpired);
     }
-
   };
 
   return agol;
-
 };
-  
 
 module.exports = AGOL;
