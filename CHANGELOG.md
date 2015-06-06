@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Added a project ROADMAP.md to lay out what's coming
 * added .travis.yml finally
 * geohash model and controller tests
+* added a jsdocs to each method in the model
 ### Changed 
 * renamed "Expired" to "X-Expired" in an attempt to flag it as a custom header.
 
