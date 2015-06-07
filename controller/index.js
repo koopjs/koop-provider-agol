@@ -134,9 +134,9 @@ var Controller = function( agol, BaseController ){
             if (error) {
               callback( error, null);
             // if we have status return right away
-            } else if ( itemJson.koop_status == 'processing'){
+            } else if (itemJson.koop_status == 'processing' && typeof req.params.silent === 'undefined') {
               // return w/202
-              agol.getCount(['agol', item, options.layer].join(':'), {}, function(err, count){
+              agol.getCount(['agol', item, options.layer].join(':'), {}, function(err, count) {
                 var code = 202;
                 var response = {
                   status: 'processing',
@@ -182,6 +182,7 @@ var Controller = function( agol, BaseController ){
       var key = crypto.createHash('md5').update(toHash).digest('hex');
 
       var _returnProcessing = function( ){
+        if (typeof req.params.silent === 'undefined') {
           agol.getCount(table_key, {}, function(err, count){
             var code = 202;
 
@@ -204,6 +205,7 @@ var Controller = function( agol, BaseController ){
             agol.log('debug',JSON.stringify({status: code, item: req.params.item, layer: ( req.params.layer || 0 )})); 
             res.status( code ).json( response );
           });
+        }
       };
 
       if (info && info.status == 'processing'){
@@ -368,17 +370,20 @@ var Controller = function( agol, BaseController ){
           }
           // get the esri json data for the service
           _get(req.params.id, req.params.item, key, req.query, function( err, itemJson ){
-              if (err) {
-                if ( err.code && err.error ){
-                  res.status(err.code).send( err.error );
+              // when silent is sent as a param undefined
+              if (typeof req.params.silent === 'undefined') {
+                if (err) {
+                  if ( err.code && err.error ){
+                    res.status(err.code).send( err.error );
+                  } else {
+                    res.status(404).send( err );
+                  }
                 } else {
-                  res.status(404).send( err );
+                  if ( itemJson && itemJson.data && itemJson.data[0].features.length > 1000){
+                    itemJson.data[0].features = itemJson.data[0].features.splice(0,1000);
+                  }
+                  res.send( itemJson );
                 }
-              } else {
-                if ( itemJson && itemJson.data && itemJson.data[0].features.length > 1000){
-                  itemJson.data[0].features = itemJson.data[0].features.splice(0,1000);
-                }
-                res.send( itemJson );
               }
           });
         }
@@ -777,8 +782,6 @@ var Controller = function( agol, BaseController ){
           var factor = .1;
           req.query.simplify = ( ( Math.abs( req.query.geometry.xmin - req.query.geometry.xmax ) ) / 256) * factor; 
 
-          console.log( 'simplify factor', req.query.simplify );
-
           // make sure we ignore the query limit of 2k
           req.query.enforce_limit = false;
 
@@ -933,10 +936,10 @@ var Controller = function( agol, BaseController ){
           if (exists) {
             // send back the geohash, but send fileInfo to set the expired header
             controller.returnGeohash(req, res, path, fileInfo);
-          } else {
-            // re-direct to cache the data
-            controller.findItemData(req, res); 
           }
+          // re-direct to findItemData since we need to cache the data
+          req.params.silent = true;
+          controller.findItemData(req, res);
         } else if (info && (info.status === 'processing' || info.geohashStatus === 'processing')){
           // if we have a file send it, else return processing
           if (exists) {
@@ -972,7 +975,9 @@ var Controller = function( agol, BaseController ){
   controller.returnGeohash = function (req, res, path, info) {
     res.contentType('application/json');
     if (info && info.LastModified) {
-      res.set('Expired', info.LastModified);
+      res.set('X-Expired', info.LastModified);
+      res.set('Access-Control-Allow-Headers', 'X-Expired');
+      res.set('Access-Control-Expose-Headers', 'X-Expired');
     }
     if ( path.substr(0, 4) === 'http' ){
       // Proxy to s3 urls allows us to not show the URL

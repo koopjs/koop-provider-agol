@@ -3,7 +3,7 @@ var should = require('should'),
   fs = require('fs');
   koop = require('koop/lib');
 
-var config = JSON.parse(fs.readFileSync(__dirname+'/config/default.json'));
+var config = {}; //JSON.parse(fs.readFileSync(__dirname+'/config/default.json'));
 
 var itemJson = require('./fixtures/itemJson.js');
 var largeCSV = fs.readFileSync('./test/fixtures/largeCSV.csv').toString();
@@ -767,6 +767,55 @@ describe('AGOL Model', function(){
       });
     });
 
+    describe('when building a geohash', function() {
+
+      before(function(done ){
+        sinon.stub(agol, 'getGeoHash', function (key, options, callback) {
+          callback(null, {geohash: 100});
+        });
+        sinon.stub(agol, 'saveFile', function (path, name, agg, callback) {
+          callback(null);
+        });
+        sinon.stub(agol, 'getInfo', function (key, callback) {
+          callback(null, {});
+        });
+        sinon.stub(koop.Cache, 'updateInfo', function(key, info, callback){
+          callback(null, true);
+        });
+        done();
+      });
+
+      after(function(done){
+        koop.Cache.updateInfo.restore();
+        agol.getInfo.restore();
+        agol.saveFile.restore();
+        agol.getGeoHash.restore();
+        done();
+      });
+
+      // all we test here is the flow of the code, the logic
+      // we make sure each method is called, but dont really test the methods here
+      it('should not call saveFile when getting a geohash w/out a where clause', function(done){
+        agol.buildGeohash({}, '/geohash-dir/', 'geohash.json', {}, function(err, geohash){
+          agol.getInfo.called.should.equal(true); 
+          agol.getGeoHash.called.should.equal(false);
+          agol.saveFile.called.should.equal(false);
+          koop.Cache.updateInfo.called.should.equal(true);
+          done();
+        });
+      });
+
+      it('should call saveFile when getting a geohash w/where clause', function(done){
+        agol.buildGeohash({}, '/geohash-dir/', 'geohash.json', {where:'1=1'}, function(err, geohash){
+          agol.getInfo.called.should.equal(true);
+          agol.getGeoHash.called.should.equal(true);
+          agol.saveFile.called.should.equal(true);
+          koop.Cache.updateInfo.called.should.equal(true);
+          done();
+        });
+      });
+
+    });
 
 });
 

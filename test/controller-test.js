@@ -4,7 +4,7 @@ var should = require('should'),
   fs = require('fs'),
   kooplib = require('koop/lib');
   
-var koop = require('koop')(JSON.parse(fs.readFileSync(__dirname+'/config/default.json')));
+var koop = require('koop')({}); //JSON.parse(fs.readFileSync(__dirname+'/config/default.json')));
 
 var itemJson = require('./fixtures/itemJson.js');
 
@@ -168,7 +168,7 @@ describe('AGOL Controller', function(){
 
     describe('getting item feature data in a processing state', function() {
       before(function(done ){
-        sinon.stub(agol, 'getItemData', function(host, item, key, options, callback){
+        sinon.stub(agol, 'getItemData', function(host, id, item, key, options, callback){
           callback(null, {});
         });
 
@@ -179,12 +179,17 @@ describe('AGOL Controller', function(){
         sinon.stub(agol, 'getInfo', function(key, callback){
           callback(null, {status: 'processing'});
         });
+
+        sinon.stub(agol, 'getCount', function(key, options, callback){
+          callback(null, 10000);
+        });
         done();
       });
 
       after(function(done){
         agol.getItemData.restore();
         agol.getInfo.restore();
+        agol.getCount.restore();
         agol.find.restore();
         done();
       });
@@ -195,6 +200,7 @@ describe('AGOL Controller', function(){
           .end(function(err, res){
             res.should.have.status(202);
             agol.getInfo.called.should.equal(true);
+            agol.getCount.called.should.equal(true);
             done();
         });
       });
@@ -237,6 +243,88 @@ describe('AGOL Controller', function(){
         });
       });
     });
+
+    describe('getting geohash json', function() {
+      before(function(done ){
+
+        sinon.stub(agol.files, 'exists', function(path, name, callback){
+          callback(false);
+        });
+
+        sinon.stub(agol, 'buildGeohash', function(params, filePath, fileName, options){
+          return true;
+        });
+
+        var itemInfo = require('./fixtures/itemInfo.js');
+        sinon.stub(agol, 'getInfo', function(key, callback){
+          callback(null, itemInfo);
+        });
+
+        sinon.stub(controller, 'createGeohash', function(req, res, filePath, fileName){
+          agol.buildGeohash({}, filePath, fileName, {});
+          res.send(true);
+        });
+        done();
+      });
+
+      after(function(done ){
+        agol.buildGeohash.restore();
+        agol.getInfo.restore();
+        agol.files.exists.restore();
+        controller.createGeohash.restore();
+        done();
+      });
+
+      it('should call agol.buildGeohash', function(done){
+        request(koop)
+          .get('/agol/test/itemid/0/geohash')
+          .end(function(err, res){
+            res.should.have.status(200);
+            agol.buildGeohash.called.should.equal(true);
+            controller.createGeohash.called.should.equal(true);
+            done();
+        });
+      });
+
+    });
+    
+    describe('getting geohash json', function() {
+      before(function(done ){
+
+        sinon.stub(agol.files, 'exists', function(path, name, callback){
+          callback(false);
+        });
+
+        var itemInfo = require('./fixtures/itemInfo.js');
+        sinon.stub(agol, 'getInfo', function(key, callback){
+          // send no INFO to force the method to 
+          callback(null, null);
+        });
+
+        // just return true
+        sinon.stub(controller, 'findItemData', function(req, res){
+          res.send(true);
+        });
+        done();
+      });
+
+      after(function (done) {
+        agol.getInfo.restore();
+        agol.files.exists.restore();
+        controller.findItemData.restore();
+        done();
+      });
+
+      it('should call controller.findItemData when the cache is empty (populate the cache)', function(done){
+        request(koop)
+          .get('/agol/test/itemid/0/geohash')
+          .end(function(err, res){
+            agol.getInfo.called.should.equal(true);
+            controller.findItemData.called.should.equal(true);
+            done();
+        });
+      });
+    });    
 
     describe('getting item feature data w/a format', function() {
       before(function(done ){
@@ -288,7 +376,6 @@ describe('AGOL Controller', function(){
 
         var itemInfo = require('./fixtures/itemInfo.js');
 
-        console.log(agol.exportLarge);
         sinon.stub(agol, 'exportLarge', function(format, dir, key, data, opts, callback){
           callback(null, 'aFakeLargeFile');
         });

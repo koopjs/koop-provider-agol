@@ -2,7 +2,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.2.9] - 2015-06-05
+## [0.2.11] - 2015-06-06
+### Added
+* Needed to add a couple headers to the geohash response when caches are expired.
+* Added a project ROADMAP.md to lay out what's coming
+* added .travis.yml finally
+* geohash model and controller tests
+* added a jsdocs to each method in the model
+### Changed 
+* renamed "Expired" to "X-Expired" in an attempt to flag it as a custom header.
+
+## [0.2.10] - 2015-06-05
 ## Changed
 * Approprately sending back the geohash on empty caches when a geohash exists
 
@@ -238,6 +248,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.2.10]: https://github.com/Esri/koop/compare/v0.2.11...v0.2.11
 [0.2.10]: https://github.com/Esri/koop/compare/v0.2.9...v0.2.10
 [0.2.9]: https://github.com/Esri/koop/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/Esri/koop/compare/v0.2.7...v0.2.8
