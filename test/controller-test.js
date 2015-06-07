@@ -4,7 +4,7 @@ var should = require('should'),
   fs = require('fs'),
   kooplib = require('koop/lib');
   
-var koop = require('koop')(JSON.parse(fs.readFileSync(__dirname+'/config/default.json')));
+var koop = require('koop')({}); //JSON.parse(fs.readFileSync(__dirname+'/config/default.json')));
 
 var itemJson = require('./fixtures/itemJson.js');
 

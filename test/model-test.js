@@ -3,7 +3,7 @@ var should = require('should'),
   fs = require('fs');
   koop = require('koop/lib');
 
-var config = JSON.parse(fs.readFileSync(__dirname+'/config/default.json'));
+var config = {}; //JSON.parse(fs.readFileSync(__dirname+'/config/default.json'));
 
 var itemJson = require('./fixtures/itemJson.js');
 var largeCSV = fs.readFileSync('./test/fixtures/largeCSV.csv').toString();
