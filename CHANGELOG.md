@@ -248,7 +248,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
-[0.2.10]: https://github.com/Esri/koop/compare/v0.2.11...v0.2.11
+[0.2.11]: https://github.com/Esri/koop/compare/v0.2.10...v0.2.11
 [0.2.10]: https://github.com/Esri/koop/compare/v0.2.9...v0.2.10
 [0.2.9]: https://github.com/Esri/koop/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/Esri/koop/compare/v0.2.7...v0.2.8
