@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.2.11] - 2015-07-11
+### Fixed
+* A bug with requesting geohash the first time a dataset is seen, now responding with 202
+
 ## [0.2.11] - 2015-06-06
 ### Added
 * Needed to add a couple headers to the geohash response when caches are expired.
@@ -248,6 +252,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.2.12]: https://github.com/Esri/koop/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/Esri/koop/compare/v0.2.10...v0.2.11
 [0.2.10]: https://github.com/Esri/koop/compare/v0.2.9...v0.2.10
 [0.2.9]: https://github.com/Esri/koop/compare/v0.2.8...v0.2.9

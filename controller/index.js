@@ -936,6 +936,8 @@ var Controller = function( agol, BaseController ){
           if (exists) {
             // send back the geohash, but send fileInfo to set the expired header
             controller.returnGeohash(req, res, path, fileInfo);
+          } else {
+            res.status( 202 ).json( { status: 'processing' } );
           }
           // re-direct to findItemData since we need to cache the data
           req.params.silent = true;
