@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.2.11] - 2015-07-11
+## [0.2.12] - 2015-07-11
 ### Fixed
 * A bug with requesting geohash the first time a dataset is seen, now responding with 202
 
