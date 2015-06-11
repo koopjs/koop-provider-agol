@@ -586,6 +586,18 @@ describe('AGOL Model', function(){
      
 
     describe('when building pages for requests', function() {
+
+      /*before(function (done) {
+        sinon.stub(agol, 'req', function (url, callback) {
+          callback(null, {body: JSON.stringify({features: [{attributes: {min_oid:1, max_oid: 1001}}]})});
+        });
+        done();
+      });
+
+      after(function (done) {
+        agol.req.restore();
+        done();
+      });*/
     
       it('should build offset based request pages', function(done){
         var url = 'https://services.arcgis.com/bkrWlSKcjUDFDtgw/arcgis/rest/services/US_Geographies/FeatureServer';
