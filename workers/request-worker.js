@@ -16,15 +16,12 @@ var protocols = {
   https: https
 };
 
-//require('look').start();
-
 // Init Koop with things it needs like a log and Cache 
 koop.log = new koop.Logger( config );
 koop.Cache = new koop.DataCache( koop );
 
 // registers a DB modules  
 koop.Cache.db = pgcache.connect( config.db.conn, koop );
-
 
 // Create the job queue for this worker process
 // connects to the redis same redis
@@ -61,14 +58,21 @@ process.once( 'SIGINT', function ( sig ) {
 });
 
 jobs.process('agol', function(job, done){
-  makeRequest(job, done);
+  var domain = require('domain').create();
+  domain.on('error', function(err){
+    done(err);
+  });
+
+  domain.run(function(){
+    makeRequest(job, done);
+  });
 });
 
 
 setInterval(function () {
-    if (typeof gc === 'function') {
-        gc();
-    }
+  if (typeof gc === 'function') {
+    gc();
+  }
 }, 5000);
 
 
