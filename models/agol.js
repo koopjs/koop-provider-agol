@@ -57,9 +57,11 @@ var AGOL = function( koop ){
   /**
    * Adds a service to the Cache
    * needs a host, generates an id 
+   *
    * @param {string} id - the id used to reference this host in the db
    * @param {string} host - host to request items from
    * @param {function} callback - The callback.
+   * TODO dont call koop.Cache.db directly
    */
   agol.register = function (id, host, callback) {
     var type = 'agol:services';

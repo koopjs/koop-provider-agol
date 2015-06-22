@@ -16,15 +16,12 @@ var protocols = {
   https: https
 };
 
-//require('look').start();
-
 // Init Koop with things it needs like a log and Cache 
 koop.log = new koop.Logger( config );
 koop.Cache = new koop.DataCache( koop );
 
 // registers a DB modules  
 koop.Cache.db = pgcache.connect( config.db.conn, koop );
-
 
 // Create the job queue for this worker process
 // connects to the redis same redis
@@ -61,14 +58,21 @@ process.once( 'SIGINT', function ( sig ) {
 });
 
 jobs.process('agol', function(job, done){
-  makeRequest(job, done);
+  var domain = require('domain').create();
+  domain.on('error', function(err){
+    done(err);
+  });
+
+  domain.run(function(){
+    makeRequest(job, done);
+  });
 });
 
 
 setInterval(function () {
-    if (typeof gc === 'function') {
-        gc();
-    }
+  if (typeof gc === 'function') {
+    gc();
+  }
 }, 5000);
 
 
@@ -109,20 +113,37 @@ function makeRequest(job, done){
         response.on('end', function () {
           try {
             var json;
-            // so sometimes server returns these crazy asterisks in the coords
-            // I do a regex to replace them in both the case that I've found them
-            //data = data.replace(/\*+/g,'null');
-            //data = data.replace(/\.null/g, '');
 
             var buffer = Buffer.concat(data);
             var encoding = response.headers['content-encoding'];
 
-            if (encoding == 'gzip') {
-              var buff = zlib.gunzip(buffer, function(e, result){
-                processJSON(JSON.parse(result.toString()), task, uri, job, cb);
-              });
-            } else if (encoding == 'deflate') {
-              json = JSON.parse(zlib.inflateSync(buffer).toString());
+            if (encoding === 'gzip') {
+              try {
+                var buff = zlib.gunzip(buffer, function(e, result){
+                  processJSON(JSON.parse(result.toString().replace(/NaN/g, 'null')), task, uri, job, cb);
+                });
+              } catch (e) {
+                console.log('Could not parse feature page with gzip encoding', uri, e)
+                done(JSON.stringify({
+                  message: 'Failed to parse a page of features',
+                  request: uri,
+                  response: e,
+                  code: 500
+                }));
+              }
+            } else if (encoding === 'deflate') {
+              try {
+                json = JSON.parse(zlib.inflateSync(buffer).toString());
+                processJSON(json, task, uri, job, cb);
+              } catch (e) {
+                console.log('Could not parse feature page with deflate encoding', uri, e)
+                done(JSON.stringify({
+                  message: 'Failed to parse a page of features',
+                  request: uri,
+                  response: e,
+                  code: 500
+                }));
+              }
             } else {
               json = JSON.parse(buffer.toString().replace(/NaN/g, 'null'));
               processJSON(json, task, uri, job, cb);
