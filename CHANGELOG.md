@@ -2,14 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased 
+## [0.3.0] - 2015-06-22
 ### Fixed
 * A bug with workers where json containing NaN in response JSON was choking the json parsing. Now they get replaced with `null`.
 ### Added 
 * Wrapped workers functions in a domain to try to force clean exits on any unhandled errors
 * Added a new route for accessing geohashes from `.../item/FeatureServer/0/geohash`.
 
-## [0.2.12] - 2015-07-11
+## [0.2.12] - 2015-06-11
 ### Fixed
 * A bug with requesting geohash the first time a dataset is seen, now responding with 202
 
@@ -259,6 +259,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.3.0]: https://github.com/Esri/koop/compare/v0.2.12...v0.3.0
 [0.2.12]: https://github.com/Esri/koop/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/Esri/koop/compare/v0.2.10...v0.2.11
 [0.2.10]: https://github.com/Esri/koop/compare/v0.2.9...v0.2.10
