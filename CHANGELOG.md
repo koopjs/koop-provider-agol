@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased 
+## Changed
+* removing \$ from any file name as it gives the export code problems on the command line.
+
 ## [0.3.0] - 2015-06-22
 ### Fixed
 * A bug with workers where json containing NaN in response JSON was choking the json parsing. Now they get replaced with `null`.
@@ -259,6 +263,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.3.1]: https://github.com/Esri/koop/compare/v0.3.1...v0.3.1
 [0.3.0]: https://github.com/Esri/koop/compare/v0.2.12...v0.3.0
 [0.2.12]: https://github.com/Esri/koop/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/Esri/koop/compare/v0.2.10...v0.2.11
