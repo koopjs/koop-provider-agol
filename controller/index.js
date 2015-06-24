@@ -268,7 +268,7 @@ var Controller = function( agol, BaseController ){
             var name = ( info && info.info ) ? info.name || info.info.name || info.info.title : key;
             name = (name.length > 150) ? name.substr(0, 150): name;
             var fileName = name + '.' + req.params.format;
-            fileName = fileName.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');;
+            fileName = fileName.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
 
             // if we have a layer then append it to the query params 
             if ( req.params.layer ) {
@@ -409,7 +409,7 @@ var Controller = function( agol, BaseController ){
 
       var name = ( itemJson && itemJson.data && itemJson.data[0] && (itemJson.data[0].name || (itemJson.data[0].info && itemJson.data[0].info.name) ) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
       // cleanze the name
-      name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '');
+      name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)|\$/g, '');
       name = (name.length > 150) ? name.substr(0, 150): name;
 
       if (itemJson && 
@@ -915,6 +915,10 @@ var Controller = function( agol, BaseController ){
    *
    */
   controller.getGeohash = function(req, res){
+    // remove but save the callback params for jsonp requests
+    var callback = req.query.callback;
+    delete req.query.callback;
+
     // used for asking if we have the data already
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
 
