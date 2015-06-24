@@ -27,7 +27,7 @@
   "license": "BSD-2-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com:Esri/koop-agol.git"
+    "url": "https://github.com:koopjs/koop-agol.git"
   },
   "devDependencies": {
     "supertest": "~0.11.0",
