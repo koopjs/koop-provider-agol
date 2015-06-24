@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased 
+## [0.3.1] - 2015-06-24 
 ## Changed
 * removing \$ from any file name as it gives the export code problems on the command line.
 
