@@ -929,7 +929,7 @@ var AGOL = function( koop ){
               itemJson.cache_save = false;
               itemJson.expires_at = expiration;
 
-              var maxCount = Math.min(parseInt(serviceInfo.maxRecordCount), 1000) || 1000,
+              var maxCount = (serviceInfo) ? Math.min(parseInt(serviceInfo.maxRecordCount), 1000) : 1000,
                 pageRequests;
               // build legit offset based page requests 
               if ( serviceInfo && serviceInfo.advancedQueryCapabilities && serviceInfo.advancedQueryCapabilities.supportsPagination ){

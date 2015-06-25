@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Fixed a bug with trying to access the maxRecordCount on service metadata when its undefined.
+
 ## [0.3.1] - 2015-06-24 
 ## Changed
 * removing \$ from any file name as it gives the export code problems on the command line.
@@ -263,7 +267,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
-[0.3.1]: https://github.com/Esri/koop/compare/v0.3.1...v0.3.1
+[0.3.1]: https://github.com/Esri/koop/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Esri/koop/compare/v0.2.12...v0.3.0
 [0.2.12]: https://github.com/Esri/koop/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/Esri/koop/compare/v0.2.10...v0.2.11
