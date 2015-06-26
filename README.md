@@ -1,5 +1,13 @@
 # koop-agol
 
+[![npm version][npm-img]][npm-url]
+[![build status][travis-img]][travis-url]
+
+[npm-img]: https://img.shields.io/npm/v/koop-agol.svg?style=flat-square
+[npm-url]: https://www.npmjs.com/package/koop-agol
+[travis-img]: https://img.shields.io/travis/koopjs/koop-agol.svg?style=flat-square
+[travis-url]: https://travis-ci.org/koopjs/koop-agol
+
 ## An ArcGIS online provider to [Koop](https://github.com/Esri/koop) 
 
 To install in an existing Koop deploy and register ArcGIS Online:
