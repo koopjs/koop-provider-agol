@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * Fixed a bug with trying to access the maxRecordCount on service metadata when its undefined.
 * Wrapping a json.parse in a try/catch to prevent parsing crashes on bad responses
+### Added
+* Killing all pending requests on a worker if the job fails
 
 ## [0.3.1] - 2015-06-24 
 ## Changed
