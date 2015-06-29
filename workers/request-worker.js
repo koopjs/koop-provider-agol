@@ -60,6 +60,7 @@ process.once( 'SIGINT', function ( sig ) {
 jobs.process('agol', function(job, done){
   var domain = require('domain').create();
   domain.on('error', function(err){
+    requestQ.kill();
     done(err);
   });
 
@@ -123,6 +124,7 @@ function makeRequest(job, done){
                   processJSON(JSON.parse(result.toString().replace(/NaN/g, 'null')), task, uri, job, cb);
                 });
               } catch (e) {
+                requestQ.kill();
                 console.log('Could not parse feature page with gzip encoding', uri, e)
                 done(JSON.stringify({
                   message: 'Failed to parse a page of features',
@@ -136,6 +138,7 @@ function makeRequest(job, done){
                 json = JSON.parse(zlib.inflateSync(buffer).toString());
                 processJSON(json, task, uri, job, cb);
               } catch (e) {
+                requestQ.kill();
                 console.log('Could not parse feature page with deflate encoding', uri, e)
                 done(JSON.stringify({
                   message: 'Failed to parse a page of features',
@@ -196,7 +199,7 @@ function makeRequest(job, done){
             koop.Cache.getInfo(key, function(err, info){
               if (err){
                 koop.log.error(err);
-                return done();
+                return done(err);
               }
               if ( info && info.status ) {
                 delete info.status;
@@ -233,17 +236,20 @@ function makeRequest(job, done){
   // puts back on the queue if < 3 retries
   // errors the entire job if if fails  
   var catchErrors = function( task, e, url, callback){
-    if (task.retry && task.retry === 3 ){
+    if (task.retry && task.retry === 2 ){
       koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
       try {
+        // kill the queue from trying more requests
+        requestQ.kill();
         var jsonErr = JSON.parse(e);
-        done(JSON.stringify({
+        return done(JSON.stringify({
           message: 'Failed to request a page of features',
           request: url,
           response: jsonErr.message,
           code: jsonErr.code
         }));
       } catch(parseErr){
+        requestQ.kill();
         done(JSON.stringify({
           message: 'Failed to request a page of features',
           request: url,
