@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [0.3.2] - 2015-06-29
 ### Fixed
 * Fixed a bug with trying to access the maxRecordCount on service metadata when its undefined.
 * Wrapping a json.parse in a try/catch to prevent parsing crashes on bad responses
@@ -270,6 +270,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.3.2]: https://github.com/Esri/koop/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Esri/koop/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Esri/koop/compare/v0.2.12...v0.3.0
 [0.2.12]: https://github.com/Esri/koop/compare/v0.2.11...v0.2.12
