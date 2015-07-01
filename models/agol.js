@@ -198,23 +198,45 @@ var AGOL = function( koop ){
    * @param {object} options - optional params from req.query (the querystring)
    * @param {function} callback - the callback for when all is gone
    */
-  agol.getItem = function( host, itemId, options, callback ){
+  agol.getItem = function ( host, itemId, options, callback ) {
     var url = host + this.agol_path + itemId+'?f=json';
-    this.req(url, function(err, data ){
+    this.req(url, function (err, data) {
       if (err) {
-        callback(err, null);
-      } else {
-        try {
-          var json = JSON.parse( data.body );
-          if (json.error){
-            callback( json.error.message, null );  
-          } else {
-            callback( null, json );
-          }
-        } catch (e){
-          callback( 'Problem accessing the request host', null );
-        }
+        return callback(err, null);
       }
+      try {
+        var json = JSON.parse(data.body);
+        if (json.error) {
+          return callback(json.error.message, null);  
+        }
+        if (options.getMetadata && json.typeKeywords.indexOf('Metadata') !== -1) {
+          agol.getItemMetaData( host, itemId, json, callback);
+        } else {
+          callback(null, json);
+        }
+      } catch (e) {
+        callback('Problem accessing the request host', null);
+      }
+    });
+  };
+
+   /**
+   * Get an item's metadata
+   * requests the metadata and attachs it to an object before calling the callback
+   *
+   * @param {string} host - the agol deploy to get data from
+   * @param {string} item - the agol item id
+   * @param {object} json - an item's json data to attach metadata to 
+   * @param {function} callback - the callback for when all is gone
+   */
+  agol.getItemMetaData = function (host, item, json, callback) {
+    var url = [host, this.agol_path, item, '/info/metadata/metadata.xml?format=default'].join('');
+    this.req(url, function (err, data) {
+      if (err) {
+        return callback(err);
+      }
+      json.metadata = data.body;
+      callback(null, json);
     });
   };
 
