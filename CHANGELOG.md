@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [0.4.0] - 2015-07-02
 ### Added 
 * a getItemMetadata to the model that will request item metadata and attach it to item json. 
 * passing metadata to koops file exporters
@@ -279,6 +279,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.4.0]: https://github.com/Esri/koop/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/Esri/koop/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Esri/koop/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Esri/koop/compare/v0.2.12...v0.3.0
