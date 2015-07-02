@@ -285,7 +285,8 @@ var Controller = function( agol, BaseController ){
                 } else {
                   // Get the item
                   req.query.layer = ( !parseInt(req.params.layer)) ? 0 : req.params.layer;
-                  
+                   
+                  // if getMetadata is true then the getItem method will attach the metadata to the json 
                   req.query.getMetadata = true;
                   agol.getItem(data.host, req.params.item, req.query, function( err, itemJson ){
                     //agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){

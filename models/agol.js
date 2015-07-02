@@ -209,8 +209,8 @@ var AGOL = function( koop ){
         if (json.error) {
           return callback(json.error.message, null);  
         }
-        if (options.getMetadata && json.typeKeywords.indexOf('Metadata') !== -1) {
-          agol.getItemMetaData( host, itemId, json, callback);
+        if (options.getMetadata && json.typeKeywords && json.typeKeywords.indexOf('Metadata') !== -1) {
+          agol.getItemMetadata( host, itemId, json, callback);
         } else {
           callback(null, json);
         }
@@ -229,7 +229,8 @@ var AGOL = function( koop ){
    * @param {object} json - an item's json data to attach metadata to 
    * @param {function} callback - the callback for when all is gone
    */
-  agol.getItemMetaData = function (host, item, json, callback) {
+  agol.getItemMetadata = function (host, item, json, callback) {
+    console.log('what')
     var url = [host, this.agol_path, item, '/info/metadata/metadata.xml?format=default'].join('');
     this.req(url, function (err, data) {
       if (err) {

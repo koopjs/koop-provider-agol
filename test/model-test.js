@@ -61,6 +61,35 @@ describe('AGOL Model', function(){
         });
       });
     });
+
+    describe('when getting an item with metadata', function() {
+      before(function (done) {
+        var itemInfo = require('./fixtures/itemInfo.js');
+        sinon.stub(agol, 'req', function(url, callback){
+          callback(null, {body: JSON.stringify(itemInfo.info)});
+        });
+
+        sinon.stub(agol, 'getItemMetadata', function(host, itemId, json, callback){
+          json.metadata = true;
+          callback(null, json);
+        });
+        done();
+      });
+
+      after(function (done) {
+        agol.getItemMetadata.restore();
+        agol.req.restore();
+        done();
+      });
+
+      it('should call getItemMetadata to json', function(done){
+        agol.getItem('host1', 'item1', {getMetadata: true}, function(err, json) {
+          json.metadata.should.equal(true);
+          done();
+        });
+      });
+      
+    });
    
     describe('when getting a an expired feature service item', function() {
 

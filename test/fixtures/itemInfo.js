@@ -26,6 +26,7 @@ module.exports = { name: 'US Congregational Districts',
      htmlPopupType: 'esriServerHTMLPopupTypeAsHTMLText',
      displayField: 'CODE',
      typeIdField: null,
+     typeKeywords: ['Metadata'],
      fields: 
       [ [Object],
         [Object],
