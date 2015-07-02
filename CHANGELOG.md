@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added 
+* a getItemMetadata to the model that will request item metadata and attach it to item json. 
+* passing metadata to koops file exporters
+* tests for getItemMetadata
+### Changed 
+* updated calls to file export methods to have less inputs. This is in anticipation of a larger controller and model refactor that is going to happen soon.
+
+
 ## [0.3.2] - 2015-06-29
 ### Fixed
 * Fixed a bug with trying to access the maxRecordCount on service metadata when its undefined.

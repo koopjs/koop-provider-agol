@@ -331,7 +331,7 @@ describe('AGOL Controller', function(){
 
         var itemInfo = require('./fixtures/itemInfo.js');
 
-        sinon.stub(agol, 'exportToFormat', function(format, dir, key, data, opts, callback){
+        sinon.stub(agol, 'exportFile', function(params, opts, callback){
           callback(null, 'aFakeFile');
         });
 
@@ -353,7 +353,7 @@ describe('AGOL Controller', function(){
         agol.getItemData.restore();
         agol.getInfo.restore();
         agol.find.restore();
-        agol.exportToFormat.restore();
+        agol.exportFile.restore();
         done();
       });
 
@@ -363,7 +363,7 @@ describe('AGOL Controller', function(){
           .end(function(err, res){
             //res.should.have.status(404);
             agol.getInfo.called.should.equal(true);
-            agol.exportToFormat.called.should.equal(true);
+            agol.exportFile.called.should.equal(true);
             agol.getItemData.called.should.equal(true);
             done();
         });
@@ -376,7 +376,7 @@ describe('AGOL Controller', function(){
 
         var itemInfo = require('./fixtures/itemInfo.js');
 
-        sinon.stub(agol, 'exportLarge', function(format, dir, key, data, opts, callback){
+        sinon.stub(agol, 'exportFile', function(params, opts, callback){
           callback(null, 'aFakeLargeFile');
         });
 
@@ -398,17 +398,17 @@ describe('AGOL Controller', function(){
         agol.getItemData.restore();
         agol.getInfo.restore();
         agol.find.restore();
-        agol.exportLarge.restore();
+        agol.exportFile.restore();
         done();
       });
 
-      it('should call Exporter.exportLarge an dreturn 200', function(done){
+      it('should call Exporter.exportFile an dreturn 200', function(done){
          request(koop)
           .get('/agol/test/itemid/0.csv')
           .end(function(err, res){
             res.should.have.status(404);
             agol.getInfo.called.should.equal(true);
-            agol.exportLarge.called.should.equal(true);
+            agol.exportFile.called.should.equal(true);
             agol.getItemData.called.should.equal(true);
             done();
         });

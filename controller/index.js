@@ -285,7 +285,9 @@ var Controller = function( agol, BaseController ){
                 } else {
                   // Get the item
                   req.query.layer = ( !parseInt(req.params.layer)) ? 0 : req.params.layer;
-
+                   
+                  // if getMetadata is true then the getItem method will attach the metadata to the json 
+                  req.query.getMetadata = true;
                   agol.getItem(data.host, req.params.item, req.query, function( err, itemJson ){
                     //agol.getItemData( data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
                       if ( exists ){
@@ -398,14 +400,10 @@ var Controller = function( agol, BaseController ){
       } else {
         res.status(400).send( err );
       }
-    } 
-    else if ( itemJson && itemJson.data && itemJson.data[0] && (!itemJson.data[0].features || !itemJson.data[0].features.length)) {
-
+    } else if ( itemJson && itemJson.data && itemJson.data[0] && (!itemJson.data[0].features || !itemJson.data[0].features.length)) {
       agol.log('error', req.url +' No features in data');
       res.status(404).send( 'No features exist for the requested FeatureService layer');
-
-    } 
-    else {
+    } else {
 
       var name = ( itemJson && itemJson.data && itemJson.data[0] && (itemJson.data[0].name || (itemJson.data[0].info && itemJson.data[0].info.name) ) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
       // cleanze the name
@@ -430,6 +428,15 @@ var Controller = function( agol, BaseController ){
 
       }
 
+      var fileParams = {
+        dir: dir,
+        key: key, 
+        id: req.params.item,
+        format: req.params.format,
+        type: 'agol',
+        data: (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
+      }
+
       if ((itemJson.koop_status && itemJson.koop_status == 'too big') || agol.forceExportWorker ){
         // export as a series of small queries/files
         var table = 'agol:' + req.params.item + ':' + ( req.params.layer || 0 );
@@ -439,7 +446,10 @@ var Controller = function( agol, BaseController ){
         if (itemJson.data && itemJson.data[0] && itemJson.data[0].info && itemJson.data[0].info.geometryType){
           req.query.geomType = itemJson.data[0].info.geometryType;
         }
-        agol.exportLarge( req.params.format, req.params.item, key, 'agol', req.query, function(err, result){
+        // force export of large data
+        req.query.large = true
+
+        agol.exportFile( fileParams, req.query, function(err, result){
           if (result && result.status && result.status == 'processing'){
             agol.getCount(table, {}, function(err, count){
               var code = 202;
@@ -475,17 +485,17 @@ var Controller = function( agol, BaseController ){
         });
       } else if (itemJson && itemJson.data && itemJson.data[0]) {
 
-        agol.exportToFormat( 
-          req.params.format, 
-          dir, 
-          key, 
-          itemJson.data[0], 
-          { 
-            isFiltered: req.query.isFiltered, 
-            name: name, 
-            wkid: req.query.wkid 
-          }, 
-          function(err, result){
+        var opts = {
+          isFiltered: req.query.isFiltered, 
+          name: name, 
+          wkid: req.query.wkid
+        };
+
+        if (itemJson.metadata) {
+          opts.metadata = itemJson.metadata;
+        }
+
+        agol.exportFile(fileParams, opts, function(err, result){
           if ( req.query.url_only ){
             var origUrl = req.originalUrl.split('?');
             origUrl[0] = origUrl[0].replace(/json/,req.params.format);
