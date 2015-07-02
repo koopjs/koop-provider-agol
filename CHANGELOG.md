@@ -3,29 +3,31 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.4.0] - 2015-07-02
-### Added 
-* a getItemMetadata to the model that will request item metadata and attach it to item json. 
+### Added
+* a getItemMetadata to the model that will request item metadata and attach it to item json.
 * passing metadata to koops file exporters
 * tests for getItemMetadata
-### Changed 
-* updated calls to file export methods to have less inputs. This is in anticipation of a larger controller and model refactor that is going to happen soon.
 
+### Changed
+* updated calls to file export methods to have less inputs. This is in anticipation of a larger controller and model refactor that is going to happen soon.
 
 ## [0.3.2] - 2015-06-29
 ### Fixed
 * Fixed a bug with trying to access the maxRecordCount on service metadata when its undefined.
 * Wrapping a json.parse in a try/catch to prevent parsing crashes on bad responses
+
 ### Added
 * Killing all pending requests on a worker if the job fails
 
-## [0.3.1] - 2015-06-24 
+## [0.3.1] - 2015-06-24
 ## Changed
 * removing \$ from any file name as it gives the export code problems on the command line.
 
 ## [0.3.0] - 2015-06-22
 ### Fixed
 * A bug with workers where json containing NaN in response JSON was choking the json parsing. Now they get replaced with `null`.
-### Added 
+
+### Added
 * Wrapped workers functions in a domain to try to force clean exits on any unhandled errors
 * Added a new route for accessing geohashes from `.../item/FeatureServer/0/geohash`.
 
@@ -40,7 +42,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * added .travis.yml finally
 * geohash model and controller tests
 * added a jsdocs to each method in the model
-### Changed 
+
+### Changed
 * renamed "Expired" to "X-Expired" in an attempt to flag it as a custom header.
 
 ## [0.2.10] - 2015-06-05
@@ -53,8 +56,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.2.8] - 2015-06-04
 ### Changed
-* Changed the way decaching works. Now we serve geohash until a new file is ready. Once a geohash is created users should always see it.  
-* Support for treating geohash requests with where clauses 
+* Changed the way decaching works. Now we serve geohash until a new file is ready. Once a geohash is created users should always see it.
+* Support for treating geohash requests with where clauses
 
 ## [0.2.7] - 2015-05-22
 ### Changed
@@ -73,31 +76,32 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Protecting against CSV data duplication by preventing inserts that fail to create tables from inserting data.
 
 ## [0.2.3] - 2015-05-14
-### Changed 
+### Changed
 * Forcing CSV data to remove each directory individually
 
 ## [0.2.2] - 2015-05-13
 ### Changed
 * Fixed worker requests for gzip responses causing strange asterisks in responses
-* Sending resultOffest and resultRecordCount to featureservices as limit/offset 
+* Sending resultOffest and resultRecordCount to featureservices as limit/offset
 
 ## [0.2.1] - 2015-05-07
-### Changed 
+### Changed
 * Changed the way geohashes are requested and processed by removing the paging and returning 202 while still processing
 * Geohash routes now request the data to be cached if its not already
-* Geohash requests now check the expiration of the data in the cache 
+* Geohash requests now check the expiration of the data in the cache
 
-### Added 
+### Added
 * the agol model now has an `isExpired` method to easily check if the data in the cache are expired
 
-
 ## [0.2.0] - 2015-04-28
-### Added 
+### Added
 * support for requesting geohash aggregations
 
 ## [0.1.69] - 2015-04-14
 ### Changed
-* fixed a callback issue with request workers where some requests error out and call task callbacks twice 
+* fixed a callback issue with request workers where some requests error out and call task callbacks twice
+
+---
 
 ## Pre clean changelog changes:
 
@@ -279,20 +283,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
-[0.4.0]: https://github.com/Esri/koop/compare/v0.3.2...v0.4.0
-[0.3.2]: https://github.com/Esri/koop/compare/v0.3.1...v0.3.2
-[0.3.1]: https://github.com/Esri/koop/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/Esri/koop/compare/v0.2.12...v0.3.0
-[0.2.12]: https://github.com/Esri/koop/compare/v0.2.11...v0.2.12
-[0.2.11]: https://github.com/Esri/koop/compare/v0.2.10...v0.2.11
-[0.2.10]: https://github.com/Esri/koop/compare/v0.2.9...v0.2.10
-[0.2.9]: https://github.com/Esri/koop/compare/v0.2.8...v0.2.9
-[0.2.8]: https://github.com/Esri/koop/compare/v0.2.7...v0.2.8
-[0.2.7]: https://github.com/Esri/koop/compare/v0.2.6...v0.2.7
-[0.2.6]: https://github.com/Esri/koop/compare/v0.2.5...v0.2.6
-[0.2.5]: https://github.com/Esri/koop/compare/v0.2.4...v0.2.5
-[0.2.4]: https://github.com/Esri/koop/compare/v0.2.3...v0.2.4
-[0.2.3]: https://github.com/Esri/koop/compare/v0.2.2...v0.2.3
-[0.2.2]: https://github.com/Esri/koop/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/Esri/koop/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/Esri/koop/tags/v0.2.0
+[0.4.0]: https://github.com/koopjs/koop-agol/compare/v0.3.2...v0.4.0
+[0.3.2]: https://github.com/koopjs/koop-agol/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/koopjs/koop-agol/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/koopjs/koop-agol/compare/v0.2.12...v0.3.0
+[0.2.12]: https://github.com/koopjs/koop-agol/compare/v0.2.11...v0.2.12
+[0.2.11]: https://github.com/koopjs/koop-agol/compare/v0.2.10...v0.2.11
+[0.2.10]: https://github.com/koopjs/koop-agol/compare/v0.2.9...v0.2.10
+[0.2.9]: https://github.com/koopjs/koop-agol/compare/v0.2.8...v0.2.9
+[0.2.8]: https://github.com/koopjs/koop-agol/compare/v0.2.7...v0.2.8
+[0.2.7]: https://github.com/koopjs/koop-agol/compare/v0.2.6...v0.2.7
+[0.2.6]: https://github.com/koopjs/koop-agol/compare/v0.2.5...v0.2.6
+[0.2.5]: https://github.com/koopjs/koop-agol/compare/v0.2.4...v0.2.5
+[0.2.4]: https://github.com/koopjs/koop-agol/compare/v0.2.3...v0.2.4
+[0.2.3]: https://github.com/koopjs/koop-agol/compare/v0.2.2...v0.2.3
+[0.2.2]: https://github.com/koopjs/koop-agol/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/koopjs/koop-agol/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/koopjs/koop-agol/releases/tag/v0.2.0
