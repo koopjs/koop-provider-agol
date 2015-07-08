@@ -8,6 +8,7 @@ var kue = require('kue'),
   zlib = require('zlib'),
   url = require('url'),
   async = require('async'),
+  argv = require('yargs').argv,
   config = require('config');
 
 // store these here so we can easily use refs to them based on protocol types
@@ -86,7 +87,7 @@ function makeRequest(job, done){
       completed = 0;
 
     var killJob = function (msg, uri, error, code) {
-      console.log('Killing job', id + '/' + layerId);
+      console.log('Killing job', id + '/' + layerId, msg);
       requestQ.kill();
       done(JSON.stringify({
         message: msg,
@@ -111,6 +112,7 @@ function makeRequest(job, done){
             'Accept-Encoding': 'gzip, deflate' 
           }
         };
+        var reqStart = Date.now();
         // make an http or https request based on the protocol
         var req = ((url_parts.protocol === 'https:') ? protocols.https : protocols.http ).request(opts, function(response) {
           var data = [];
@@ -123,6 +125,7 @@ function makeRequest(job, done){
           });
 
           response.on('end', function () {
+            if (argv.debug) console.log('Request took:', (Date.now() - reqStart) / 1000);
             try {
               var json;
 
@@ -130,31 +133,25 @@ function makeRequest(job, done){
               var encoding = response.headers['content-encoding'];
 
               if (encoding === 'gzip') {
-                try {
-                  var buff = zlib.gunzip(buffer, function (e, result) {
-                    try {
-                      json = JSON.parse(result.toString().replace(/NaN/g, 'null'));
-                      processJSON(json, task, uri, job, cb);
-                    } catch (e) {
-                      console.log('catch');
-                      killJob('Could not gunzip feature page with gzip encoding', uri, e);
-                    }
-                  });
-                } catch (e) {
-                  killJob('Could not gunzip feature page with gzip encoding', uri, e);
-                }
+                var buff = zlib.gunzip(buffer, function (e, result) {
+                  try {
+                    json = JSON.parse(result.toString().replace(/NaN/g, 'null'));
+                    processJSON(json, task, uri, job, cb);
+                  } catch (e) {
+                    catchErrors(task, e, uri, cb);
+                  }
+                });
               } else if (encoding === 'deflate') {
                 try {
                   json = JSON.parse(zlib.inflateSync(buffer).toString());
                   processJSON(json, task, uri, job, cb);
                 } catch (e) {
-                  killJob('Could not parse feature page with deflate encoding', uri, e);
+                  catchErrors(task, e, uri, cb);
                 }
               } else {
                 json = JSON.parse(buffer.toString().replace(/NaN/g, 'null'));
                 processJSON(json, task, uri, job, cb);
               }
-              //var json = JSON.parse(data.replace(/NaN/g, 'null'));
             } catch(e){
               catchErrors(task, e, uri, cb);
             }
@@ -178,8 +175,12 @@ function makeRequest(job, done){
         catchErrors(task, JSON.stringify(json.error), uri, cb);
       } else {
         // insert a partial
+        var start = Date.now();
         koop.GeoJSON.fromEsri( job.data.fields || [], json, function(err, geojson){
+          if (argv.debug) console.log('Geojson from Esri took:', (Date.now() - start) / 1000);
+          start = Date.now(); 
           koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
+            if (argv.debug) console.log('Geojson Insert took:', (Date.now() - start) / 1000);
             // when we gets errors on insert the whole job needs to stop
             // most often this error means the cache was dropped
             if (err) {
@@ -239,26 +240,13 @@ function makeRequest(job, done){
     // puts back on the queue if < 3 retries
     // errors the entire job if if fails  
     var catchErrors = function( task, e, url, callback){
-      if (task.retry && task.retry === 2 ){
+      if (task.retry && task.retry === 3 ){
         koop.log.error( 'failed to parse json, not trying again '+ task.req +' '+ e);
         try {
-          // kill the queue from trying more requests
-          requestQ.kill();
           var jsonErr = JSON.parse(e);
-          return done(JSON.stringify({
-            message: 'Failed to request a page of features',
-            request: url,
-            response: jsonErr.message,
-            code: jsonErr.code
-          }));
-        } catch(parseErr){
-          requestQ.kill();
-          done(JSON.stringify({
-            message: 'Failed to request a page of features',
-            request: url,
-            response: parseErr,
-            code: null
-          }));
+          killJob('Failed to request a page of features', url, jsonErr.message, jsonErr.code);
+        } catch (parseErr) {
+          killJob('Failed to request a page of features', url, parseErr);
         }
         return;
       } else {
@@ -268,7 +256,10 @@ function makeRequest(job, done){
           task.retry++;
         }
         koop.log.info('Re-requesting page '+ task.req +' '+ e + ' - ' + task.retry );
-        requestQ.push( task, function(err){ if (err) { koop.log.error(err); } });
+        // the timeout simulated a backoff by delaying adding it back to the queue
+        setTimeout(function () {
+          requestQ.push( task, function(err){ if (err) { koop.log.error(err); } });
+        }, task.retry * 1000);
         try {
           return callback();
         } catch (e) {
