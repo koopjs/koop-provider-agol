@@ -2,11 +2,26 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased 
+### Fixed
+* Fixed a bug with the try/catch on failed gzip responses
+* Fixed an issues where serviceInfo was null and the fields array was attempting to be read
+
+### Changed
+* Made retry of failed requests be 3 instead of 2
+
+### Added 
+* added a backoff for re-requests of failed feature pages
+
+
 ## [0.4.0] - 2015-07-02
 ### Added
 * a getItemMetadata to the model that will request item metadata and attach it to item json.
 * passing metadata to koops file exporters
 * tests for getItemMetadata
+
+### Changed 
+* updated calls to file export methods to have less inputs. This is in anticipation of a larger controller and model refactor that is going to happen soon.
 
 ### Changed
 * updated calls to file export methods to have less inputs. This is in anticipation of a larger controller and model refactor that is going to happen soon.
@@ -27,7 +42,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * A bug with workers where json containing NaN in response JSON was choking the json parsing. Now they get replaced with `null`.
 
-### Added
+### Added 
 * Wrapped workers functions in a domain to try to force clean exits on any unhandled errors
 * Added a new route for accessing geohashes from `.../item/FeatureServer/0/geohash`.
 
