@@ -230,7 +230,6 @@ var AGOL = function( koop ){
    * @param {function} callback - the callback for when all is gone
    */
   agol.getItemMetadata = function (host, item, json, callback) {
-    console.log('what')
     var url = [host, this.agol_path, item, '/info/metadata/metadata.xml?format=default'].join('');
     this.req(url, function (err, data) {
       if (err) {
@@ -890,7 +889,6 @@ var AGOL = function( koop ){
 
     // get the featureservice info 
     agol.getFeatureServiceLayerInfo(itemJson.url, ( options.layer || 0 ), function(err, serviceInfo){
-      
       // set the name in options
       if ( (itemJson.name || itemJson.title) && !options.name ){
         options.name = itemJson.name || itemJson.title;
@@ -947,7 +945,7 @@ var AGOL = function( koop ){
               }
             };
             // save the fields as an array of the names
-            info.info.fields = serviceInfo.fields.map(function (f) { return f.name; });
+            info.info.fields = (serviceInfo) ? serviceInfo.fields.map(function (f) { return f.name; }) : [];
 
             koop.Cache.insert( 'agol', id, info, ( options.layer || 0 ), function( err, success ){
 
@@ -1329,7 +1327,6 @@ var AGOL = function( koop ){
         json.url = url;
         callback( err, json );
       } catch (e) {
-        //console.log('failed to get URL, no big deal, most likely this can be ignored', url, e, err);
         callback( 'failed to parse service info', null );
       }
     });
