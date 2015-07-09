@@ -410,24 +410,6 @@ var Controller = function( agol, BaseController ){
       name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)|\$/g, '');
       name = (name.length > 150) ? name.substr(0, 150): name;
 
-      if (itemJson && 
-          itemJson.data && 
-          itemJson.data[0] && 
-          itemJson.data[0].info && 
-          itemJson.data[0].info && 
-          itemJson.data[0].info.extent &&
-          itemJson.data[0].info.extent.spatialReference ){
-
-        var wkid = parseInt(itemJson.data[0].info.extent.spatialReference.latestWkid);
-        if ( wkid && ([3785, 3857, 4326, 102100].indexOf(wkid) === -1) && !req.query.wkid){
-          req.query.wkid = wkid;
-        } 
-        else if ( itemJson.data[0].info.extent.spatialReference.wkt && !req.query.wkid){
-          req.query.wkt = itemJson.data[0].info.extent.spatialReference.wkt;
-        } 
-
-      }
-
       var fileParams = {
         dir: dir,
         key: key, 
@@ -488,7 +470,7 @@ var Controller = function( agol, BaseController ){
         var opts = {
           isFiltered: req.query.isFiltered, 
           name: name, 
-          wkid: req.query.wkid
+          outSR: req.query.outSR
         };
 
         if (itemJson.metadata) {
