@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased 
+## [0.4.1] - 2015-07-09
 ### Fixed
 * Fixed a bug with the try/catch on failed gzip responses
 * Fixed an issues where serviceInfo was null and the fields array was attempting to be read
@@ -298,6 +298,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[0.4.1]: https://github.com/koopjs/koop-agol/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/koopjs/koop-agol/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/koopjs/koop-agol/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/koopjs/koop-agol/compare/v0.3.0...v0.3.1
