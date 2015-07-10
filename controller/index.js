@@ -166,6 +166,15 @@ var Controller = function( agol, BaseController ){
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
     agol.getInfo(table_key, function(err, info){
 
+      // parse the spatial ref if we have one, 
+      // if its whitelisted remove it from the query object
+      if (req.query.outSR) {
+        var sr = agol.parseSpatialReference(req.query.outSR);
+        if (sr && sr.wkid && [3785, 3857, 4326, 102100].indexOf(sr.wkid) !== -1){
+          delete req.query.outSR;
+        }
+      }
+
       // sort the req.query before we hash so we are consistent 
       var sorted_query = {};
       _(req.query).keys().sort().each(function (key) {
