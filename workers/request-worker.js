@@ -111,8 +111,11 @@ function makeRequest(job, done){
             'User-Agent': 'esri-koop', 
             'Accept-Encoding': 'gzip, deflate' 
           }
-        };
-        var reqStart = Date.now();
+        }
+;
+        if (argv.debug) { 
+          console.time('request');
+        }
         // make an http or https request based on the protocol
         var req = ((url_parts.protocol === 'https:') ? protocols.https : protocols.http ).request(opts, function(response) {
           var data = [];
@@ -125,7 +128,9 @@ function makeRequest(job, done){
           });
 
           response.on('end', function () {
-            if (argv.debug) console.log('Request took:', (Date.now() - reqStart) / 1000);
+            if (argv.debug) {
+              console.timeEnd('request');
+            }
             try {
               var json;
 
@@ -175,12 +180,18 @@ function makeRequest(job, done){
         catchErrors(task, JSON.stringify(json.error), uri, cb);
       } else {
         // insert a partial
-        var start = Date.now();
+        if (argv.debug) {
+          console.time('parse');
+        }
         koop.GeoJSON.fromEsri( job.data.fields || [], json, function(err, geojson){
-          if (argv.debug) console.log('Geojson from Esri took:', (Date.now() - start) / 1000);
-          start = Date.now(); 
+          if (argv.debug) {
+            console.timeEnd('parse');
+            console.time('insert');
+          } 
           koop.Cache.insertPartial( 'agol', id, geojson, layerId, function( err, success){
-            if (argv.debug) console.log('Geojson Insert took:', (Date.now() - start) / 1000);
+            if (argv.debug) {
+              console.timeEnd('insert');
+            } 
             // when we gets errors on insert the whole job needs to stop
             // most often this error means the cache was dropped
             if (err) {

@@ -166,6 +166,15 @@ var Controller = function( agol, BaseController ){
     var table_key = ['agol', req.params.item, (req.params.layer || 0)].join(':');
     agol.getInfo(table_key, function(err, info){
 
+      // parse the spatial ref if we have one, 
+      // if its whitelisted remove it from the query object
+      if (req.query.outSR) {
+        var sr = agol.parseSpatialReference(req.query.outSR);
+        if (sr && sr.wkid && [3785, 3857, 4326, 102100].indexOf(sr.wkid) !== -1){
+          delete req.query.outSR;
+        }
+      }
+
       // sort the req.query before we hash so we are consistent 
       var sorted_query = {};
       _(req.query).keys().sort().each(function (key) {
@@ -410,24 +419,6 @@ var Controller = function( agol, BaseController ){
       name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)|\$/g, '');
       name = (name.length > 150) ? name.substr(0, 150): name;
 
-      if (itemJson && 
-          itemJson.data && 
-          itemJson.data[0] && 
-          itemJson.data[0].info && 
-          itemJson.data[0].info && 
-          itemJson.data[0].info.extent &&
-          itemJson.data[0].info.extent.spatialReference ){
-
-        var wkid = parseInt(itemJson.data[0].info.extent.spatialReference.latestWkid);
-        if ( wkid && ([3785, 3857, 4326, 102100].indexOf(wkid) === -1) && !req.query.wkid){
-          req.query.wkid = wkid;
-        } 
-        else if ( itemJson.data[0].info.extent.spatialReference.wkt && !req.query.wkid){
-          req.query.wkt = itemJson.data[0].info.extent.spatialReference.wkt;
-        } 
-
-      }
-
       var fileParams = {
         dir: dir,
         key: key, 
@@ -488,7 +479,7 @@ var Controller = function( agol, BaseController ){
         var opts = {
           isFiltered: req.query.isFiltered, 
           name: name, 
-          wkid: req.query.wkid
+          outSR: req.query.outSR
         };
 
         if (itemJson.metadata) {

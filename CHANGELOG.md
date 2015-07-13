@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed 
+* Turned off auto-projections, instead passing outSR to file exports to handle projections on demand via query string.
+* using console.time and console.timeEnd to debug request and insert times in the workers
+
 ## [0.4.1] - 2015-07-09
 ### Fixed
 * Fixed a bug with the try/catch on failed gzip responses
