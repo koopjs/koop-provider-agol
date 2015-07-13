@@ -11,14 +11,15 @@
     "lint": "node_modules/jshint/bin/jshint **/*.js"
   },
   "dependencies": {
-    "config": "~0.4.35",
-    "sphericalmercator": "~1.0.2",
-    "lodash": "~2.4.1",
-    "ejs": "~1.0.0",
     "async": "~0.9.0",
+    "config": "~0.4.35",
     "csv": "~0.4.0",
+    "ejs": "~1.0.0",
     "kue": "~0.8.9",
-    "request": "~2.48.0"
+    "lodash": "~2.4.1",
+    "request": "~2.48.0",
+    "sphericalmercator": "~1.0.2",
+    "yargs": "^3.15.0"
   },
   "author": "Chris Helm",
   "license": "BSD-2-Clause",
