@@ -274,117 +274,56 @@ var AGOL = function( koop ){
     this.getItem(host, itemId, options, function( err, itemJson ){
       
       if ( err ){
-        callback(err, null);
-      } else {
-        // put host in option so our cacheCheck has ref to it 
-        options.host = host;
+        return callback(err, null);
+      }
 
-        var qKey = ['agol', itemId, (options.layer || 0)].join(':');
 
-        self.getInfo( qKey, function(err, info){
+      // put host in option so our cacheCheck has ref to it 
+      options.host = host;
 
-          var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
+      var qKey = ['agol', itemId, (options.layer || 0)].join(':');
 
-          // check the last char on the url
-          // protects us from urls registered with layers already in the url
-          if (itemJson && itemJson.url){
-            var url_parts = itemJson.url.split('/');
-            if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
-              var lyrId = url_parts[ url_parts.length-1 ];
-              itemJson.hasLayerURL = true;
-              itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
+      self.getInfo( qKey, function(err, info){
+
+        var is_expired = info ? ( Date.now() >= info.expires_at ) : false;
+
+        // check the last char on the url
+        // protects us from urls registered with layers already in the url
+        if (itemJson && itemJson.url){
+          var url_parts = itemJson.url.split('/');
+          if ( parseInt(url_parts[ url_parts.length-1 ]) >= 0 ){
+            var lyrId = url_parts[ url_parts.length-1 ];
+            itemJson.hasLayerURL = true;
+            itemJson.url = self.stripLayerOffUrl( itemJson.url, (''+lyrId).split('').length );
+          }
+        }
+
+        self.getFeatureServiceLayerInfo( itemJson.url, (options.layer || 0), function(err, serviceInfo){
+          
+          // TODO centralize this logic
+          // check for infon on last edit date 
+          // set is_expired to false if it hasnt changed
+          if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo){
+            if (!serviceInfo.editingInfo.lastEditDate && (info.retrieved_at > itemJson.modified)) {
+              is_expired = false;  
+            } else if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
+              is_expired = true;        
+            } else {
+              // if the retrieved at date is greater than the lastEditDate then the data are still good
+              is_expired = false;
             }
           }
-
-          self.getFeatureServiceLayerInfo( itemJson.url, (options.layer || 0), function(err, serviceInfo){
-            
-            // check for infon on last edit date 
-            // set is_expired to false if it hasnt changed
-            if ( info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo){
-              if (!serviceInfo.editingInfo.lastEditDate && (info.retrieved_at > itemJson.modified)) {
-                is_expired = false;  
-              } else if ( info.retrieved_at < serviceInfo.editingInfo.lastEditDate ){
-                is_expired = true;        
-              } else {
-                // if the retrieved at date is greater than the lastEditDate then the data are still good
-                is_expired = false;
-              }
-            }
-         
-            if ( is_expired ) {
-              koop.Cache.remove('agol', itemId, options, function(err, res){
-                self.getData(itemJson, host, hostId, itemId, hash, options, callback);
-              });
-            } else {
-              self.getData(itemJson, host, hostId, itemId, hash, options, callback);
-            }
+       
+          if ( !is_expired ) {
+            return self.getData(itemJson, host, hostId, itemId, hash, options, callback);
+          }
+          
+          koop.Cache.remove('agol', itemId, options, function(err, res){
+            self.getData(itemJson, host, hostId, itemId, hash, options, callback);
           });
-
         });
 
-      }
-    });
-  };
-
-  /**
-   * Collects metadata for every layer in a service
-   * this is only used in server level tiles creation where we need all the layers
-   * @param {string} host - the host is needed to tell what dataset to remove 
-   * @param {string} itemid - id of the item
-   * @param {string} hash - the sha1 hash of the params and querystring 
-   * @param {object} options - optional params from req.query (the querystring)
-   * @param {function} callback - the callback for when all is gone
-   */
-  agol.getServiceLayerData = function( host, itemId, hash, options, callback ){
-    var self = this;
-    var reqCount = 0, nlayers, serviceInfo, serviceUrl;
-    var qKey = ['agol', itemId, 'all'].join(':');
-
-    var _collect = function(layerInfo, cb){
-      serviceInfo.layerInfo.push(layerInfo);
-      serviceInfo.geometryType = 'esriGeometryPoint';
-      if ( reqCount++ == nlayers){
-        koop.Cache.insert( 'agol', itemId, { 
-          features: [], 
-          info: serviceInfo }, 
-          'all', 
-          function( err, success){
-            if ( success ) {
-              callback(null, serviceInfo);
-            } else {
-              callback( err, null );
-            }
-          }
-        );
-      }
-      cb();
-    };
-
-    var q = async.queue(function(task, cb){
-      agol.req( task.url +'/'+ task.layer.id + '?f=json', function(err, res){
-        lyrInfo = JSON.parse(res.body);
-        _collect(lyrInfo, cb);
       });
-    },4);
-
-    koop.Cache.getInfo( qKey, function(err, info){
-      // if we have it send that back
-      if (!err && info){
-        callback(null, info.info);
-      } else {
-        self.getItem(host, itemId, options, function( err, itemJson ){
-          // collect all layers info
-          self.req( itemJson.url + '?f=json', function( err, data ){
-            serviceInfo = JSON.parse( data.body );
-            serviceInfo.layerInfo = [];
-            nlayers = serviceInfo.layers.length - 1;
-
-            serviceInfo.layers.forEach(function(layer, i){
-              q.push({ layer: layer, url: itemJson.url }, function(){});
-            });
-          });
-        });
-      }
 
     });
   };
@@ -402,14 +341,18 @@ var AGOL = function( koop ){
    */
   agol.getData = function(itemJson, host, hostId, itemId, hash, options, callback){
     if ( itemJson.type == 'CSV' ){
-      agol.getCSV( host + agol.agol_path, hostId, itemId, itemJson, options, callback );
-    } else if ( itemJson.type == 'Feature Collection' ){
-      agol.getFeatureCollection( host + agol.agol_path, hostId, itemId, itemJson, options, callback );
-    } else if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
-      agol.getFeatureService( hostId, itemId, itemJson, hash, options, callback );
-    } else {
-      callback('item must be a Feature Collection, Feature Service, or CSV', itemJson);
+      return agol.getCSV( host + agol.agol_path, hostId, itemId, itemJson, options, callback );
     }
+
+    if ( itemJson.type == 'Feature Collection' ){
+      return agol.getFeatureCollection( host + agol.agol_path, hostId, itemId, itemJson, options, callback );
+    }
+
+    if ( itemJson.type == 'Feature Service' || itemJson.type == 'Map Service' ) {
+      return agol.getFeatureService( hostId, itemId, itemJson, hash, options, callback );
+    }
+
+    return callback('item must be a Feature Collection, Feature Service, or CSV', itemJson);
   };
 
   /**

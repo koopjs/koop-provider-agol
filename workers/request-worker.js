@@ -100,7 +100,7 @@ function makeRequest(job, done){
     var requestFeatures = function (task, cb) {
       var uri = encodeURI( decodeURI(task.req) );
       try { 
-
+        console.log(uri)
         var url_parts = url.parse( uri );
         var opts = {
           method: 'GET',
