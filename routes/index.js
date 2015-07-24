@@ -17,7 +17,5 @@ module.exports = {
   'get /agol/:id/:item/thumbnail/:layer': 'thumbnail',
   'get /agol/:id/:item/:layer/tiles/:z/:x/:y.:format': 'tiles',
   'get /agol/:id/:item/:layer/tiles/:z/:x/:y': 'tiles',
-  'get /agol/:id/:item/tiles/:z/:x/:y.:format': 'servicetiles',
-  'get /agol/:id/:item/tiles/:z/:x/:y': 'servicetiles',
   'get /agol/:id/:item/FeatureServer/:layer/geohash': 'getGeohash',
 };
