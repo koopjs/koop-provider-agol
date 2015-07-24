@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 var should = require('should')
 var sinon = require('sinon')
 var request = require('supertest')
