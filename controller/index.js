@@ -41,7 +41,7 @@ var Controller = function (agol, BaseController) {
   controller.del = function (req, res) {
     if (!req.params.id) {
       return res.status(400).send('Must specify a service id')
-    } 
+    }
 
     agol.remove(req.params.id, function (err, data) {
       if (err) {
@@ -61,7 +61,7 @@ var Controller = function (agol, BaseController) {
     agol.find(null, function (err, data) {
       if (err) {
         return res.status(500).send(err)
-      } 
+      }
       res.json(data)
     })
   }
@@ -76,7 +76,7 @@ var Controller = function (agol, BaseController) {
     agol.find(req.params.id, function (err, data) {
       if (err) {
         return res.status(err.code || 404).send(err)
-      } 
+      }
       res.json(data)
     })
   }
@@ -106,9 +106,7 @@ var Controller = function (agol, BaseController) {
         res.contentType('text')
         res.json(itemJson)
       })
-      
     })
-    
   }
 
   /**
@@ -132,301 +130,219 @@ var Controller = function (agol, BaseController) {
         if (error) {
           return res.status(error.code || 400).send(error)
         }
-
         res.json(itemJson)
       })
-      
     })
   }
 
   /**
-   * find the items data
+   * Gets the actual json data from the model
+   *
+   * @param {object} params - required params used to fetch data
+   * @param {object} options - optional query string based params
+   * @param {function} callback
+   */
+  controller._getItemData = function (req, res, callback) {
+    var params = req.params
+    var options = req.query
+    var id = params.id
+    var item = params.item
+    var key = params.key
+
+    agol.find(id, function (err, data) {
+      if (err) {
+        return callback(err, null)
+      }
+
+      // Get the item
+      if (!parseInt(options.layer, 0)) {
+        options.layer = 0
+      }
+
+      agol.getItemData(data.host, id, item, key, options, function (error, itemJson) {
+        if (error) {
+          return callback(error, null)
+        }
+
+        if (itemJson.koop_status === 'processing' && typeof req.params.silent === 'undefined') {
+          // return w/202
+          agol.getCount(controller._createTableKey('agol', req.params), {}, function (err, count) {
+            var code = 202
+            var response = {
+              status: 'processing',
+              processing_time: (Date.now() - itemJson.retrieved_at) / 1000 || 0,
+              count: count
+            }
+            if (itemJson.generating) {
+              response.generating = itemJson.generating
+              // we received an error from the server
+              if (itemJson.generating.error || err) {
+                code = 502
+              }
+            }
+            res.status(code).json(response)
+          })
+          return
+        }
+
+        callback(null, itemJson)
+      })
+    })
+  }
+
+  /**
+   * Creates a unique based on request params and the querystring
+   * @returns {string} key
+   */
+  controller._createCacheKey = function (params, query) {
+    // sort the req.query before we hash so we are consistent
+    var sorted_query = {}
+    _(query).keys().sort().each(function (key) {
+      if (key !== 'url_only' && key !== 'format') {
+        sorted_query[key] = query[key]
+      }
+    })
+    // build the file key as an MD5 hash that's a join on the paams and look for the file
+    var toHash = params.item + '_' + (params.layer || 0) + JSON.stringify(sorted_query)
+
+    return crypto.createHash('md5').update(toHash).digest('hex')
+  }
+
+  /**
+   * Finds the item's data
+   * this method is crux of the controller. It handles the logic for returning data in several forms:
+   *   - status processing return 202
+   *   - status is processing but a file exists
+   *   - a file exists for the data
+   *   - a new file needs to be created
+   *   - no format given, just returns json
    * @param {object} req - the incoming request object
    * @param {object} res - the outgoing response object
    */
   controller.findItemData = function (req, res) {
-    // closure that actually goes out gets the data
-
-    // TODO move this into a testable method...
-    var _get = function (params, options, callback) {
-      var id = params.id
-      var item = params.item
-      var key = params.key
-
-      agol.find(id, function (err, data) {
-        if (err) {
-          return callback(err, null)
-        }
-
-        // Get the item
-        if (!parseInt(options.layer, 0)) {
-          options.layer = 0
-        }
-
-        agol.getItemData(data.host, id, item, key, options, function (error, itemJson) {
-          if (error) {
-            return callback(error, null)
-          } 
-
-          if (itemJson.koop_status === 'processing' && typeof req.params.silent === 'undefined') {
-            // return w/202
-            agol.getCount(controller._createTableKey('agol', req.params), {}, function (err, count) {
-              var code = 202
-              var response = {
-                status: 'processing',
-                processing_time: (Date.now() - itemJson.retrieved_at) / 1000 || 0,
-                count: count
-              }
-              if (itemJson.generating) {
-                response.generating = itemJson.generating
-                // we received an error from the server
-                if (itemJson.generating.error || err) {
-                  code = 502
-                }
-              }
-              res.status(code).json(response)
-            })
-          } else {
-            callback(null, itemJson)
-          }
-        })
-        
-      })
-    }
-
     var tableKey = controller._createTableKey('agol', req.params)
+    var dir = req.params.item + '_' + (req.params.layer || 0)
+    var path
+    var fileName
 
+    // returns data in the data
     agol.getInfo(tableKey, function (err, info) {
       if (err) {
         return res.status(500).send(err)
       }
 
-      var dir, key, path, fileName
-
-      // sort the req.query before we hash so we are consistent
-      var sorted_query = {}
-      _(req.query).keys().sort().each(function (key) {
-        if (key !== 'url_only' && key !== 'format') {
-          sorted_query[key] = req.query[key]
-        }
-      })
+      var key = controller._createCacheKey(req, req.params, req.query)
+      req.params.key = key
 
       // determine if this request is for a filtered dataset
       req.query.isFiltered = (req.query.where || req.query.geometry)
 
-      // build the file key as an MD5 hash that's a join on the paams and look for the file
-      var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-      key = crypto.createHash('md5').update(toHash).digest('hex')
-      req.params.key = key
-
+      // if the status is processing we either return with a file or a 202
       if (info && info.status === 'processing') {
         if (req.params.format) {
-          // force an override on the format param if given a format in the query
-          if (req.query.format) {
-            req.params.format = req.query.format
-            delete req.query.format
-          }
+          return controller._returnProcessingFile(req, res, info)
+        }
+        return controller._returnProcessing(req, res, info)
+      }
 
-          // this logic should be wrapped into a Function since its copied from below
-          req.params.format = req.params.format.replace('geojson', 'json')
-          dir = req.params.item + '_' + (req.params.layer || 0)
-          path = ['files', dir, key].join('/')
-
-          // get the name of the data; else use the key (md5 hash)
-          fileName = controller._createName(info, key, req.params.format)
-
-          // if we have a layer then append it to the query params
-          if (req.params.layer) {
-            req.query.layer = req.params.layer
-          }
-
-          agol.files.exists(path, fileName, function (exists, path) {
-            if (exists) {
-              return controller.returnFile(req, res, path, fileName)
-            }
-            controller._returnProcessing(req, res, info)
-          })
-
-        } else {
-          controller._returnProcessing(req, res, info)
+      // check format for exporting data
+      if (req.params.format) {
+        // file params for building an export file
+        var fileParams = {
+          req: req,
+          res: res,
+          dir: dir,
+          key: key
         }
 
-      } else {
-        // check format for exporting data
-        if (req.params.format) {
-          // force an override on the format param if given a format in the query
-          if (req.query.format) {
-            req.params.format = req.query.format
-            delete req.query.format
-          }
+        // force an override on the format param if given a format in the query
+        if (req.query.format) {
+          req.params.format = req.query.format
+          delete req.query.format
+        }
 
-          // redirect to thumbnail for png access
-          if (req.params.format === 'png') {
-            controller.thumbnail(req, res)
-          } else {
-            // change geojson to json
-            req.params.format = req.params.format.replace('geojson', 'json')
-            // use the item as the file dir so we can organize exports by id
-            dir = req.params.item + '_' + (req.params.layer || 0)
-            path = [ 'files', dir, key ].join('/')
+        // redirect to thumbnail for png access
+        if (req.params.format === 'png') {
+          return controller.thumbnail(req, res)
+        }
 
-            // the file name for the export
-            fileName = controller._createName(info, key, req.params.format)
+        // create the file path
+        path = controller._createFilePath(key, req.params)
+        // the file name for the export
+        fileName = controller._createName(info, key, req.params.format)
 
-            // if we have a layer then append it to the query params
-            if (req.params.layer) {
-              req.query.layer = req.params.layer
+        // does the data export already exist?
+        agol.files.exists(path, fileName, function (exists, path) {
+
+          // get the item data before we check for
+          agol.find(req.params.id, function (err, data) {
+            if (err) {
+              return res.status(500).send(err)
             }
+            // save the item layer
+            req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
 
-            // does the data export already exist?
-            agol.files.exists(path, fileName, function (exists, path) {
-              // get the item data before we check for
-              agol.find(req.params.id, function (err, data) {
-                if (err) {
-                  return res.status(500).send(err)
-                }
-                // Get the item
-                req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
+            agol.getItem(data.host, req.params.item, req.query, function (err, itemJson) {
+              if (err) {
+                return res.status(500).send(err)
+              }
 
-                agol.getItem(data.host, req.params.item, req.query, function (err, itemJson) {
-                  if (err) {
-                    return res.status(500).send(err)
+              if (exists) {
+                return agol.isExpired(info, req.query.layer, function (err, isExpired) {
+                  fileParams.err = err
+                  if (!isExpired) {
+                    return controller._returnFile(req, res, path, fileName)
                   }
-                  // agol.getItemData(data.host, req.params.id, req.params.item, key, req.query, function(error, itemJson){
-                  if (exists) {
-                    // check if the cache is expired
-                    var is_expired = info ? (new Date().getTime() >= info.expires_at) : false
 
-                    if (info.info.url) {
-                      // clean up the url; remove layer at the end just in case
-                      var url = info.info.url.replace('?f=json', '')
-                      var url_parts = url.split('/')
-                      var len = url_parts.length - 1
-                      if (parseInt(url_parts[ len ], 0) >= 0) {
-                        var lyrId = url_parts[ len ]
-                        url = url.substring(0, url.length - ((('' + lyrId).split('').length || 2) + 1))
-                      }
-
-                      agol.getFeatureServiceLayerInfo(url, (req.params.layer || 0), function (err, serviceInfo) {
-                        if (err) {
-                          return res.status(500).send(err)
-                        }
-                        // check for info on last edit date (for hosted services dont expired unless changed)
-                        // set is_expired to false if it hasnt changed or if its null
-                        if (info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo) {
-                          if (!serviceInfo.editingInfo.lastEditDate && (info.retrieved_at > itemJson.modified)) {
-                            is_expired = false
-                          } else if (info.retrieved_at < serviceInfo.editingInfo.lastEditDate) {
-                            is_expired = true
-                          } else {
-                            // if the retrieved at date is greater than the lastEditDate then the data are still good
-                            is_expired = false
-                          }
-                        }
-
-                        // return it.
-                        // if expired -> remove the data and request
-                        if (is_expired) {
-                          agol.dropItem(data.host, req.params.item, req.query, function () {
-                            req.query.format = req.params.format
-                            _get(req.params, req.query, function (err, itemJson) {
-                              // var used to request new files if needed.
-                              var fileParams = {
-                                req: req,
-                                res: res,
-                                dir: dir,
-                                key: key,
-                                err: err,
-                                itemJson: itemJson
-                              }
-                              controller.requestNewFile(fileParams)
-                            })
-                          })
-                        } else {
-                          // else serve it
-                          controller.returnFile(req, res, path, fileName)
-                        }
-                      })
-
-                    } else {
-                      // if expired -> remove the data and request
-                      if (is_expired) {
-                        agol.dropItem('', req.params.item, req.query, function () {
-                          req.query.format = req.params.format
-                          _get(req.params, req.query, function (err, itemJson) {
-                            // var used to request new files if needed.
-                            var fileParams = {
-                              req: req,
-                              res: res,
-                              dir: dir,
-                              key: key,
-                              err: err,
-                              itemJson: itemJson
-                            }
-                            controller.requestNewFile(fileParams)
-                          })
-                        })
-                      } else {
-                        // else serve it
-                        controller.returnFile(req, res, path, fileName)
-                      }
-                    }
-                  } else {
-                    // check the koop status table to see if we have a job running
-                    // if we do then return
-                    // else proceed
+                  // if it's expired, then remove the data and request a new file
+                  agol.dropItem(data.host, req.params.item, req.query, function () {
                     req.query.format = req.params.format
-                    _get(req.params, req.query, function (err, itemJson) {
+                    controller._getItemData(req.params, req.query, function (err, itemJson) {
+                      fileParams.err = err
+                      fileParams.itemJson = itemJson
                       // var used to request new files if needed.
-                      var fileParams = {
-                        req: req,
-                        res: res,
-                        dir: dir,
-                        key: key,
-                        err: err,
-                        itemJson: itemJson
-                      }
                       controller.requestNewFile(fileParams)
                     })
-                  }
-                // })
+                  })
                 })
+              }
+
+              req.query.format = req.params.format
+              controller._getItemData(req.params, req.query, function (err, itemJson) {
+                fileParams.err = err
+                fileParams.itemJson = itemJson
+                controller.requestNewFile(fileParams)
               })
             })
-          }
-        } else {
-          // if we have a layer then append it to the query params
-          if (req.params.layer) {
-            req.query.layer = req.params.layer
-          }
-          // get the esri json data for the service
-          _get(req.params, req.query, function (err, itemJson) {
-            // when silent is sent as a param undefined
-            // TODO too many ifs
-            if (typeof req.params.silent === 'undefined') {
-              if (err) {
-                if (err.code && err.error) {
-                  return res.status(err.code).send(err.error)
-                }
-
-                res.status(404).send(err)
-              } else {
-                // TODO remove hard coded maxRecCount
-                if (itemJson && itemJson.data && itemJson.data[0].features.length > 1000) {
-                  itemJson.data[0].features = itemJson.data[0].features.splice(0, 1000)
-                }
-                res.send(itemJson)
-              }
-            }
           })
+        })
+      } else {
+        // if we have a layer then append it to the query params
+        if (req.params.layer) {
+          req.query.layer = req.params.layer
         }
+        // get the esri json data for the service
+        controller._getItemData(req, res, function (err, itemJson) {
+          // when silent is sent as a param undefined
+          if (typeof req.params.silent === 'undefined') {
+            if (err) {
+              return res.status(err.code || 404).send(err.error || err)
+            }
+
+            // TODO remove hard coded maxRecCount
+            if (itemJson && itemJson.data && itemJson.data[0].features.length > 1000) {
+              itemJson.data[0].features = itemJson.data[0].features.splice(0, 1000)
+            }
+            return res.send(itemJson)
+          }
+        })
       }
     })
   }
 
   /**
    * Create key used to query a table in the cache
-   * 
+   *
    * @params {string} type - the type of the providers ("agol")
    * @params {object} params - an object with an item id and layer number
    *
@@ -437,18 +353,74 @@ var Controller = function (agol, BaseController) {
     return [type, params.item, (params.layer || 0)].join(':')
   }
 
-  /**
-   * Respond to a requests with a "processing" response
-   * 
+   /**
+   * Respond to a request for file downloads when a dataset is still "processing"
+   *
    * @params {object} type - the type of the providers ("agol")
    * @params {object} params - an object with an item id and layer number
    * @params {object} info - item metadata from the cache
+   * @private
+   */
+  controller._returnProcessingFile = function (req, res, info) {
+    // force an override on the format param if given a format in the query
+    if (req.query.format) {
+      req.params.format = req.query.format
+      delete req.query.format
+    }
+
+    // create the file path
+    var path = controller._createFilePath(req.params.key, req.params)
+    // get the name of the data; else use the key (md5 hash)
+    var fileName = controller._createName(info, req.params.key, req.params.format)
+
+    // if we have a layer then append it to the query params
+    if (req.params.layer) {
+      req.query.layer = req.params.layer
+    }
+
+    agol.files.exists(path, fileName, function (exists, path) {
+      if (exists) {
+        return controller._returnFile(req, res, path, fileName)
+      }
+      controller._returnProcessing(req, res, info)
+    })
+    return
+  }
+
+  /**
+   * Respond to a requests with a "processing" response
    *
-   * @returns {string} key
+   * @params {object} type - the type of the providers ("agol")
+   * @params {object} params - an object with an item id and layer number
+   * @params {object} info - item metadata from the cache
    * @private
    */
   controller._returnProcessing = function (req, res, info) {
     var table = controller._createTableKey('agol', req.params)
+    if (req.params.format) {
+      // force an override on the format param if given a format in the query
+      if (req.query.format) {
+        req.params.format = req.query.format
+        delete req.query.format
+      }
+      // create the file path
+      var path = controller._createFilePath(req.params.key, req.params)
+      // get the name of the data; else use the key (md5 hash)
+      var fileName = controller._createName(info, req.params.key, req.params.format)
+
+      // if we have a layer then append it to the query params
+      if (req.params.layer) {
+        req.query.layer = req.params.layer
+      }
+
+      agol.files.exists(path, fileName, function (exists, path) {
+        if (exists) {
+          return controller._returnFile(req, res, path, fileName)
+        }
+        controller._returnProcessing(req, res, info)
+      })
+      return
+    }
 
     if (typeof req.params.silent === 'undefined') {
       agol.getCount(table, {}, function (err, count) {
@@ -487,18 +459,36 @@ var Controller = function (agol, BaseController) {
    *
    * @returns {string} key
    * @private
-   */ 
+   */
   controller._createName = function (info, key, format) {
+    format = format.replace('geojson', 'json')
+
     var name = (info && info.info) ? info.name || info.info.name || info.info.title : key
     name = (name.length > 150) ? name.substr(0, 150) : name
+
     var fileName = name + '.' + format
     fileName = fileName.replace(/\/|,|&|\|/g, '').replace(/ /g, '_').replace(/\(|\)/g, '')
+
     return fileName
   }
 
   /**
+   * Creates a clean file path for files exports
+   *
+   * @params {string} type - the type of the providers ("agol")
+   * @params {object} params - an object with an item id and layer number
+   *
+   * @returns {string} key
+   * @private
+   */
+  controller._createFilePath = function (key, params) {
+    var dir = params.item + '_' + (params.layer || 0)
+    return ['files', dir, key].join('/')
+  }
+
+  /**
    * Create key used to query a table in the cache
-   * 
+   *
    * @params {string} type - the type of the providers ("agol")
    * @params {object} params - an object with an item id and layer number
    *
@@ -514,8 +504,6 @@ var Controller = function (agol, BaseController) {
     var itemJson = params.itemJson
     var req = params.req
     var res = params.res
-    var dir = params.dir
-    var key = params.key
 
     // flatten the data from an array to sep objects/arrays
     var itemData
@@ -551,32 +539,25 @@ var Controller = function (agol, BaseController) {
       }
     }
 
-    var fileParams = {
-      req: req,
-      res: res,
-      name: name,
-      itemJson: itemJson,
-      dir: dir,
-      key: key
-    }
+    // save name in the file params
+    params.name = name
 
     if ((itemJson.koop_status && itemJson.koop_status === 'too big') || agol.forceExportWorker) {
-      return controller._exportLarge(fileParams)
+      return controller._exportLarge(params)
     }
-    
     if (itemJson && itemJson.data && itemJson.data[0]) {
       // req.params.format, params.dir, params.key, params.itemJson.
-      return controller.exportToFormat(fileParams)
+      return controller.exportToFormat(params)
     }
 
     return res.status(400).send('Could not create export, missing data')
   }
 
   /**
-   * Exports a large dataset 
+   * Exports a large dataset
    * calls the exportLarge method on the agol model
    * @param {objects} params - file export parameters
-   */ 
+   */
   controller._exportLarge = function (params) {
     var req = params.req
     var res = params.res
@@ -632,7 +613,6 @@ var Controller = function (agol, BaseController) {
 
         return res.json({url: newUrl})
       }
-      
       res.contentType('text')
       return res.sendfile(result)
     })
@@ -666,7 +646,7 @@ var Controller = function (agol, BaseController) {
             .replace('&format=' + format, '')
 
           return res.json({url: newUrl})
-        } 
+        }
 
         res = controller._setHeaders(res, params.name, format)
 
@@ -685,8 +665,8 @@ var Controller = function (agol, BaseController) {
   /**
    * Returns a file as either a URL or an actual file download
    *
-   * @params {object} request object 
-   * @params {object} response object 
+   * @params {object} request object
+   * @params {object} response object
    * @params {string} path - the path the file
    * @params {string} name - the name of the file
    * @private
@@ -715,15 +695,14 @@ var Controller = function (agol, BaseController) {
       })
       return
     }
-      
     return res.sendfile(path)
   }
 
   /**
-   * Set file download headers for data exports 
+   * Set file download headers for data exports
    * adds the content-disposition and content-type bases on the file format
-   * 
-   * @params {object} response object 
+   *
+   * @params {object} response object
    * @params {string} name - the name of the file
    * @params {string} format - the exported file format
    * @returns {object} response
@@ -803,7 +782,6 @@ var Controller = function (agol, BaseController) {
         delete req.query.where
         controller.processFeatureServer(req, res, err, itemJson.data, callback)
       })
-      
     })
   }
 
@@ -867,7 +845,7 @@ var Controller = function (agol, BaseController) {
           agol.generateThumbnail(itemJson.data[0], req.params.item + '_' + req.params.layer, req.query, function (err, file) {
             if (err) {
               return res.status(500).send(err)
-            } 
+            }
 
             // send back image
             res.sendfile(file)
@@ -886,8 +864,8 @@ var Controller = function (agol, BaseController) {
   }
 
   /**
-   * Tile request handler, responds to z/x/y tile requests 
-   * 
+   * Tile request handler, responds to z/x/y tile requests
+   *
    */
   controller.tiles = function (req, res) {
     var callback = req.query.callback
@@ -924,7 +902,6 @@ var Controller = function (agol, BaseController) {
         if (callback) {
           return res.send(callback + '(' + fs.readFileSync(JSON.parse(tile)) + ')')
         }
-        
         return res.json(JSON.parse(fs.readFileSync(tile)))
       })
     }
@@ -1018,7 +995,7 @@ var Controller = function (agol, BaseController) {
 
   /**
    * Forced a drop of the cache for an item and DELETEs all known files
-   * used for responding to DELETE calls. 
+   * used for responding to DELETE calls.
    */
   controller.deleteItemData = function (req, res) {
     req.query.forceDelete = true
@@ -1027,7 +1004,7 @@ var Controller = function (agol, BaseController) {
 
   /**
    * Request handler for returning the counts of currently queued workers
-   * 
+   *
    */
   controller.getQueueCounts = function (req, res) {
     agol.getQueueCounts(function (err, response) {
@@ -1040,8 +1017,8 @@ var Controller = function (agol, BaseController) {
 
   /**
   * Get the geohash for an item/layer
-  * 
-  * 
+  *
+  *
   */
   controller.getGeohash = function (req, res) {
     // used for asking if we have the data already
@@ -1086,8 +1063,8 @@ var Controller = function (agol, BaseController) {
             // send back the geohash, but send fileInfo to set the expired header
             return controller.returnGeohash(req, res, path, fileInfo)
           }
-          
           return res.status(202).json({ status: 'processing' })
+
         } else {
           // need to know if the data are expired or not
           var isExpired = (info.retrieved_at && fileInfo && fileInfo.LastModified) ?
