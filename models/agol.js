@@ -277,7 +277,7 @@ var AGOL = function (koop) {
 
       self.getInfo(qKey, function (err, info) {
         if (err) {
-          console.log('Data not found in the cache', info)  
+          console.log('Data not found in the cache', info)
         }
         var is_expired = info ? (Date.now() >= info.expires_at) : false
 
@@ -736,7 +736,6 @@ var AGOL = function (koop) {
   */
   agol._page = function (params, options, callback) {
     params.featureService = new FeatureService(utils.forceHttps(params.itemJson.url), options)
-    
     params.featureService.pages(function (err, pages) {
       if (err) {
         return callback(err)
