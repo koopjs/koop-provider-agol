@@ -1,5 +1,5 @@
 /* global before, after, it, describe, should */
-var should = require('should')
+var should = require('should') // eslint-disable-line
 var sinon = require('sinon')
 var request = require('supertest')
 var fs = require('fs')
@@ -43,6 +43,7 @@ describe('AGOL Controller', function () {
           'id': 'tester'
         })
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(400)
           agol.register.called.should.equal(false)
           done()
@@ -58,6 +59,7 @@ describe('AGOL Controller', function () {
           'host': 'http://dummy.host.com'
         })
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(200)
           agol.register.called.should.equal(true)
           done()
@@ -79,6 +81,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(200)
           agol.find.called.should.equal(true)
           done()
@@ -89,6 +92,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .del('/agol/test')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(200)
           agol.remove.called.should.equal(true)
           done()
@@ -118,6 +122,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(200)
           agol.find.called.should.equal(true)
           agol.getItem.called.should.equal(true)
@@ -147,6 +152,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid/0/drop')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(200)
           agol.find.called.should.equal(true)
           agol.dropItem.called.should.equal(true)
@@ -187,6 +193,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid/0')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(202)
           agol.getInfo.called.should.equal(true)
           agol.getCount.called.should.equal(true)
@@ -224,6 +231,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid/0')
         .end(function (err, res) {
+          should.not.exist(err)
           //            res.should.have.status(200)
           agol.getItemData.called.should.equal(true)
           done()
@@ -265,6 +273,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid/0/geohash')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(200)
           agol.buildGeohash.called.should.equal(true)
           controller.createGeohash.called.should.equal(true)
@@ -280,16 +289,14 @@ describe('AGOL Controller', function () {
         callback(false)
       })
 
-      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
       sinon.stub(agol, 'getInfo', function (key, callback) {
-        // send no INFO to force the method to 
+        // send no INFO to force the method to
         callback(null, null)
       })
 
-      // just return true
-      sinon.stub(controller, 'findItemData', function (req, res) {
-        // res.send(true)
-      })
+      // stub this but dont respond since the geohash method will respond sooner
+      sinon.stub(controller, 'findItemData', function (req, res) { })
+
       done()
     })
 
@@ -302,8 +309,9 @@ describe('AGOL Controller', function () {
 
     it('should call controller.findItemData when the cache is empty (populate the cache)', function (done) {
       request(koop)
-        .get('/agol/test/itemid/0/geohash')
+        .get('/agol/test/itemid/1/geohash')
         .end(function (err, res) {
+          should.not.exist(err)
           agol.getInfo.called.should.equal(true)
           controller.findItemData.called.should.equal(true)
           done()
@@ -353,6 +361,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid/0.csv')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(200)
           agol.getInfo.called.should.equal(true)
           controller._getItemData.called.should.equal(true)
@@ -396,6 +405,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid/0.csv')
         .end(function (err, res) {
+          should.not.exist(err)
           // res.should.have.status(404)
           // agol.getInfo.called.should.equal(true)
           // agol.exportFile.called.should.equal(true)
@@ -440,6 +450,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid/Thumbnail/0')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(404)
           agol.find.called.should.equal(true)
           agol.generateThumbnail.called.should.equal(true)
@@ -482,6 +493,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid/0/tiles/5/5/12.png')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(404)
           agol.find.called.should.equal(true)
           agol.getItemData.called.should.equal(true)

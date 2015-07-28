@@ -223,20 +223,19 @@ var Controller = function (agol, BaseController) {
     var tableKey = controller._createTableKey('agol', req.params)
     var dir = req.params.item + '_' + (req.params.layer || 0)
     var path
-    var fileName
 
     // returns data in the data
     agol.getInfo(tableKey, function (err, info) {
-      //if (err) {
-      //  return res.status(500).send(err)
-      //}
+      if (err) {
+        console.log(err)
+      }
 
-      // parse the spatial ref if we have one, 
+      // parse the spatial ref if we have one,
       // if its whitelisted remove it from the query object
       if (req.query.outSR) {
-        var sr = agol.parseSpatialReference(req.query.outSR);
-        if (sr && sr.wkid && [3785, 3857, 4326, 102100].indexOf(sr.wkid) !== -1){
-          delete req.query.outSR;
+        var sr = agol.parseSpatialReference(req.query.outSR)
+        if (sr && sr.wkid && [3785, 3857, 4326, 102100].indexOf(sr.wkid) !== -1) {
+          delete req.query.outSR
         }
       }
 
@@ -299,7 +298,6 @@ var Controller = function (agol, BaseController) {
               if (err) {
                 return res.status(500).send(err)
               }
-                      
 
               if (exists) {
                 return agol.isExpired(info, req.query.layer, function (err, isExpired) {
@@ -484,7 +482,6 @@ var Controller = function (agol, BaseController) {
     }
 
     var itemJson = params.itemJson
-    var req = params.req
     var res = params.res
 
     // flatten the data from an array to sep objects/arrays
@@ -503,10 +500,10 @@ var Controller = function (agol, BaseController) {
     }
 
     // this logic sure does suck...
-    var name = ( itemJson && itemJson.data && itemJson.data[0] && (itemJson.data[0].name || (itemJson.data[0].info && itemJson.data[0].info.name) ) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
+    var name = (itemJson && itemJson.data && itemJson.data[0] && (itemJson.data[0].name || (itemJson.data[0].info && itemJson.data[0].info.name))) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title
     // cleanze the name
-    name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)|\$/g, '');
-    name = (name.length > 150) ? name.substr(0, 150): name;
+    name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)|\$/g, '')
+    name = (name.length > 150) ? name.substr(0, 150) : name
     params.name = name
 
     if ((itemJson.koop_status && itemJson.koop_status === 'too big') || agol.forceExportWorker) {
@@ -597,15 +594,14 @@ var Controller = function (agol, BaseController) {
     var res = params.res
 
     var format = req.params.format
-    
     var options = {
-      isFiltered: req.query.isFiltered, 
-      name: params.name, 
+      isFiltered: req.query.isFiltered,
+      name: params.name,
       outSR: req.query.outSR
     }
 
     if (params.itemJson.metadata) {
-      options.metadata = itemJson.metadata;
+      options.metadata = params.itemJson.metadata
     }
 
     agol.exportFile(params, options, function (err, result) {
@@ -1010,7 +1006,6 @@ var Controller = function (agol, BaseController) {
     // build the file key as an MD5 hash that's a join on the paams and look for the file
     var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
     var fileKey = crypto.createHash('md5').update(toHash).digest('hex')
-    
     var key = req.params.item + '_' + req.params.layer
     var filePath = ['latest', 'files', key].join('/')
     var fileName = fileKey + '.geohash.json'
