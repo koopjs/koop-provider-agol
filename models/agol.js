@@ -6,8 +6,8 @@ var async = require('async')
 var utils = require('./utils')
 
 var AGOL = function (koop) {
-  /** 
-   * inherits from the base model 
+  /**
+   * inherits from the base model
    */
   var agol = new koop.BaseModel(koop)
 
@@ -277,7 +277,7 @@ var AGOL = function (koop) {
 
       self.getInfo(qKey, function (err, info) {
         if (err) {
-          return callback(err)
+          console.log('Data not found in the cache', info)  
         }
         var is_expired = info ? (Date.now() >= info.expires_at) : false
 
@@ -736,17 +736,18 @@ var AGOL = function (koop) {
   */
   agol._page = function (params, options, callback) {
     params.featureService = new FeatureService(utils.forceHttps(params.itemJson.url), options)
+    
     params.featureService.pages(function (err, pages) {
       if (err) {
         return callback(err)
       }
 
-      // add to a separate queue that we can use to add jobs one at a time
-      // this prevents the case when we get 2 requests at the same time
       if (pages.length > 1) {
         callback(null, params.itemJson)
       }
 
+      // add to a separate queue that we can use to add jobs one at a time
+      // this prevents the case when we get 2 requests at the same time
       var key = ['agol', params.itemId, params.layerId].join(':')
       agol._throttleQ.push(key, function (locked) {
         if (!locked) {
