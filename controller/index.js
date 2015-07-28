@@ -165,7 +165,7 @@ var Controller = function (agol, BaseController) {
 
       agol.getItemData(data.host, id, item, key, options, function (error, itemJson) {
         if (error) {
-          return callback(error, null)
+          agol.log('debug', 'Data not found in cache.')
         }
 
         if (itemJson.koop_status === 'processing' && typeof req.params.silent === 'undefined') {
@@ -285,7 +285,6 @@ var Controller = function (agol, BaseController) {
         path = controller._createFilePath(key, req.params)
         // the file name for the export
         fileParams.fileName = controller._createName(info, key, req.params.format)
-        console.log()
 
         // does the data export already exist?
         agol.files.exists(path, fileParams.fileName, function (exists, path) {
