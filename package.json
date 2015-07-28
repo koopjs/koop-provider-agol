@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha test/*.js -t 40000",
+    "test": "standard && mocha test/*.js -t 40000",
     "lint": "node_modules/jshint/bin/jshint **/*.js"
   },
   "dependencies": {
@@ -19,7 +19,7 @@
     "lodash": "~2.4.1",
     "request": "~2.48.0",
     "sphericalmercator": "~1.0.2",
-    "yargs": "^3.15.0"
+    "featureservice": "~0.0.1"
   },
   "author": "Chris Helm",
   "license": "BSD-2-Clause",

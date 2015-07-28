@@ -257,7 +257,7 @@ var AGOL = function( koop ){
    * @param {function} callback - the callback for when all is gone
    */
   agol.getInfo = function(key, callback){
-    koop.Cache.getInfo( key, callback);
+    koop.Cache.getInfo(key, callback);
   };
 
    /**

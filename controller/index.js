@@ -227,11 +227,20 @@ var Controller = function (agol, BaseController) {
 
     // returns data in the data
     agol.getInfo(tableKey, function (err, info) {
-      if (err) {
-        return res.status(500).send(err)
+      //if (err) {
+      //  return res.status(500).send(err)
+      //}
+
+      // parse the spatial ref if we have one, 
+      // if its whitelisted remove it from the query object
+      if (req.query.outSR) {
+        var sr = agol.parseSpatialReference(req.query.outSR);
+        if (sr && sr.wkid && [3785, 3857, 4326, 102100].indexOf(sr.wkid) !== -1){
+          delete req.query.outSR;
+        }
       }
 
-      var key = controller._createCacheKey(req, req.params, req.query)
+      var key = controller._createCacheKey(req.params, req.query)
       req.params.key = key
 
       // determine if this request is for a filtered dataset
@@ -252,7 +261,10 @@ var Controller = function (agol, BaseController) {
           req: req,
           res: res,
           dir: dir,
-          key: key
+          key: key,
+          format: req.params.format,
+          id: req.params.item,
+          type: 'agol'
         }
 
         // force an override on the format param if given a format in the query
@@ -269,10 +281,11 @@ var Controller = function (agol, BaseController) {
         // create the file path
         path = controller._createFilePath(key, req.params)
         // the file name for the export
-        fileName = controller._createName(info, key, req.params.format)
+        fileParams.fileName = controller._createName(info, key, req.params.format)
+        console.log()
 
         // does the data export already exist?
-        agol.files.exists(path, fileName, function (exists, path) {
+        agol.files.exists(path, fileParams.fileName, function (exists, path) {
 
           // get the item data before we check for
           agol.find(req.params.id, function (err, data) {
@@ -286,32 +299,35 @@ var Controller = function (agol, BaseController) {
               if (err) {
                 return res.status(500).send(err)
               }
+                      
 
               if (exists) {
                 return agol.isExpired(info, req.query.layer, function (err, isExpired) {
                   fileParams.err = err
                   if (!isExpired) {
-                    return controller._returnFile(req, res, path, fileName)
+                    return controller._returnFile(req, res, path, fileParams.fileName)
                   }
 
                   // if it's expired, then remove the data and request a new file
                   agol.dropItem(data.host, req.params.item, req.query, function () {
                     req.query.format = req.params.format
-                    controller._getItemData(req.params, req.query, function (err, itemJson) {
+                    controller._getItemData(req, res, function (err, itemJson) {
                       fileParams.err = err
                       fileParams.itemJson = itemJson
+                      fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
                       // var used to request new files if needed.
-                      controller.requestNewFile(fileParams)
+                      controller._requestNewFile(fileParams)
                     })
                   })
                 })
               }
 
               req.query.format = req.params.format
-              controller._getItemData(req.params, req.query, function (err, itemJson) {
+              controller._getItemData(req, res, function (err, itemJson) {
                 fileParams.err = err
                 fileParams.itemJson = itemJson
-                controller.requestNewFile(fileParams)
+                fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
+                controller._requestNewFile(fileParams)
               })
             })
           })
@@ -353,8 +369,9 @@ var Controller = function (agol, BaseController) {
     return [type, params.item, (params.layer || 0)].join(':')
   }
 
-   /**
+  /**
    * Respond to a request for file downloads when a dataset is still "processing"
+   * if the file exists send it, else return processing 202
    *
    * @params {object} type - the type of the providers ("agol")
    * @params {object} params - an object with an item id and layer number
@@ -363,20 +380,11 @@ var Controller = function (agol, BaseController) {
    */
   controller._returnProcessingFile = function (req, res, info) {
     // force an override on the format param if given a format in the query
-    if (req.query.format) {
-      req.params.format = req.query.format
-      delete req.query.format
-    }
-
+    delete req.query.format
     // create the file path
     var path = controller._createFilePath(req.params.key, req.params)
     // get the name of the data; else use the key (md5 hash)
     var fileName = controller._createName(info, req.params.key, req.params.format)
-
-    // if we have a layer then append it to the query params
-    if (req.params.layer) {
-      req.query.layer = req.params.layer
-    }
 
     agol.files.exists(path, fileName, function (exists, path) {
       if (exists) {
@@ -397,30 +405,6 @@ var Controller = function (agol, BaseController) {
    */
   controller._returnProcessing = function (req, res, info) {
     var table = controller._createTableKey('agol', req.params)
-    if (req.params.format) {
-      // force an override on the format param if given a format in the query
-      if (req.query.format) {
-        req.params.format = req.query.format
-        delete req.query.format
-      }
-      // create the file path
-      var path = controller._createFilePath(req.params.key, req.params)
-      // get the name of the data; else use the key (md5 hash)
-      var fileName = controller._createName(info, req.params.key, req.params.format)
-
-      // if we have a layer then append it to the query params
-      if (req.params.layer) {
-        req.query.layer = req.params.layer
-      }
-
-      agol.files.exists(path, fileName, function (exists, path) {
-        if (exists) {
-          return controller._returnFile(req, res, path, fileName)
-        }
-        controller._returnProcessing(req, res, info)
-      })
-      return
-    }
 
     if (typeof req.params.silent === 'undefined') {
       agol.getCount(table, {}, function (err, count) {
@@ -439,7 +423,6 @@ var Controller = function (agol, BaseController) {
         }
         if (info.generating) {
           response.generating = info.generating
-          // we received an error from the server
           if (info.generating.error) {
             code = 502
           }
@@ -496,7 +479,6 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._requestNewFile = function (params) {
-    var name
     if (params.err) {
       return res.status(params.err.code || 400).send(params.err.error || params.err)
     }
@@ -520,34 +502,19 @@ var Controller = function (agol, BaseController) {
       return res.status(404).send('No features exist for the requested FeatureService layer')
     }
 
+    // this logic sure does suck...
+    var name = ( itemJson && itemJson.data && itemJson.data[0] && (itemJson.data[0].name || (itemJson.data[0].info && itemJson.data[0].info.name) ) ) ? itemJson.data[0].name || itemJson.data[0].info.name : itemJson.name || itemJson.title;
     // cleanze the name
-    name = itemJson.info.name || itemData.info.title || itemJson.name || itemJson.title
-    name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)|\$/g, '')
-    name = (name.length > 150) ? name.substr(0, 150) : name
-
-    if (itemData &&
-      itemData.info &&
-      itemData.info.extent &&
-      itemData.info.extent.spatialReference) {
-      var spatialRef = itemData.info.extent.spatialReference
-
-      var wkid = parseInt(spatialRef.latestWkid, 0)
-      if (wkid && ([3785, 3857, 4326, 102100].indexOf(wkid) === -1) && !req.query.wkid) {
-        req.query.wkid = wkid
-      } else if (spatialRef.wkt && !req.query.wkid) {
-        req.query.wkt = spatialRef.wkt
-      }
-    }
-
-    // save name in the file params
+    name = name.replace(/\/|,|&\|/g, '').replace(/ /g, '_').replace(/\(|\)|\$/g, '');
+    name = (name.length > 150) ? name.substr(0, 150): name;
     params.name = name
 
     if ((itemJson.koop_status && itemJson.koop_status === 'too big') || agol.forceExportWorker) {
       return controller._exportLarge(params)
     }
+
     if (itemJson && itemJson.data && itemJson.data[0]) {
-      // req.params.format, params.dir, params.key, params.itemJson.
-      return controller.exportToFormat(params)
+      return controller._exportToFormat(params)
     }
 
     return res.status(400).send('Could not create export, missing data')
@@ -562,7 +529,6 @@ var Controller = function (agol, BaseController) {
     var req = params.req
     var res = params.res
     var itemJson = params.itemJson
-
     req.query.name = params.name
 
     // set the geometry type so the exporter can do its thing for csv points (add x,y)
@@ -570,12 +536,16 @@ var Controller = function (agol, BaseController) {
       req.query.geomType = itemJson.data[0].info.geometryType
     }
 
-    agol.exportLarge(req.params.format, req.params.item, params.key, 'agol', req.query, function (err, result) {
+    // force export of large data
+    req.query.large = true
+
+    agol.exportFile(params, req.query, function (err, result) {
       if (err) {
         return res.status(err.code || 400).send(err)
       }
 
       if (result && result.status && result.status === 'processing') {
+        // TODO refactor this
         var tableKey = controller._createTableKey('agol', req.params)
         agol.getCount(tableKey, {}, function (err, count) {
           if (err) {
@@ -614,7 +584,7 @@ var Controller = function (agol, BaseController) {
         return res.json({url: newUrl})
       }
       res.contentType('text')
-      return res.sendfile(result)
+      return res.sendFile(result)
     })
   }
 
@@ -622,44 +592,49 @@ var Controller = function (agol, BaseController) {
    * Exports "non-large" data to a file format
    * @param {objects} params - file export parameters
    */
-  controller.exportToFormat = function (params) {
+  controller._exportToFormat = function (params) {
     var req = params.req
     var res = params.res
 
     var format = req.params.format
+    
+    var options = {
+      isFiltered: req.query.isFiltered, 
+      name: params.name, 
+      outSR: req.query.outSR
+    }
 
-    agol.exportToFormat(format, params.dir, params.key, params.itemJson.data[0],
-      { isFiltered: req.query.isFiltered,
-        name: params.name,
-        wkid: req.query.wkid }, function (err, result) {
-        if (err) {
-          return res.status(err.code || 400).send(err)
-        }
+    if (params.itemJson.metadata) {
+      options.metadata = itemJson.metadata;
+    }
 
-        if (req.query.url_only) {
-          var origUrl = req.originalUrl.split('?')
-          origUrl[0] = origUrl[0].replace(/json/, format)
-          var newUrl = req.protocol + '://' + req.get('host') + origUrl[0] + '?'
-          newUrl += origUrl[1]
-            .replace(/url_only=true&|url_only=true|/, '')
-            .replace('format=' + format, '')
-            .replace('&format=' + format, '')
+    agol.exportFile(params, options, function (err, result) {
+      if (err) {
+        return res.status(err.code || 400).send(err)
+      }
 
-          return res.json({url: newUrl})
-        }
+      if (req.query.url_only) {
+        var origUrl = req.originalUrl.split('?')
+        origUrl[0] = origUrl[0].replace(/json/, format)
+        var newUrl = req.protocol + '://' + req.get('host') + origUrl[0] + '?'
+        newUrl += origUrl[1]
+          .replace(/url_only=true&|url_only=true|/, '')
+          .replace('format=' + format, '')
+          .replace('&format=' + format, '')
 
-        res = controller._setHeaders(res, params.name, format)
+        return res.json({url: newUrl})
+      }
 
-        if (result.substr(0, 4) === 'http') {
-          // Proxy to s3 urls allows us to not show the URL
-          https.get(result, function (proxyRes) {
-            proxyRes.pipe(res)
-          })
-          return
-        }
-
-        res.sendfile(result)
-      })
+      res = controller._setHeaders(res, params.name, format)
+      if (result.substr(0, 4) === 'http') {
+        // Proxy to s3 urls allows us to not show the URL
+        return https.get(result, function (proxyRes) {
+          proxyRes.pipe(res)
+        })
+      } else {
+        res.sendFile(result)
+      }
+    })
   }
 
   /**
@@ -690,12 +665,12 @@ var Controller = function (agol, BaseController) {
 
     if (path.substr(0, 4) === 'http') {
       // Proxy to s3 urls allows us to not show the URL
-      https.get(path, function (proxyRes) {
+      return https.get(path, function (proxyRes) {
         proxyRes.pipe(res)
       })
-      return
     }
-    return res.sendfile(path)
+
+    return res.sendFile(path)
   }
 
   /**
@@ -807,7 +782,7 @@ var Controller = function (agol, BaseController) {
 
       agol.files.exists(null, png, function (exists) {
         if (exists) {
-          return res.sendfile(png)
+          return res.sendFile(png)
         }
 
         // if we have a layer then pass it along
@@ -848,7 +823,7 @@ var Controller = function (agol, BaseController) {
             }
 
             // send back image
-            res.sendfile(file)
+            res.sendFile(file)
           })
         })
       })
@@ -896,7 +871,7 @@ var Controller = function (agol, BaseController) {
         }
 
         if (req.params.format === 'png' || req.params.format === 'pbf') {
-          return res.sendfile(tile)
+          return res.sendFile(tile)
         }
 
         if (callback) {
@@ -922,7 +897,7 @@ var Controller = function (agol, BaseController) {
       }
 
       if (req.params.format === 'png' || req.params.format === 'pbf') {
-        return res.sendfile(file)
+        return res.sendFile(file)
       }
 
       if (callback) {
@@ -1035,6 +1010,7 @@ var Controller = function (agol, BaseController) {
     // build the file key as an MD5 hash that's a join on the paams and look for the file
     var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
     var fileKey = crypto.createHash('md5').update(toHash).digest('hex')
+    
     var key = req.params.item + '_' + req.params.layer
     var filePath = ['latest', 'files', key].join('/')
     var fileName = fileKey + '.geohash.json'
@@ -1102,7 +1078,7 @@ var Controller = function (agol, BaseController) {
         proxyRes.pipe(res)
       })
     } else {
-      res.sendfile(path)
+      res.sendFile(path)
     }
   }
 
