@@ -1,7 +1,7 @@
 /* global gc */
 var kue = require('kue')
 var koop = require('koop/lib')
-var FeatureService = require('../models/FeatureService')
+var FeatureService = require('featureservice')
 var pgcache = require('koop-pgcache')
 var config = require('config')
 
