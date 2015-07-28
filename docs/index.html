@@ -1,0 +1,2933 @@
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>koop-agol 1.0.0</title>
+  <link href='assets/bass.css' type='text/css' rel='stylesheet' />
+  <link href='assets/style.css' type='text/css' rel='stylesheet' />
+  <link href='assets/github.css' type='text/css' rel='stylesheet' />
+</head>
+<body class='documentation'>
+  <div class='px2'>
+    <div class='clearfix flex flex-stretch mxn2'>
+      <div class='documentation-sidebar relative top-0 bottom-0 right-0 px2 py2 col-3 sm-show'>
+        <div class='font-smaller fixed col-3 top-0 bottom-0 left-0 overflow-auto black bg-cloudy'>
+          <a href="/" class="h5 button block button-transparent">koop-agol 1.0.0</a>
+          <div class='px2'>
+              <a
+                href='#agol'
+                class='regular block'>
+                <code>agol</code>
+              </a>
+                <a
+                  href='#agol/page'
+                  class='px1 regular block'>
+                  <code>._page</code>
+                </a>
+                <a
+                  href='#agol/removeexportdirs'
+                  class='px1 regular block'>
+                  <code>._removeExportDirs</code>
+                </a>
+                <a
+                  href='#agol/throttleq'
+                  class='px1 regular block'>
+                  <code>._throttleQ</code>
+                </a>
+                <a
+                  href='#agol/buildgeohash'
+                  class='px1 regular block'>
+                  <code>.buildGeohash</code>
+                </a>
+                <a
+                  href='#agol/csvqueue'
+                  class='px1 regular block'>
+                  <code>.csvQueue</code>
+                </a>
+                <a
+                  href='#agol/dropitem'
+                  class='px1 regular block'>
+                  <code>.dropItem</code>
+                </a>
+                <a
+                  href='#agol/featureservicerequest'
+                  class='px1 regular block'>
+                  <code>.featureServiceRequest</code>
+                </a>
+                <a
+                  href='#agol/find'
+                  class='px1 regular block'>
+                  <code>.find</code>
+                </a>
+                <a
+                  href='#agol/geomtypes'
+                  class='px1 regular block'>
+                  <code>.geomTypes</code>
+                </a>
+                <a
+                  href='#agol/getcount'
+                  class='px1 regular block'>
+                  <code>.getCount</code>
+                </a>
+                <a
+                  href='#agol/getcsv'
+                  class='px1 regular block'>
+                  <code>.getCSV</code>
+                </a>
+                <a
+                  href='#agol/getdata'
+                  class='px1 regular block'>
+                  <code>.getData</code>
+                </a>
+                <a
+                  href='#agol/getdatafromcache'
+                  class='px1 regular block'>
+                  <code>.getDataFromCache</code>
+                </a>
+                <a
+                  href='#agol/getfeaturecollection'
+                  class='px1 regular block'>
+                  <code>.getFeatureCollection</code>
+                </a>
+                <a
+                  href='#agol/getfeatureservice'
+                  class='px1 regular block'>
+                  <code>.getFeatureService</code>
+                </a>
+                <a
+                  href='#agol/getfeatureservicelayerinfo'
+                  class='px1 regular block'>
+                  <code>.getFeatureServiceLayerInfo</code>
+                </a>
+                <a
+                  href='#agol/getinfo'
+                  class='px1 regular block'>
+                  <code>.getInfo</code>
+                </a>
+                <a
+                  href='#agol/getitem'
+                  class='px1 regular block'>
+                  <code>.getItem</code>
+                </a>
+                <a
+                  href='#agol/getitemdata'
+                  class='px1 regular block'>
+                  <code>.getItemData</code>
+                </a>
+                <a
+                  href='#agol/getitemmetadata'
+                  class='px1 regular block'>
+                  <code>.getItemMetadata</code>
+                </a>
+                <a
+                  href='#agol/getobjectidfield'
+                  class='px1 regular block'>
+                  <code>.getObjectIDField</code>
+                </a>
+                <a
+                  href='#agol/getqueuecounts'
+                  class='px1 regular block'>
+                  <code>.getQueueCounts</code>
+                </a>
+                <a
+                  href='#agol/isexpired'
+                  class='px1 regular block'>
+                  <code>.isExpired</code>
+                </a>
+                <a
+                  href='#agol/register'
+                  class='px1 regular block'>
+                  <code>.register</code>
+                </a>
+                <a
+                  href='#agol/remove'
+                  class='px1 regular block'>
+                  <code>.remove</code>
+                </a>
+                <a
+                  href='#agol/req'
+                  class='px1 regular block'>
+                  <code>.req</code>
+                </a>
+                <a
+                  href='#agol/requestqueue'
+                  class='px1 regular block'>
+                  <code>.requestQueue</code>
+                </a>
+                <a
+                  href='#agol/sendtoworkers'
+                  class='px1 regular block'>
+                  <code>.sendToWorkers</code>
+                </a>
+                <a
+                  href='#agol/striplayeroffurl'
+                  class='px1 regular block'>
+                  <code>.stripLayerOffUrl</code>
+                </a>
+              <a
+                href='#controller'
+                class='regular block'>
+                <code>controller</code>
+              </a>
+                <a
+                  href='#controller/createcachekey'
+                  class='px1 regular block'>
+                  <code>._createCacheKey</code>
+                </a>
+                <a
+                  href='#controller/exportlarge'
+                  class='px1 regular block'>
+                  <code>._exportLarge</code>
+                </a>
+                <a
+                  href='#controller/exporttoformat'
+                  class='px1 regular block'>
+                  <code>._exportToFormat</code>
+                </a>
+                <a
+                  href='#controller/getitemdata'
+                  class='px1 regular block'>
+                  <code>._getItemData</code>
+                </a>
+                <a
+                  href='#controller/setheaders'
+                  class='px1 regular block'>
+                  <code>._setHeaders</code>
+                </a>
+                <a
+                  href='#controller/del'
+                  class='px1 regular block'>
+                  <code>.del</code>
+                </a>
+                <a
+                  href='#controller/deleteitemdata'
+                  class='px1 regular block'>
+                  <code>.deleteItemData</code>
+                </a>
+                <a
+                  href='#controller/dropitem'
+                  class='px1 regular block'>
+                  <code>.dropItem</code>
+                </a>
+                <a
+                  href='#controller/featureserver'
+                  class='px1 regular block'>
+                  <code>.featureserver</code>
+                </a>
+                <a
+                  href='#controller/find'
+                  class='px1 regular block'>
+                  <code>.find</code>
+                </a>
+                <a
+                  href='#controller/finditem'
+                  class='px1 regular block'>
+                  <code>.findItem</code>
+                </a>
+                <a
+                  href='#controller/finditemdata'
+                  class='px1 regular block'>
+                  <code>.findItemData</code>
+                </a>
+                <a
+                  href='#controller/getgeohash'
+                  class='px1 regular block'>
+                  <code>.getGeohash</code>
+                </a>
+                <a
+                  href='#controller/getqueuecounts'
+                  class='px1 regular block'>
+                  <code>.getQueueCounts</code>
+                </a>
+                <a
+                  href='#controller/list'
+                  class='px1 regular block'>
+                  <code>.list</code>
+                </a>
+                <a
+                  href='#controller/preview'
+                  class='px1 regular block'>
+                  <code>.preview</code>
+                </a>
+                <a
+                  href='#controller/register'
+                  class='px1 regular block'>
+                  <code>.register</code>
+                </a>
+                <a
+                  href='#controller/thumbnail'
+                  class='px1 regular block'>
+                  <code>.thumbnail</code>
+                </a>
+                <a
+                  href='#controller/tiles'
+                  class='px1 regular block'>
+                  <code>.tiles</code>
+                </a>
+              <a
+                href='#controller'
+                class='regular block'>
+                <code>Controller</code>
+              </a>
+              <a
+                href='#forcehttps'
+                class='regular block'>
+                <code>forceHttps</code>
+              </a>
+          </div>
+        </div>
+      </div>
+      <div class='sm-col  col-9  flex flex-column'>
+        <div class='flex-auto full-width'>
+          <div class='px1'>
+<section id='agol'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L12-L15'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol'>
+      <code>
+        agol<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>inherits from the base model</p>
+
+
+
+
+
+
+
+      <div class='section-indent'>
+<section id='agol/page'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L737-L799'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/page'>
+      <code>
+        _page<span class='gray'>(count, pageRequests, id, itemJson, layerId, options, hash)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Add pages of requests through the throttle Q</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>count</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>
+            </td>
+            <td><p>the total number of features in the service</p>
+</td>
+          </tr>
+          <tr>
+            <td>pageRequests</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>an array of page urls to be requested</p>
+</td>
+          </tr>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemJson</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the item json metadata from the server</p>
+</td>
+          </tr>
+          <tr>
+            <td>layerId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>
+            </td>
+            <td><p>the numeric id of the layer being requested</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>hash</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the sha1 hash of the params and querystring</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/removeexportdirs'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L175-L194'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/removeexportdirs'>
+      <code>
+        _removeExportDirs<span class='gray'>(dir, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Method to remove all the data in each export dir
+this logic is being used in 4 places</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>dir</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>The base dir to remove all files</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>The callback.</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/throttleq'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L709-L737'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/throttleq'>
+      <code>
+        _throttleQ<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>A queue used to throttle requests
+we need this to prevent duplicate paging requests that
+cause features to be inserted twice</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/buildgeohash'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L1003-L1044'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/buildgeohash'>
+      <code>
+        buildGeohash<span class='gray'>(params, filePath, fileName, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Puts the dataset into a state of processes
+makes async call to create the geohash
+saves the geohash agg into the file given</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>params</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>request params from the url</p>
+</td>
+          </tr>
+          <tr>
+            <td>filePath</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the path of the file to be saved</p>
+</td>
+          </tr>
+          <tr>
+            <td>fileName</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the name of the file to save, determined by request params</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from the url querystring</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>callback to call when the requests are done</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/csvqueue'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L373-L439'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/csvqueue'>
+      <code>
+        csvQueue<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>A queue used to control the flow of the csv inserts
+if we get many requests for a new CSV they insert multiple times
+here we handle removing the data cache before we insert</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/dropitem'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L124-L175'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/dropitem'>
+      <code>
+        dropItem<span class='gray'>(host, itemid, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Drops the item from the cache
+will remove all exported files as well,
+but will only remove &quot;latest&quot; files if forceDelete is set</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>host</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemid</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/featureservicerequest'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L629-L670'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/featureservicerequest'>
+      <code>
+        featureServiceRequest<span class='gray'>(hostId, id, itemJson, hash, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Makes a request to the feature service
+first checks the count and determines if koop should make one or many requests</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>hostId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemJson</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>json metadata from the item in the host</p>
+</td>
+          </tr>
+          <tr>
+            <td>hash</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the sha1 hash of the params and querystring</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/find'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L90-L106'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/find'>
+      <code>
+        find<span class='gray'>(id, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Get a service by id
+if no id given then return all services</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the id used to reference this host in the db</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>The callback.</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/geomtypes'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L799-L813'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/geomtypes'>
+      <code>
+        geomTypes<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Mapping between Esri geomTypes and GeoJSON types</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getcount'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L243-L252'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getcount'>
+      <code>
+        getCount<span class='gray'>(key, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Get the count of the features in the cache
+wrapper around the Cache.getCount method</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>key</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>a table name in the db</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getcsv'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L439-L496'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getcsv'>
+      <code>
+        getCSV<span class='gray'>(baseUrl, hostId, id, itemJson, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Gets CSV item data from the server and inserts it into the Cache</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>baseUrl</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>hostId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemJson</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>json metadata from the item in the host</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getdata'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L352-L373'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getdata'>
+      <code>
+        getData<span class='gray'>(itemJson, host, itemid, hostId, hash, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>This is really the main entry point to this model
+here we route to the correct data type method based on the item type</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>itemJson</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>json metadata from the item in the host</p>
+</td>
+          </tr>
+          <tr>
+            <td>host</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemid</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>hostId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the id of the host in the DB</p>
+</td>
+          </tr>
+          <tr>
+            <td>hash</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the sha1 hash of the params and querystring</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionElement/Option">option</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getdatafromcache'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L576-L615'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getdatafromcache'>
+      <code>
+        getDataFromCache<span class='gray'>(hostId, id, itemJson, hash, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Determines if the FeatureService is already cached or not</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>hostId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemJson</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>json metadata from the item in the host</p>
+</td>
+          </tr>
+          <tr>
+            <td>hash</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the sha1 hash of the params and querystring</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getfeaturecollection'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L496-L547'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getfeaturecollection'>
+      <code>
+        getFeatureCollection<span class='gray'>(baseUrl, hostId, id, itemJson, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Get a feature collection from the server and inserts it
+FeatureCollection are simply JSON features requested in one just (not services)</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>baseUrl</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>hostId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemJson</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>json metadata from the item in the host</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getfeatureservice'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L547-L576'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getfeatureservice'>
+      <code>
+        getFeatureService<span class='gray'>(hostId, id, itemJson, hash, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Gets the service metadata first and adds any fields to request for the actual features</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>hostId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemJson</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>json metadata from the item in the host</p>
+</td>
+          </tr>
+          <tr>
+            <td>hash</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the sha1 hash of the params and querystring</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getfeatureservicelayerinfo'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L931-L948'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getfeatureservicelayerinfo'>
+      <code>
+        getFeatureServiceLayerInfo<span class='gray'>(url, layer, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Gets the feature service info</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>url</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the max number of features in the service</p>
+</td>
+          </tr>
+          <tr>
+            <td>layer</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>
+            </td>
+            <td><p>the id of the service layer</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>called when the service info comes back</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getinfo'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L252-L265'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getinfo'>
+      <code>
+        getInfo<span class='gray'>(key, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Wraps Cache.getInfo to make testing possible w/o the cache</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>key</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>a table name in the db</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getitem'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L194-L225'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getitem'>
+      <code>
+        getItem<span class='gray'>(host, itemid, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Get the service then get the item</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>host</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemid</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getitemdata'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L265-L352'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getitemdata'>
+      <code>
+        getItemData<span class='gray'>(host, hostId, itemid, hash, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Get the actual features and metadata from the DB</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>host</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the host is needed to tell what dataset to remove</p>
+</td>
+          </tr>
+          <tr>
+            <td>hostId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the id of the host in the DB</p>
+</td>
+          </tr>
+          <tr>
+            <td>itemid</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>id of the item</p>
+</td>
+          </tr>
+          <tr>
+            <td>hash</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the sha1 hash of the params and querystring</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params from req.query (the querystring)</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getitemmetadata'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L225-L243'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getitemmetadata'>
+      <code>
+        getItemMetadata<span class='gray'>(host, item, json, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Get an item's metadata
+requests the metadata and attachs it to an object before calling the callback</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>host</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the agol deploy to get data from</p>
+</td>
+          </tr>
+          <tr>
+            <td>item</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the agol item id</p>
+</td>
+          </tr>
+          <tr>
+            <td>json</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>an item's json data to attach metadata to</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>the callback for when all is gone</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getobjectidfield'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L948-L962'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getobjectidfield'>
+      <code>
+        getObjectIDField<span class='gray'>(info)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Find and return the OID field from the list of fields on metadata</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>info</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>metadata from the service</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/getqueuecounts'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L962-L1003'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/getqueuecounts'>
+      <code>
+        getQueueCounts<span class='gray'>(callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Returns the count of jobs on each Kue queue</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>a function to call when all counts have returns</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/isexpired'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L1044-L1077'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/isexpired'>
+      <code>
+        isExpired<span class='gray'>(info, layerId, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Checks to see if an item is expired or not</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>info</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>metadata from the service</p>
+</td>
+          </tr>
+          <tr>
+            <td>layerId</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code>
+            </td>
+            <td><p>the number of the layer in the request</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>callback to call when the requests are done</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/register'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L67-L80'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/register'>
+      <code>
+        register<span class='gray'>(id, host, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Adds a service to the Cache
+needs a host, generates an id</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the id used to reference this host in the db</p>
+</td>
+          </tr>
+          <tr>
+            <td>host</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>host to request items from</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>The callback.</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/remove'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L80-L90'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/remove'>
+      <code>
+        remove<span class='gray'>(id, host, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Adds a service to the Cache
+needs a host, generates an id</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>id</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the id used to reference this host in the db</p>
+</td>
+          </tr>
+          <tr>
+            <td>host</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>host to request items from</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>The callback.</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/req'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L106-L124'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/req'>
+      <code>
+        req<span class='gray'>(url, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Centralized request method that forces URI encoding
+all ajax requests should use this so it can be tested</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>url</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>The url for the request.</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>The callback.</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/requestqueue'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L813-L859'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/requestqueue'>
+      <code>
+        requestQueue<span class='gray'>(pages, params, options, done)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Make requests for feature pages
+execute done when we have all features</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>pages</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>
+            </td>
+            <td><p>an array of pare URLs to request</p>
+</td>
+          </tr>
+          <tr>
+            <td>params</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>service params</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params for creating pages</p>
+</td>
+          </tr>
+          <tr>
+            <td>done</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>callback to call when the requests are done</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/sendtoworkers'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L859-L931'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/sendtoworkers'>
+      <code>
+        sendToWorkers<span class='gray'>(pages, params, options, done)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Create a worker job that will handle the requests</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>pages</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">array</a></code>
+            </td>
+            <td><p>an array of pare URLs to request</p>
+</td>
+          </tr>
+          <tr>
+            <td>params</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>service params</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional params for creating pages</p>
+</td>
+          </tr>
+          <tr>
+            <td>done</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td><p>callback to call when the requests are done</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='agol/striplayeroffurl'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/agol.js#L615-L629'><code>models/agol.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#agol/striplayeroffurl'>
+      <code>
+        stripLayerOffUrl<span class='gray'>(url, length)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Removes the layer from the end of a url</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>url</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>the url to strip the layer from</p>
+</td>
+          </tr>
+          <tr>
+            <td>length</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>length of the layer value to string</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+
+
+
+</section>
+<section id='controller'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L17-L26'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller'>
+      <code>
+        controller<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>The primary controller onto which all methods are attached</p>
+
+
+
+
+
+
+
+      <div class='section-indent'>
+<section id='controller/createcachekey'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L201-L226'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/createcachekey'>
+      <code>
+        _createCacheKey<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Creates a unique based on request params and the querystring</p>
+
+
+
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code></code>
+      :
+      <span class='force-inline'>
+        <p>key</p>
+
+      </span>
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/exportlarge'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L529-L596'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/exportlarge'>
+      <code>
+        _exportLarge<span class='gray'>(params)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Exports a large dataset
+calls the exportLarge method on the agol model</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>params</td>
+            <td>
+              <code>objects</code>
+            </td>
+            <td><p>file export parameters</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/exporttoformat'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L596-L649'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/exporttoformat'>
+      <code>
+        _exportToFormat<span class='gray'>(params)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Exports &quot;non-large&quot; data to a file format</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>params</td>
+            <td>
+              <code>objects</code>
+            </td>
+            <td><p>file export parameters</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/getitemdata'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L149-L201'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/getitemdata'>
+      <code>
+        _getItemData<span class='gray'>(params, options, callback)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Gets the actual json data from the model</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>params</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>required params used to fetch data</p>
+</td>
+          </tr>
+          <tr>
+            <td>options</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>optional query string based params</p>
+</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code>
+            </td>
+            <td></td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/setheaders'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L685-L708'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/setheaders'>
+      <code>
+        _setHeaders<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Set file download headers for data exports
+adds the content-disposition and content-type bases on the file format</p>
+
+
+
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code></code>
+      :
+      <span class='force-inline'>
+        <p>response</p>
+
+      </span>
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/del'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L45-L64'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/del'>
+      <code>
+        del<span class='gray'>(req, res)</span>
+      </code>
+    </a>
+  </h3>
+  <p>handles a DELETE to remove a registered host from the DB</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>req</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the incoming request object</p>
+</td>
+          </tr>
+          <tr>
+            <td>res</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the outgoing response object</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/deleteitemdata'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L975-L984'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/deleteitemdata'>
+      <code>
+        deleteItemData<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Forced a drop of the cache for an item and DELETEs all known files
+used for responding to DELETE calls.</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/dropitem'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L121-L149'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/dropitem'>
+      <code>
+        dropItem<span class='gray'>(req, res)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Drops the cache for an item</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>req</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the incoming request object</p>
+</td>
+          </tr>
+          <tr>
+            <td>res</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the outgoing response object</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/featureserver'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L708-L766'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/featureserver'>
+      <code>
+        featureserver<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Handles all requests for FeatureServices</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/find'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L79-L94'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/find'>
+      <code>
+        find<span class='gray'>(req, res)</span>
+      </code>
+    </a>
+  </h3>
+  
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>req</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the incoming request object</p>
+</td>
+          </tr>
+          <tr>
+            <td>res</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the outgoing response object</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/finditem'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L94-L121'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/finditem'>
+      <code>
+        findItem<span class='gray'>(req, res)</span>
+      </code>
+    </a>
+  </h3>
+  
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>req</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the incoming request object</p>
+</td>
+          </tr>
+          <tr>
+            <td>res</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the outgoing response object</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/finditemdata'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L226-L370'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/finditemdata'>
+      <code>
+        findItemData<span class='gray'>(req, res)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Finds the item's data
+this method is crux of the controller. It handles the logic for returning data in several forms:</p>
+<ul>
+<li>status processing return 202</li>
+<li>status is processing but a file exists</li>
+<li>a file exists for the data</li>
+<li>a new file needs to be created</li>
+<li>no format given, just returns json</li>
+</ul>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>req</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the incoming request object</p>
+</td>
+          </tr>
+          <tr>
+            <td>res</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the outgoing response object</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/getgeohash'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L998-L1067'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/getgeohash'>
+      <code>
+        getGeohash<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Get the geohash for an item/layer</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/getqueuecounts'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L984-L998'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/getqueuecounts'>
+      <code>
+        getQueueCounts<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Request handler for returning the counts of currently queued workers</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/list'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L64-L79'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/list'>
+      <code>
+        list<span class='gray'>(req, res)</span>
+      </code>
+    </a>
+  </h3>
+  
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>req</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the incoming request object</p>
+</td>
+          </tr>
+          <tr>
+            <td>res</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the outgoing response object</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/preview'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L836-L845'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/preview'>
+      <code>
+        preview<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>renders the preview map view</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/register'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L26-L45'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/register'>
+      <code>
+        register<span class='gray'>(req, res)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Registers a host with the given id
+this inserts a record into the db for an ArcGIS instances ie: id -&gt; hostname :: arcgis -&gt; arcgis.com</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>req</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the incoming request object</p>
+</td>
+          </tr>
+          <tr>
+            <td>res</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>
+            </td>
+            <td><p>the outgoing response object</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/thumbnail'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L766-L836'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/thumbnail'>
+      <code>
+        thumbnail<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Handles request for thubmnails</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+      <div class='section-indent'>
+<section id='controller/tiles'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L845-L975'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller/tiles'>
+      <code>
+        tiles<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Tile request handler, responds to z/x/y tile requests</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+      </div>
+
+
+
+</section>
+<section id='controller'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/controller/index.js#L13-L1103'><code>controller/index.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#controller'>
+      <code>
+        Controller<span class='gray'></span>
+      </code>
+    </a>
+  </h3>
+  <p>Inherit from the koop base controller
+handles requests for routes</p>
+
+
+
+
+
+
+
+
+
+
+</section>
+<section id='forcehttps'class='mt2 mb2 py1 px2 keyline-top'>
+    <div class='right py2'>
+      <a class='fade font-smaller' href='https://github.com/koopjs/koop-agol/blob/42457601cfebd44ee56db926cf008753cfbd2955/models/utils.js#L6-L13'><code>models/utils.js</code></a>
+    </div>
+  <h3 class='regular'>
+    <a class='black' href='#forcehttps'>
+      <code>
+        forceHttps<span class='gray'>(url)</span>
+      </code>
+    </a>
+  </h3>
+  <p>Force a url to use https vs http</p>
+
+
+    <p>
+      <table class='table-light overflow-hidden bg-cloudy-light'>
+        <thead>
+          <th class='col-3'>parameter</th>
+          <th class='col-3'>type</th>
+          <th class='col-6'>description</th>
+        </thead>
+          <tr>
+            <td>url</td>
+            <td>
+              <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>
+            </td>
+            <td><p>The url for the request
+returns {string} url</p>
+</td>
+          </tr>
+      </table>
+    </p>
+
+
+
+
+
+
+
+
+</section>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

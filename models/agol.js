@@ -6,7 +6,9 @@ var async = require('async')
 var utils = require('./utils')
 
 var AGOL = function (koop) {
-  // inherits from the base model
+  /** 
+   * inherits from the base model 
+   */
   var agol = new koop.BaseModel(koop)
 
   // base path to use for every host

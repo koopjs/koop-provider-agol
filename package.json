@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "standard && mocha test/*.js -t 40000",
-    "lint": "node_modules/jshint/bin/jshint **/*.js"
+    "lint": "node_modules/jshint/bin/jshint **/*.js",
+    "docs": "node node_modules/documentation/bin/documentation.js -f html --name koop-agol -g -o docs"
   },
   "dependencies": {
     "async": "~0.9.0",
@@ -28,6 +29,7 @@
     "url": "https://github.com:koopjs/koop-agol.git"
   },
   "devDependencies": {
+    "documentation": "^2.0.1",
     "jshint": "~2.5.1",
     "koop": "*",
     "mocha": "~2.2.5",

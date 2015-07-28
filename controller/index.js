@@ -8,8 +8,12 @@ var fs = require('fs')
 /**
  * Inherit from the koop base controller
  * handles requests for routes
+ * @module Controller
  */
 var Controller = function (agol, BaseController) {
+  /**
+   * The primary controller onto which all methods are attached
+   */
   var controller = BaseController()
 
   /**
