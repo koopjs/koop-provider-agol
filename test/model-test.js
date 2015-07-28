@@ -7,7 +7,7 @@ var koop = require('koop/lib')
 
 var config = {}
 
-var itemJson = require('./fixtures/itemJson.js')
+var itemJson = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemJson.json').toString())
 var largeCSV = fs.readFileSync(__dirname + '/fixtures/largeCSV.csv').toString()
 
 // setup koop
@@ -63,7 +63,7 @@ describe('AGOL Model', function () {
 
   describe('when getting an item with metadata', function () {
     before(function (done) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
       sinon.stub(agol, 'req', function (url, callback) {
         callback(null, {body: JSON.stringify(itemInfo.info)})
       })
@@ -93,7 +93,7 @@ describe('AGOL Model', function () {
 
   describe('when getting a an expired feature service item', function () {
     before(function (done) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItem', function (host, itemId, options, callback) {
         callback(null, itemJson)
@@ -137,7 +137,7 @@ describe('AGOL Model', function () {
 
   describe('when getting a feature service item', function () {
     before(function (done) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItem', function (host, itemId, options, callback) {
         callback(null, itemJson)
@@ -180,7 +180,7 @@ describe('AGOL Model', function () {
 
   describe('when getting a feature service item', function () {
     before(function (done) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItem', function (host, itemId, options, callback) {
         callback(null, itemJson)
@@ -209,6 +209,7 @@ describe('AGOL Model', function () {
       agol.getItemData('host', 'hostid', 'itemid1', 'dummyhash', {}, function () {
         koop.Cache.getInfo.called.should.equal(true)
         agol.getItem.called.should.equal(true)
+        koop.Cache.getInfo.called.should.equal(true)
         agol.getFeatureService.called.should.equal(true)
         done()
       })
@@ -367,8 +368,8 @@ describe('AGOL Model', function () {
 
   /* describe('when calling pageFeatureService w/statistics', function() {
     before(function(done){
-      var serviceInfo = require('./fixtures/serviceInfo.js')
-      var features = require('./fixtures/esriJson.js')
+      var serviceInfo = JSON.parse(fs.readFileSync('./fixtures/serviceInfo.json').toString())
+      var features = JSON.parse(fs.readFileSync('./fixtures/esriJson.json').toString())
 
       sinon.stub(agol, '_page', function(count, pageRequests, id, itemJson, layerId){
 
@@ -421,7 +422,7 @@ describe('AGOL Model', function () {
 
   describe('when getting a csv item', function () {
     before(function (done) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
       itemInfo.type = 'CSV'
       sinon.stub(agol, 'getItem', function (host, itemId, options, callback) {
         itemJson.type = 'CSV'
@@ -468,7 +469,7 @@ describe('AGOL Model', function () {
       sinon.stub(koop.Cache, 'insertPartial', function (type, id, data, options, callback) {
         callback(null, true)
       })
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
       sinon.stub(koop.Cache, 'getInfo', function (key, callback) {
         callback(null, itemInfo)
       })
@@ -508,7 +509,7 @@ describe('AGOL Model', function () {
       sinon.stub(koop.Cache, 'get', function (type, id, options, callback) {
         callback(null, {info: {status: 'too big'}})
       })
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
       sinon.stub(koop.Cache, 'getInfo', function (key, callback) {
         callback(null, itemInfo)
       })

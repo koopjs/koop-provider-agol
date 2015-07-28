@@ -1,21 +1,20 @@
-<<<<<<< HEAD
+/* global before, after, it, describe, should */
 var should = require('should')
 var sinon = require('sinon')
 var request = require('supertest')
 var fs = require('fs')
 var kooplib = require('koop/lib')
 
-var koop = new require('koop')({})
-var itemJson = require('./fixtures/itemJson.js')
+var koop = require('koop')({})
 
-var provider = require('../index.js')
-var agol = new provider.model(kooplib)
-var controller = new provider.controller(agol, kooplib.BaseController)
-koop._bindRoutes(provider.routes, controller)
+var Provider = require('../index.js')
+var agol = Provider.model(kooplib)
+var controller = Provider.controller(agol, kooplib.BaseController)
+koop._bindRoutes(Provider.routes, controller)
 
 describe('AGOL Controller', function () {
   describe('add / get / remove hosts', function () {
-    before(function (done ) {
+    before(function (done) {
       sinon.stub(agol, 'register', function (id, host, callback) {
         callback(null, 'test')
       })
@@ -69,6 +68,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol')
         .end(function (err, res) {
+          should.not.exist(err)
           res.should.have.status(200)
           agol.find.called.should.equal(true)
           done()
@@ -97,7 +97,7 @@ describe('AGOL Controller', function () {
   })
 
   describe('finding item metadata', function () {
-    before(function (done ) {
+    before(function (done) {
       sinon.stub(agol, 'getItem', function (host, item, options, callback) {
         callback(null, {})
       })
@@ -126,7 +126,7 @@ describe('AGOL Controller', function () {
     })
   })
   describe('dropping item metadata', function () {
-    before(function (done ) {
+    before(function (done) {
       sinon.stub(agol, 'dropItem', function (host, item, options, callback) {
         callback(null, {})
       })
@@ -156,7 +156,7 @@ describe('AGOL Controller', function () {
   })
 
   describe('getting item feature data in a processing state', function () {
-    before(function (done ) {
+    before(function (done) {
       sinon.stub(agol, 'getItemData', function (host, id, item, key, options, callback) {
         callback(null, {})
       })
@@ -196,8 +196,8 @@ describe('AGOL Controller', function () {
   })
 
   describe('getting item feature data w/o a format', function () {
-    before(function (done ) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+    before(function (done) {
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
         callback(null, {name: '', data: [{name: '', features: []}]})
@@ -232,7 +232,7 @@ describe('AGOL Controller', function () {
   })
 
   describe('getting geohash json', function () {
-    before(function (done ) {
+    before(function (done) {
       sinon.stub(agol.files, 'exists', function (path, name, callback) {
         callback(false)
       })
@@ -241,7 +241,7 @@ describe('AGOL Controller', function () {
         return true
       })
 
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
       sinon.stub(agol, 'getInfo', function (key, callback) {
         callback(null, itemInfo)
       })
@@ -253,7 +253,7 @@ describe('AGOL Controller', function () {
       done()
     })
 
-    after(function (done ) {
+    after(function (done) {
       agol.buildGeohash.restore()
       agol.getInfo.restore()
       agol.files.exists.restore()
@@ -275,12 +275,12 @@ describe('AGOL Controller', function () {
   })
 
   describe('getting geohash json', function () {
-    before(function (done ) {
+    before(function (done) {
       sinon.stub(agol.files, 'exists', function (path, name, callback) {
         callback(false)
       })
 
-      var itemInfo = require('./fixtures/itemInfo.js')
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
       sinon.stub(agol, 'getInfo', function (key, callback) {
         // send no INFO to force the method to 
         callback(null, null)
@@ -312,8 +312,8 @@ describe('AGOL Controller', function () {
   })
 
   describe('getting item feature data w/a format', function () {
-    before(function (done ) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+    before(function (done) {
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
         callback(null, { data: [{info: {name: 'dummy'}, features: [{}]}]})
@@ -363,8 +363,8 @@ describe('AGOL Controller', function () {
 
   // Exporter.exportLarge
   describe('getting large feature data w/a format', function () {
-    before(function (done ) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+    before(function (done) {
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'exportFile', function (params, opts, callback) {
         callback(null, '/aFakeLargeFile')
@@ -406,8 +406,8 @@ describe('AGOL Controller', function () {
   })
 
   describe('getting an existing thumbnail', function () {
-    before(function (done ) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+    before(function (done) {
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
         callback(null, { koop_status: 'too big', data: [{info: 'dummy', features: [{}]}]})
@@ -449,8 +449,8 @@ describe('AGOL Controller', function () {
   })
 
   describe('getting a png tile should return 404 for test', function () {
-    before(function (done ) {
-      var itemInfo = require('./fixtures/itemInfo.js')
+    before(function (done) {
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
         callback(null, { name: '', koop_status: 'too big', data: [{name: '', info: 'dummy', features: [{}]}]})
