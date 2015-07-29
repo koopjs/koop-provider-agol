@@ -302,9 +302,7 @@ describe('AGOL Controller', function(){
         });
 
         // just return true
-        sinon.stub(controller, 'findItemData', function(req, res){
-          res.send(true);
-        });
+        sinon.stub(controller, 'findItemData', function(req, res){});
         done();
       });
 
