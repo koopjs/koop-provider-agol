@@ -99,7 +99,7 @@ describe('AGOL Model', function () {
         callback(null, itemJson)
       })
 
-      sinon.stub(agol, 'getData', function (type, host, itemId, hash, options, callback) {
+      sinon.stub(agol, 'getData', function (params, options, callback) {
         callback(null, itemJson)
       })
 
@@ -143,7 +143,7 @@ describe('AGOL Model', function () {
         callback(null, itemJson)
       })
 
-      sinon.stub(agol, 'getData', function (type, host, itemId, hash, options, callback) {
+      sinon.stub(agol, 'getData', function (params, options, callback) {
         callback(null, itemJson)
       })
 
@@ -428,7 +428,7 @@ describe('AGOL Model', function () {
         itemJson.type = 'CSV'
         callback(null, itemJson)
       })
-      sinon.stub(agol, 'getCSV', function (base_url, id, itemJson, options, callback) {
+      sinon.stub(agol, 'getCSV', function (base_url, params, options, callback) {
         callback(null, itemInfo)
       })
       sinon.stub(koop.Cache, 'getInfo', function (key, callback) {

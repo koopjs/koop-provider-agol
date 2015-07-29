@@ -232,7 +232,7 @@ describe('AGOL Controller', function () {
         .get('/agol/test/itemid/0')
         .end(function (err, res) {
           should.not.exist(err)
-          //            res.should.have.status(200)
+          res.should.have.status(200)
           agol.getItemData.called.should.equal(true)
           done()
         })
@@ -499,6 +499,106 @@ describe('AGOL Controller', function () {
           agol.getItemData.called.should.equal(true)
           done()
         })
+    })
+  })
+
+  // fake req / res objects
+  var req = {
+    params: {
+      id: 'hostid',
+      item: 'itemid',
+      key: 'cachekey'
+    },
+    query: {
+      options: {}
+    }
+  }
+
+  var res = {}
+
+  describe('when calling controller._getItemData', function () {
+    before(function (done) {
+      var itemJson = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemJson.json').toString())
+      sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
+        callback(null, itemJson)
+      })
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, {id: 'test', host: 'http://dummy.host.com'})
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.getItemData.restore()
+      agol.find.restore()
+      done()
+    })
+
+    it('should call agol.getItemData and return itemJson', function (done) {
+      controller._getItemData(req, res, function (err, json) {
+        should.not.exist(err)
+        should.exist(json)
+        agol.getItemData.called.should.equal(true)
+        done()
+      })
+    })
+  })
+
+  describe('when calling controller._getItemData with a processing dataset', function () {
+    before(function (done) {
+      sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
+        callback(null, { name: '', koop_status: 'processing', data: [{name: '', info: 'dummy', features: [{}]}]})
+      })
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, {id: 'test', host: 'http://dummy.host.com'})
+      })
+      sinon.stub(controller, '_returnProcessing', function (req, res, json, callback) {
+        callback(null, json)
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.getItemData.restore()
+      agol.find.restore()
+      controller._returnProcessing.restore()
+      done()
+    })
+
+    it('should call controller._returnProcessing', function (done) {
+      controller._getItemData(req, res, function (err, json) {
+        should.not.exist(err)
+        should.exist(json)
+        controller._returnProcessing.called.should.equal(true)
+        done()
+      })
+    })
+  })
+
+  describe('when calling controller._getItemData w/o data in the cache', function () {
+    before(function (done) {
+      sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
+        callback()
+      })
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, {id: 'test', host: 'http://dummy.host.com'})
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.getItemData.restore()
+      agol.find.restore()
+      done()
+    })
+
+    it('should call agol.getItemData and return null', function (done) {
+      controller._getItemData(req, res, function (err, json) {
+        should.not.exist(err)
+        should.not.exist(json)
+        agol.getItemData.called.should.equal(true)
+        done()
+      })
     })
   })
 

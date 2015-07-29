@@ -264,10 +264,28 @@ var AGOL = function (koop) {
   */
   agol.getItemData = function (host, hostId, itemId, hash, options, callback) {
     var self = this
+    var _getData = function (params) {
+      koop.Cache.remove('agol', itemId, options, function (err, res) {
+        if (err) {
+          return callback(err)
+        }
+        self.getData(params, options, callback)
+      })
+    }
+
     this.getItem(host, itemId, options, function (err, itemJson) {
       var layerId = options.layer || 0
       if (err) {
         return callback(err, null)
+      }
+
+      var params = {
+        itemJson: itemJson,
+        host: host,
+        hostId: hostId,
+        itemId: itemId,
+        layerId: layerId,
+        hash: hash
       }
 
       // put host in option so our cacheCheck has ref to it
@@ -277,60 +295,18 @@ var AGOL = function (koop) {
 
       self.getInfo(qKey, function (err, info) {
         if (err) {
-          console.log('Data not found in the cache', info)
+          console.log('Data not found in the cache')
         }
-        var is_expired = info ? (Date.now() >= info.expires_at) : false
-
-        // check the last char on the url
-        // protects us from urls registered with layers already in the url
-        if (itemJson && itemJson.url) {
-          var layer = itemJson.url.split('/').pop()
-          if (parseInt(layer, 0) >= 0) {
-            var len = ('' + layer).length
-            itemJson.hasLayerURL = true
-            itemJson.url = itemJson.url.substring(0, itemJson.url.length - ((len || 2) + 1))
-          }
-        }
-
-        // Note: we have to check the service metadata to know if the item has changed in AGOL
-        self.getFeatureServiceLayerInfo(itemJson.url, (options.layer || 0), function (err, serviceInfo) {
+        self.isExpired(info, layerId, function (err, isExpired, serviceInfo) {
           if (err) {
-            return callback(err)
-          }
-          // TODO centralize this logic
-          // check for infon on last edit date
-          // set is_expired to false if it hasnt changed
-          if (info && info.retrieved_at && serviceInfo && serviceInfo.editingInfo) {
-            if (!serviceInfo.editingInfo.lastEditDate && (info.retrieved_at > itemJson.modified)) {
-              is_expired = false
-            } else if (info.retrieved_at < serviceInfo.editingInfo.lastEditDate) {
-              is_expired = true
-            } else {
-              // if the retrieved at date is greater than the lastEditDate then the data are still good
-              is_expired = false
-            }
+            callback(err)
           }
 
-          var params = {
-            itemJson: itemJson,
-            serviceInfo: serviceInfo,
-            host: host,
-            hostId: hostId,
-            itemId: itemId,
-            layerId: layerId,
-            hash: hash
-          }
-
-          if (!is_expired) {
+          params.serviceInfo = serviceInfo
+          if (!isExpired) {
             return self.getData(params, options, callback)
           }
-
-          koop.Cache.remove('agol', itemId, options, function (err, res) {
-            if (err) {
-              return callback(err)
-            }
-            self.getData(params, options, callback)
-          })
+          return _getData(params)
         })
 
       })
@@ -576,7 +552,6 @@ var AGOL = function (koop) {
   agol.getDataFromCache = function (params, options, callback) {
     var self = this
     var itemJson = params.itemJson
-
     // search the cache for this data
     koop.Cache.get('agol', params.itemId, options, function (err, entry) {
       if (err) {
@@ -750,11 +725,13 @@ var AGOL = function (koop) {
       var key = ['agol', params.itemId, params.layerId].join(':')
       agol._throttleQ.push(key, function (locked) {
         if (!locked) {
+          // Use the workers is configured...
           if (koop.config.agol && koop.config.agol.request_workers) {
+            callback(null, params.itemJson)
             return agol.sendToWorkers(pages, params, options)
           }
 
-          agol.requestQueue(pages, params, options, function (error, data) {
+          agol.requestQueue(pages, params, options, function (error, geojson) {
             koop.Cache.getInfo(key, function (err, info) {
               if (err || !info) {
                 info = {}
@@ -782,7 +759,8 @@ var AGOL = function (koop) {
 
               koop.Cache.updateInfo(key, info, function () {
                 if (pages.length === 1) {
-                  params.itemJson.data = [data]
+                  delete params.itemJson.koop_status
+                  params.itemJson.data = [geojson]
                   callback(null, params.itemJson)
                 }
               })
@@ -835,9 +813,10 @@ var AGOL = function (koop) {
           // concat the features so we return the full json
           koop.Cache.insertPartial('agol', params.itemId, geojson, params.layerId, function (err) {
             if (err) return done(err)
-            if (reqCount++ === pages.length - 1) {
+            reqCount++
+            if (reqCount === pages.length) {
               // pass back the full array of features
-              done(null, itemJson)
+              done(null, geojson)
             }
           })
         })
@@ -929,7 +908,15 @@ var AGOL = function (koop) {
    * @param {function} callback - called when the service info comes back
    */
   agol.getFeatureServiceLayerInfo = function (url, layer, callback) {
+
+    var urlLayer = url.split('/').pop()
+    if (parseInt(urlLayer, 0) >= 0) {
+      var len = ('' + urlLayer).length
+      url = url.substring(0, url.length - ((len || 2) + 1))
+    }
+
     url = url + '/' + layer + '?f=json'
+
     agol.req(url, function (err, res) {
       try {
         var json = JSON.parse(res.body)
@@ -1045,15 +1032,7 @@ var AGOL = function (koop) {
     var isExpired = info ? (new Date().getTime() >= info.expires_at) : false
 
     if (info && info.info && info.info.url) {
-      // clean up the url; remove layer at the end just in case
-      var url = info.info.url.replace('?f=json', '')
-      var layer = url.split('/').pop()
-      if (parseInt(layer, 0) >= 0) {
-        var len = ('' + layer).length
-        url = url.substring(0, url.length - ((len || 2) + 1))
-      }
-
-      agol.getFeatureServiceLayerInfo(url, layerId, function (err, serviceInfo) {
+      agol.getFeatureServiceLayerInfo(info.info.url, layerId, function (err, serviceInfo) {
         if (err) return callback(err)
         // check for info on last edit date (for hosted services dont expired unless changed)
         // set isExpired to false if it hasnt changed or if its null
@@ -1067,7 +1046,7 @@ var AGOL = function (koop) {
             isExpired = false
           }
         }
-        callback(null, isExpired)
+        callback(null, isExpired, serviceInfo)
       })
     } else {
       callback(null, isExpired)

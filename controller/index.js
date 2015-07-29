@@ -164,32 +164,11 @@ var Controller = function (agol, BaseController) {
       }
 
       agol.getItemData(data.host, id, item, key, options, function (error, itemJson) {
-        if (error) {
-          agol.log('debug', 'Data not found in cache.')
+        if (itemJson && itemJson.koop_status === 'processing' && typeof req.params.silent === 'undefined') {
+          // callback is never called?
+          return controller._returnProcessing(req, res, itemJson, callback)
         }
-
-        if (itemJson.koop_status === 'processing' && typeof req.params.silent === 'undefined') {
-          // return w/202
-          agol.getCount(controller._createTableKey('agol', req.params), {}, function (err, count) {
-            var code = 202
-            var response = {
-              status: 'processing',
-              processing_time: (Date.now() - itemJson.retrieved_at) / 1000 || 0,
-              count: count
-            }
-            if (itemJson.generating) {
-              response.generating = itemJson.generating
-              // we received an error from the server
-              if (itemJson.generating.error || err) {
-                code = 502
-              }
-            }
-            res.status(code).json(response)
-          })
-          return
-        }
-
-        callback(null, itemJson)
+        callback(error, itemJson)
       })
     })
   }
@@ -231,7 +210,7 @@ var Controller = function (agol, BaseController) {
     // returns data in the data
     agol.getInfo(tableKey, function (err, info) {
       if (err) {
-        console.log(err)
+        agol.log('error', err)
       }
 
       // parse the spatial ref if we have one,
@@ -480,12 +459,12 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._requestNewFile = function (params) {
+    var res = params.res
+    var itemJson = params.itemJson
+
     if (params.err) {
       return res.status(params.err.code || 400).send(params.err.error || params.err)
     }
-
-    var itemJson = params.itemJson
-    var res = params.res
 
     // flatten the data from an array to sep objects/arrays
     var itemData
@@ -545,30 +524,7 @@ var Controller = function (agol, BaseController) {
       }
 
       if (result && result.status && result.status === 'processing') {
-        // TODO refactor this
-        var tableKey = controller._createTableKey('agol', req.params)
-        agol.getCount(tableKey, {}, function (err, count) {
-          if (err) {
-            return res.status(500).send(err)
-          }
-          var code = 202
-
-          var response = {
-            status: 'processing',
-            processing_time: (Date.now() - result.retrieved_at) / 1000 || 0,
-            count: count
-          }
-
-          if (result.generating) {
-            response.generating = result.generating
-            // we received an error from the server
-            if (result.generating.error) {
-              code = 502
-            }
-          }
-          res.status(code).json(response)
-        })
-        return
+        return controller._returnProcessing(req, res, itemJson)
       }
 
       if (req.query.url_only) {
@@ -577,9 +533,9 @@ var Controller = function (agol, BaseController) {
         origUrl[0] = origUrl[0].replace(/json/, req.params.format)
 
         var newUrl = req.protocol + '://' + req.get('host') + origUrl[0] + '?' + origUrl[1]
-            .replace(/url_only=true&|url_only=true|/, '')
-            .replace('format=' + req.params.format, '')
-            .replace('&format=' + req.params.format, '')
+          .replace(/url_only=true&|url_only=true|/, '')
+          .replace('format=' + req.params.format, '')
+          .replace('&format=' + req.params.format, '')
 
         return res.json({url: newUrl})
       }
