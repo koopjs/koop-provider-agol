@@ -89,7 +89,7 @@ function makeRequest (job, done) {
       if (json) {
         if (json.error) {
           featureService.pageQueue.kill()
-          return done(json.error.details[0])
+          return done(json.error)
         }
 
         // insert a partial
