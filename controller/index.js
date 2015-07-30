@@ -5,14 +5,10 @@ var crypto = require('crypto')
 var _ = require('lodash')
 var fs = require('fs')
 
-/**
- * Inherit from the koop base controller
- * handles requests for routes
- * @module Controller
- */
 var Controller = function (agol, BaseController) {
   /**
    * The primary controller onto which all methods are attached
+   * @module Controller
    */
   var controller = BaseController()
 
@@ -70,8 +66,8 @@ var Controller = function (agol, BaseController) {
     })
   }
 
-  // looks up a host based on a given id
   /**
+   * looks up a host based on a given id
    *
    * @param {object} req - the incoming request object
    * @param {object} res - the outgoing response object
@@ -85,8 +81,8 @@ var Controller = function (agol, BaseController) {
     })
   }
 
-  // get the item metadata from the host
   /**
+   * get the item metadata from the host
    *
    * @param {object} req - the incoming request object
    * @param {object} res - the outgoing response object
