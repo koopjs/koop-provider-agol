@@ -229,7 +229,6 @@ var Controller = function (agol, BaseController) {
         if (req.params.format) {
           return controller._returnProcessingFile(req, res, info)
         }
-        console.log('here')
         return controller._returnProcessing(req, res, info)
       }
 
