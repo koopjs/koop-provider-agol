@@ -98,7 +98,11 @@ function makeRequest (job, done) {
             done(err)
           }
           // concat the features so we return the full json
-          koop.Cache.insertPartial('agol', job.data.itemId, geojson, job.data.layerId, function () {
+          koop.Cache.insertPartial('agol', job.data.itemId, geojson, job.data.layerId, function (err) {
+            if (err) {
+              featureService.pageQueue.kill()
+              return done(err)
+            }
             completed++
             console.log(completed, len, job.data.itemId)
             job.progress(completed, len)

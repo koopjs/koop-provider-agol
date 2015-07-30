@@ -716,10 +716,6 @@ var AGOL = function (koop) {
         return callback(err)
       }
 
-      if (pages.length > 1) {
-        callback(null, params.itemJson)
-      }
-
       // add to a separate queue that we can use to add jobs one at a time
       // this prevents the case when we get 2 requests at the same time
       var key = ['agol', params.itemId, params.layerId].join(':')
@@ -729,6 +725,11 @@ var AGOL = function (koop) {
           if (koop.config.agol && koop.config.agol.request_workers) {
             callback(null, params.itemJson)
             return agol.sendToWorkers(pages, params, options)
+          }
+
+          // only call the callback if we have more than one page
+          if (pages.length > 1) {
+            callback(null, params.itemJson)
           }
 
           agol.requestQueue(pages, params, options, function (error, geojson) {
