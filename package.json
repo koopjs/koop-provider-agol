@@ -20,7 +20,6 @@
   "devDependencies": {
     "documentation": "^2.0.1",
     "istanbul": "^0.3.17",
-    "jshint": "~2.5.1",
     "koop": "*",
     "mocha": "~2.2.5",
     "should": "~3.3.1",
@@ -51,9 +50,8 @@
     "url": "git@github.com:koopjs/koop-agol.git"
   },
   "scripts": {
-    "coverage": "istanbul cover node_modules/.bin/_mocha test/*-test.js",
-    "docs": "node node_modules/documentation/bin/documentation.js -f html --name koop-agol -g -o docs",
-    "lint": "node_modules/jshint/bin/jshint **/*.js",
+    "coverage": "istanbul cover _mocha test/*-test.js",
+    "docs": "documentation -f html --name koop-agol -g -o docs",
     "test": "standard && mocha test/*.js -t 40000"
   }
 }
