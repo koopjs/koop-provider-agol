@@ -7,8 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha test/*.js -t 40000",
-    "lint": "node_modules/jshint/bin/jshint **/*.js"
+    "test": "standard && mocha test/*.js -t 40000",
+    "lint": "node_modules/jshint/bin/jshint **/*.js",
+    "docs": "node node_modules/documentation/bin/documentation.js -f html --name koop-agol -g -o docs",
+    "coverage": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha test/*-test.js"
   },
   "dependencies": {
     "async": "~0.9.0",
@@ -19,7 +21,7 @@
     "lodash": "~2.4.1",
     "request": "~2.48.0",
     "sphericalmercator": "~1.0.2",
-    "yargs": "^3.15.0"
+    "featureservice": "~0.0.1"
   },
   "author": "Chris Helm",
   "license": "BSD-2-Clause",
@@ -28,11 +30,14 @@
     "url": "https://github.com:koopjs/koop-agol.git"
   },
   "devDependencies": {
-    "supertest": "~0.11.0",
-    "should": "~3.3.1",
+    "documentation": "^2.0.1",
+    "istanbul": "^0.3.17",
     "jshint": "~2.5.1",
-    "sinon": "~1.10.2",
+    "koop": "*",
     "mocha": "~2.2.5",
-    "koop": "*"
+    "should": "~3.3.1",
+    "sinon": "~1.10.2",
+    "standard": "^4.5.4",
+    "supertest": "~0.11.0"
   }
 }

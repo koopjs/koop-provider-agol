@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased](https://github.com/koopjs/koop-agol/compare/v1.0.0...HEAD)
+### Added
+* Using [JavaScript Standard Style](https://github.com/feross/standard)
+* Dependency on a new node module: [featureservice](https://github.com/chelm/featureservice)
+
+### Changed 
+* Refactored `models/agol.js` to extract shared code for paging feature service data.
+* Refactored `workers/request-worker.js` to extract shared code for paging feature service data.
+* Refactored `controller/index.js` to redude some of the complexity
+
+### Removed
+* removed the all code for talking to Feature Services from both the model and the request worker. This helps reduce the deplucation of logic and code for paging over service features. 
+
 ## [1.0.0] - 2015-07-09
 ### Changed 
 * Turned off auto-projections, instead passing outSR to file exports to handle projections on demand via query string.

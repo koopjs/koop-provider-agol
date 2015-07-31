@@ -1,4 +1,4 @@
-module.exports = { currentVersion: 10.21,
+{ currentVersion: 10.21,
   id: 0,
   name: 'Flag Pole',
   type: 'Feature Layer',
