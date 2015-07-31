@@ -30,14 +30,14 @@ curl -i -X POST -d "id=arcgis" -d "host=https://www.arcgis.com" "http://localhos
 
 ## Resources
 
-* [Koop](https://github.com/Esri/koop)
+* [Koop Documentation](https://koopjs.github.io)
 * [ArcGIS for Developers](http://developers.arcgis.com)
 * [ArcGIS REST Documentation](http://resources.arcgis.com/en/help/arcgis-rest-api/)
 * [@esri](http://twitter.com/esri)
 
 ## Issues
 
-Find a bug or want to request a new feature?  Please let us know by submitting an issue.
+Find a bug or want to request a new feature? Please let us know by submitting an issue.
 
 ## Contributing
 
@@ -47,5 +47,5 @@ Esri welcomes contributions from anyone and everyone. Please see our [guidelines
 
 [Apache 2.0](LICENSE)
 
-[](Esri Tags: ArcGIS Web Mapping GeoJson FeatureServices)
-[](Esri Language: JavaScript)
+<!-- [](Esri Tags: ArcGIS Web Mapping GeoJson FeatureServices) -->
+<!-- [](Esri Language: JavaScript) -->
