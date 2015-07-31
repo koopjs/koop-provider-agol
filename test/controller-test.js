@@ -390,6 +390,10 @@ describe('AGOL Controller', function () {
       sinon.stub(agol, 'getInfo', function (key, callback) {
         callback(null, itemInfo)
       })
+
+      sinon.stub(agol, 'getCount', function (key, options, callback) {
+        callback(null, 100)
+      })
       done()
     })
 
@@ -397,19 +401,20 @@ describe('AGOL Controller', function () {
       agol.getItemData.restore()
       agol.getInfo.restore()
       agol.find.restore()
+      agol.getCount.restore()
       agol.exportFile.restore()
       done()
     })
 
-    it('should call Exporter.exportFile an dreturn 404?', function (done) {
+    it('should call Exporter.exportFile an return 202', function (done) {
       request(koop)
         .get('/agol/test/itemid/0.csv')
         .end(function (err, res) {
           should.not.exist(err)
-          // res.should.have.status(404)
-          // agol.getInfo.called.should.equal(true)
-          // agol.exportFile.called.should.equal(true)
-          // agol.getItemData.called.should.equal(true)
+          res.should.have.status(202)
+          agol.getInfo.called.should.equal(true)
+          agol.exportFile.called.should.equal(true)
+          agol.getItemData.called.should.equal(true)
           done()
         })
     })

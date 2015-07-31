@@ -102,8 +102,6 @@ var Controller = function (agol, BaseController) {
         if (error) {
           return res.status(404).send(error)
         }
-
-        res.contentType('text')
         res.json(itemJson)
       })
     })
@@ -519,24 +517,7 @@ var Controller = function (agol, BaseController) {
         return res.status(err.code || 400).send(err)
       }
 
-      if (result && result.status && result.status === 'processing') {
-        return controller._returnProcessing(req, res, itemJson)
-      }
-
-      if (req.query.url_only) {
-        // reuse this code...
-        var origUrl = req.originalUrl.split('?')
-        origUrl[0] = origUrl[0].replace(/json/, req.params.format)
-
-        var newUrl = req.protocol + '://' + req.get('host') + origUrl[0] + '?' + origUrl[1]
-          .replace(/url_only=true&|url_only=true|/, '')
-          .replace('format=' + req.params.format, '')
-          .replace('&format=' + req.params.format, '')
-
-        return res.json({url: newUrl})
-      }
-      res.contentType('text')
-      return res.sendFile(result)
+      return controller._returnProcessing(req, res, itemJson)
     })
   }
 
