@@ -607,4 +607,39 @@ describe('AGOL Controller', function () {
     })
   })
 
+  describe('when creating a cache key', function () {
+    var params = {
+      item: 'item',
+      layer: 0
+    }
+    var query1 = {
+      foo: 1,
+      bar: 1
+    }
+    var query2 = {
+      bar: 1,
+      foo: 1
+    }
+    var key1 = controller._createCacheKey(params, query1)
+    it('should create the same cache key when query params are out of order', function (done) {
+      var key2 = controller._createCacheKey(params, query2)
+      key1.should.equal(key2)
+      done()
+    })
+    it('should create the same cache key on url only requests', function (done) {
+      query2.url_only = true
+      var key2 = controller._createCacheKey(params, query2)
+      key1.should.equal(key2)
+      delete query2.url_only
+      done()
+    })
+    it('should create the same cache key on format requests', function (done) {
+      query2.format = 'zip'
+      var key2 = controller._createCacheKey(params, query2)
+      key1.should.equal(key2)
+      delete query2.format
+      done()
+    })
+  })
+
 })

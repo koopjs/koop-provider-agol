@@ -173,12 +173,7 @@ var Controller = function (agol, BaseController) {
    */
   controller._createCacheKey = function (params, query) {
     // sort the req.query before we hash so we are consistent
-    var sorted_query = {}
-    _(query).keys().sort().each(function (key) {
-      if (key !== 'url_only' && key !== 'format') {
-        sorted_query[key] = query[key]
-      }
-    })
+    var sorted_query = _(query).omit(['url_only', 'format']).keys().sort()
     // build the file key as an MD5 hash that's a join on the paams and look for the file
     var toHash = params.item + '_' + (params.layer || 0) + JSON.stringify(sorted_query)
 
@@ -616,22 +611,14 @@ var Controller = function (agol, BaseController) {
    */
   controller._setHeaders = function (res, name, format) {
     res.setHeader('Content-disposition', 'attachment; filename=' + (encodeURIComponent(name) + '.' + format))
-    switch (format) {
-      case 'json':
-      case 'geojson':
-        res.contentType('application/json')
-        break
-      case 'kml':
-        res.contentType('application/vnd.google-earth.kml+xml')
-        break
-      case 'csv':
-        res.contentType('text/csv')
-        break
-      case 'zip':
-        res.contentType('application/octet-stream')
-        break
+    var formats = {
+      json: 'application/json',
+      geojson: 'application/json',
+      kml: 'application/vnd.google-earth.kml+xml',
+      csv: 'text/csv',
+      zip: 'application/octet-stream'
     }
-    return res
+    return res.contentType(formats[format])
   }
 
   /**
