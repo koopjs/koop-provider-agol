@@ -173,7 +173,7 @@ var Controller = function (agol, BaseController) {
    */
   controller._createCacheKey = function (params, query) {
     // sort the req.query before we hash so we are consistent
-    var sorted_query = _(query).omit(['url_only', 'format']).keys().sort()
+    var sorted_query = _(query).omit(['url_only', 'format', 'callback']).keys().sort()
     // build the file key as an MD5 hash that's a join on the paams and look for the file
     var toHash = params.item + '_' + (params.layer || 0) + JSON.stringify(sorted_query)
 
@@ -241,7 +241,6 @@ var Controller = function (agol, BaseController) {
         // force an override on the format param if given a format in the query
         if (req.query.format) {
           req.params.format = req.query.format
-          delete req.query.format
         }
 
         // redirect to thumbnail for png access
@@ -348,8 +347,8 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._returnProcessingFile = function (req, res, info) {
-    // force an override on the format param if given a format in the query
-    delete req.query.format
+    // // force an override on the format param if given a format in the query
+    // delete req.query.format
     // create the file path
     var path = controller._createFilePath(req.params.key, req.params)
     // get the name of the data; else use the key (md5 hash)
@@ -631,8 +630,8 @@ var Controller = function (agol, BaseController) {
       return
     }
 
+    // hang on to this callback in case it's a JSONP request
     var callback = req.query.callback
-    delete req.query.callback
 
     // support POST requests; map body vals to the query
     // (then all same as GET)
@@ -744,7 +743,7 @@ var Controller = function (agol, BaseController) {
    */
   controller.tiles = function (req, res) {
     var callback = req.query.callback
-    delete req.query.callback
+    // delete req.query.callback
 
     var key
     var layer = req.params.layer || 0

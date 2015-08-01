@@ -626,17 +626,14 @@ describe('AGOL Controller', function () {
       key1.should.equal(key2)
       done()
     })
-    it('should create the same cache key on url only requests', function (done) {
+    it('should create the same cache key on requests with omitted params', function (done) {
       query2.url_only = true
+      query2.format = 'zip'
+      query2.callback = {}
       var key2 = controller._createCacheKey(params, query2)
       key1.should.equal(key2)
       delete query2.url_only
-      done()
-    })
-    it('should create the same cache key on format requests', function (done) {
-      query2.format = 'zip'
-      var key2 = controller._createCacheKey(params, query2)
-      key1.should.equal(key2)
+      delete query2.callback
       delete query2.format
       done()
     })
