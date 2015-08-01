@@ -664,17 +664,7 @@ var Controller = function (agol, BaseController) {
         return res.status(404).send(err)
       }
 
-      // sort the req.query before we hash so we are consistent
-      var sorted_query = {}
-      _(req.query).keys().sort().each(function (key) {
-        if (key !== 'url_only' && key !== 'format') {
-          sorted_query[key] = req.query[key]
-        }
-      })
-      // build the file key as an MD5 hash that's a join on the paams and look for the file
-      var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-      var key = crypto.createHash('md5').update(toHash).digest('hex')
-      // Get the item
+      var key = controller._createCacheKey(req.params, req.query)
 
       // set a really high limit so large datasets can be turned into feature services
       req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
@@ -696,7 +686,8 @@ var Controller = function (agol, BaseController) {
    * Handles request for thubmnails
    */
   controller.thumbnail = function (req, res) {
-    var key, dir, layer
+    var dir
+    var layer
 
     agol.find(req.params.id, function (err, data) {
       if (err) {
@@ -705,7 +696,6 @@ var Controller = function (agol, BaseController) {
       layer = (req.params.layer || 0)
 
       // check the image first and return if exists
-      key = ['agol', req.params.id, req.params.item, layer].join(':')
       dir = '/thumbs'
       req.query.width = parseInt(req.query.width, 0) || 150
       req.query.height = parseInt(req.query.height, 0) || 150
@@ -722,16 +712,7 @@ var Controller = function (agol, BaseController) {
           req.query.layer = req.params.layer
         }
 
-        // sort the req.query before we hash so we are consistent
-        var sorted_query = {}
-        _(req.query).keys().sort().each(function (key) {
-          if (key !== 'url_only' && key !== 'format') {
-            sorted_query[key] = req.query[key]
-          }
-        })
-        // build the file key as an MD5 hash that's a join on the paams and look for the file
-        var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-        key = crypto.createHash('md5').update(toHash).digest('hex')
+        var key = controller._createCacheKey(req.params, req.query)
 
         // Get the item
         agol.getItemData(data.host, req.params.id, req.params.item, key, req.query, function (error, itemJson) {
@@ -859,16 +840,7 @@ var Controller = function (agol, BaseController) {
             req.query.layer = req.params.layer
           }
 
-          // sort the req.query before we hash so we are consistent
-          var sorted_query = {}
-          _(req.query).keys().sort().each(function (key) {
-            if (key !== 'url_only' && key !== 'format') {
-              sorted_query[key] = req.query[key]
-            }
-          })
-          // build the file key as an MD5 hash that's a join on the paams and look for the file
-          var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-          var hash = crypto.createHash('md5').update(toHash).digest('hex')
+          var key = controller._createCacheKey(req.params, req.query)
 
           var factor = 0.1
           req.query.simplify = ((Math.abs(req.query.geometry.xmin - req.query.geometry.xmax)) / 256) * factor
@@ -877,7 +849,7 @@ var Controller = function (agol, BaseController) {
           req.query.enforce_limit = false
 
           // Get the item
-          agol.getItemData(data.host, req.params.id, req.params.item, hash, req.query, function (error, itemJson) {
+          agol.getItemData(data.host, req.params.id, req.params.item, key, req.query, function (error, itemJson) {
             if (error) {
               if (itemJson && itemJson.type === 'Image Service' && req.params.format === 'png') {
                 agol.getImageServiceTile(req.params, function (err, newFile) {
@@ -934,14 +906,7 @@ var Controller = function (agol, BaseController) {
     // Determine if we have the file first
     // -------------------------------------
     // sort the req.query before we hash so we are consistent
-    var sorted_query = {}
-    _(req.query).keys().sort().each(function (key) {
-      sorted_query[key] = req.query[key]
-    })
-
-    // build the file key as an MD5 hash that's a join on the paams and look for the file
-    var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-    var fileKey = crypto.createHash('md5').update(toHash).digest('hex')
+    var fileKey = controller._createCacheKey(req.params, req.query)
     var key = req.params.item + '_' + req.params.layer
     var filePath = ['latest', 'files', key].join('/')
     var fileName = fileKey + '.geohash.json'
