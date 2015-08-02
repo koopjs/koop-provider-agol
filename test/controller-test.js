@@ -8,6 +8,7 @@ var kooplib = require('koop/lib')
 var koop = require('koop')({})
 
 var Provider = require('../index.js')
+var Utils = require('../models/utils.js')
 var agol = Provider.model(kooplib)
 var controller = Provider.controller(agol, kooplib.BaseController)
 koop._bindRoutes(Provider.routes, controller)
@@ -258,6 +259,10 @@ describe('AGOL Controller', function () {
         agol.buildGeohash({}, filePath, fileName, {})
         res.send(true)
       })
+
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, 'http://whateva.com')
+      })
       done()
     })
 
@@ -265,6 +270,7 @@ describe('AGOL Controller', function () {
       agol.buildGeohash.restore()
       agol.getInfo.restore()
       agol.files.exists.restore()
+      agol.find.restore()
       controller.createGeohash.restore()
       done()
     })
@@ -620,9 +626,9 @@ describe('AGOL Controller', function () {
       bar: 1,
       foo: 1
     }
-    var key1 = controller._createCacheKey(params, query1)
+    var key1 = Utils.createCacheKey(params, query1)
     it('should create the same cache key when query params are out of order', function (done) {
-      var key2 = controller._createCacheKey(params, query2)
+      var key2 = Utils.createCacheKey(params, query2)
       key1.should.equal(key2)
       done()
     })
@@ -630,7 +636,7 @@ describe('AGOL Controller', function () {
       query2.url_only = true
       query2.format = 'zip'
       query2.callback = {}
-      var key2 = controller._createCacheKey(params, query2)
+      var key2 = Utils.createCacheKey(params, query2)
       key1.should.equal(key2)
       delete query2.url_only
       delete query2.callback

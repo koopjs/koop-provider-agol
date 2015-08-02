@@ -3,6 +3,7 @@ module.exports = {
   'get /agol': 'list',
   'get /agolworkers': 'getQueueCounts',
   'get /agol/:id': 'find',
+  'get /agol/:id/*': 'main',
   'delete /agol/:id': 'del',
   'delete /agol/:id/:item/:layer': 'deleteItemData',
   'get /agol/:id/:item/:layer/geohash': 'getGeohash',
