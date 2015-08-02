@@ -16,7 +16,7 @@ describe('Utils', function () {
       foo: 1
     }
     var expected_key = Utils.createCacheKey(params, reference_query)
-    
+
     it('should create the same cache key when query params are out of order', function (done) {
       var test_key = Utils.createCacheKey(params, test_query)
       test_key.should.equal(expected_key)
