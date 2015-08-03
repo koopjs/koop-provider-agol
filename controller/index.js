@@ -16,6 +16,7 @@ var Controller = function (agol, BaseController) {
   *
   * @param {object} req - the incoming request object
   * @param {object} res - the outgoing response object
+  * @param {function} next - calls the next route handler
   */
   controller.main = function (req, res, next) {
     // geohash requests don't need to call agol.find because we already have the item
