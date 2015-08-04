@@ -3,7 +3,7 @@ var kue = require('kue')
 var csv = require('csv')
 var FeatureService = require('featureservice')
 var async = require('async')
-var utils = require('./utils')
+var utils = require('../lib/utils.js')
 
 var AGOL = function (koop) {
   /**

@@ -1,9 +1,8 @@
 var https = require('https')
 var Sm = require('sphericalmercator')
 var merc = new Sm({size: 256})
-var crypto = require('crypto')
-var _ = require('lodash')
 var fs = require('fs')
+var Utils = require('../lib/utils.js')
 
 var Controller = function (agol, BaseController) {
   /**
@@ -11,6 +10,24 @@ var Controller = function (agol, BaseController) {
    * @module Controller
    */
   var controller = BaseController()
+
+  /**
+  * Manages shared logic for any request that needs a host or key
+  *
+  * @param {object} req - the incoming request object
+  * @param {object} res - the outgoing response object
+  * @param {function} next - calls the next route handler
+  */
+  controller.setHostKey = function (req, res, next) {
+    // geohash requests don't need to call agol.find because we already have the item
+    if (!req.params.id || req.path.indexOf('geohash') > -1) return next()
+    req.key = Utils.createCacheKey(req.params, req.query)
+    agol.find(req.params.id, function (err, data) {
+      if (err) return res.status(404).send(err)
+      req.portal = data.host
+      next()
+    })
+  }
 
   /**
    * Registers a host with the given id
@@ -73,12 +90,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.find = function (req, res) {
-    agol.find(req.params.id, function (err, data) {
-      if (err) {
-        return res.status(err.code || 404).send(err)
-      }
-      res.json(data)
-    })
+    res.status(200).json(req.portal)
   }
 
   /**
@@ -91,19 +103,12 @@ var Controller = function (agol, BaseController) {
     if (req.params.format) {
       return this.findItemData(req, res)
     }
-
-    agol.find(req.params.id, function (err, data) {
-      if (err) {
-        return res.status(err.code || 404).send(err)
+    // Get the item
+    agol.getItem(req.portal, req.params.item, req.query, function (error, itemJson) {
+      if (error) {
+        return res.status(404).send(error)
       }
-
-      // Get the item
-      agol.getItem(data.host, req.params.item, req.query, function (error, itemJson) {
-        if (error) {
-          return res.status(404).send(error)
-        }
-        res.json(itemJson)
-      })
+      res.json(itemJson)
     })
   }
 
@@ -117,19 +122,12 @@ var Controller = function (agol, BaseController) {
     if (req.params.layer) {
       req.query.layer = req.params.layer
     }
-
-    agol.find(req.params.id, function (err, data) {
-      if (err) {
-        return res.status(err.code || 404).send(err)
+    // Get the item
+    agol.dropItem(req.portal, req.params.item, req.query, function (error, itemJson) {
+      if (error) {
+        return res.status(error.code || 400).send(error)
       }
-
-      // Get the item
-      agol.dropItem(data.host, req.params.item, req.query, function (error, itemJson) {
-        if (error) {
-          return res.status(error.code || 400).send(error)
-        }
-        res.json(itemJson)
-      })
+      res.json(itemJson)
     })
   }
 
@@ -145,44 +143,23 @@ var Controller = function (agol, BaseController) {
     var options = req.query
     var id = params.id
     var item = params.item
-    var key = params.key
 
-    agol.find(id, function (err, data) {
-      if (err) {
-        return callback(err, null)
+    // Get the item
+    if (!parseInt(options.layer, 10)) {
+      options.layer = 0
+    }
+
+    agol.getItemData(req.portal, id, item, req.key, options, function (error, itemJson) {
+      var itemExists = typeof itemJson !== 'undefined'
+      var isProcessing = itemExists && itemJson.koop_status === 'processing'
+      var silent = typeof req.params.silent !== 'undefined'
+
+      if (isProcessing && !silent) {
+        // callback is never called?
+        return controller._returnProcessing(req, res, itemJson, callback)
       }
-
-      // Get the item
-      if (!parseInt(options.layer, 0)) {
-        options.layer = 0
-      }
-
-      agol.getItemData(data.host, id, item, key, options, function (error, itemJson) {
-        if (itemJson && itemJson.koop_status === 'processing' && typeof req.params.silent === 'undefined') {
-          // callback is never called?
-          return controller._returnProcessing(req, res, itemJson, callback)
-        }
-        callback(error, itemJson)
-      })
+      callback(error, itemJson)
     })
-  }
-
-  /**
-   * Creates a unique based on request params and the querystring
-   * @returns {string} key
-   */
-  controller._createCacheKey = function (params, query) {
-    // sort the req.query before we hash so we are consistent
-    var sorted_query = {}
-    _(query).keys().sort().each(function (key) {
-      if (key !== 'url_only' && key !== 'format') {
-        sorted_query[key] = query[key]
-      }
-    })
-    // build the file key as an MD5 hash that's a join on the paams and look for the file
-    var toHash = params.item + '_' + (params.layer || 0) + JSON.stringify(sorted_query)
-
-    return crypto.createHash('md5').update(toHash).digest('hex')
   }
 
   /**
@@ -216,8 +193,7 @@ var Controller = function (agol, BaseController) {
         }
       }
 
-      var key = controller._createCacheKey(req.params, req.query)
-      req.params.key = key
+      req.params.key = req.key
 
       // determine if this request is for a filtered dataset
       req.query.isFiltered = (req.query.where || req.query.geometry)
@@ -237,7 +213,7 @@ var Controller = function (agol, BaseController) {
           req: req,
           res: res,
           dir: dir,
-          key: key,
+          key: req.key,
           format: req.params.format,
           id: req.params.item,
           type: 'agol'
@@ -246,7 +222,6 @@ var Controller = function (agol, BaseController) {
         // force an override on the format param if given a format in the query
         if (req.query.format) {
           req.params.format = req.query.format
-          delete req.query.format
         }
 
         // redirect to thumbnail for png access
@@ -255,54 +230,48 @@ var Controller = function (agol, BaseController) {
         }
 
         // create the file path
-        path = controller._createFilePath(key, req.params)
+        path = controller._createFilePath(req.key, req.params)
         // the file name for the export
-        fileParams.fileName = controller._createName(info, key, req.params.format)
+        fileParams.fileName = controller._createName(info, req.key, req.params.format)
 
         // does the data export already exist?
         agol.files.exists(path, fileParams.fileName, function (exists, path) {
 
-          // get the item data before we check for
-          agol.find(req.params.id, function (err, data) {
+          // save the item layer
+          req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
+
+          agol.getItem(req.portal, req.params.item, req.query, function (err, itemJson) {
             if (err) {
               return res.status(500).send(err)
             }
-            // save the item layer
-            req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
 
-            agol.getItem(data.host, req.params.item, req.query, function (err, itemJson) {
-              if (err) {
-                return res.status(500).send(err)
-              }
+            if (exists) {
+              return agol.isExpired(info, req.query.layer, function (err, isExpired) {
+                fileParams.err = err
+                if (!isExpired) {
+                  return controller._returnFile(req, res, path, fileParams.fileName)
+                }
 
-              if (exists) {
-                return agol.isExpired(info, req.query.layer, function (err, isExpired) {
-                  fileParams.err = err
-                  if (!isExpired) {
-                    return controller._returnFile(req, res, path, fileParams.fileName)
-                  }
-
-                  // if it's expired, then remove the data and request a new file
-                  agol.dropItem(data.host, req.params.item, req.query, function () {
-                    req.query.format = req.params.format
-                    controller._getItemData(req, res, function (err, itemJson) {
-                      fileParams.err = err
-                      fileParams.itemJson = itemJson
-                      fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
-                      // var used to request new files if needed.
-                      controller._requestNewFile(fileParams)
-                    })
+                // if it's expired, then remove the data and request a new file
+                agol.dropItem(req.portal, req.params.item, req.query, function () {
+                  req.query.format = req.params.format
+                  controller._getItemData(req, res, function (err, itemJson) {
+                    fileParams.err = err
+                    fileParams.itemJson = itemJson
+                    fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
+                    // var used to request new files if needed.
+                    controller._requestNewFile(fileParams)
                   })
                 })
-              }
-
-              req.query.format = req.params.format
-              controller._getItemData(req, res, function (err, itemJson) {
-                fileParams.err = err
-                fileParams.itemJson = itemJson
-                fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
-                controller._requestNewFile(fileParams)
               })
+            }
+
+            req.query.format = req.params.format
+            controller._getItemData(req, res, function (err, itemJson) {
+              fileParams.err = err
+              fileParams.itemJson = itemJson
+              fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
+              controller._requestNewFile(fileParams)
             })
           })
         })
@@ -353,8 +322,6 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._returnProcessingFile = function (req, res, info) {
-    // force an override on the format param if given a format in the query
-    delete req.query.format
     // create the file path
     var path = controller._createFilePath(req.params.key, req.params)
     // get the name of the data; else use the key (md5 hash)
@@ -616,22 +583,14 @@ var Controller = function (agol, BaseController) {
    */
   controller._setHeaders = function (res, name, format) {
     res.setHeader('Content-disposition', 'attachment; filename=' + (encodeURIComponent(name) + '.' + format))
-    switch (format) {
-      case 'json':
-      case 'geojson':
-        res.contentType('application/json')
-        break
-      case 'kml':
-        res.contentType('application/vnd.google-earth.kml+xml')
-        break
-      case 'csv':
-        res.contentType('text/csv')
-        break
-      case 'zip':
-        res.contentType('application/octet-stream')
-        break
+    var formats = {
+      json: 'application/json',
+      geojson: 'application/json',
+      kml: 'application/vnd.google-earth.kml+xml',
+      csv: 'text/csv',
+      zip: 'application/octet-stream'
     }
-    return res
+    return res.contentType(formats[format])
   }
 
   /**
@@ -644,8 +603,8 @@ var Controller = function (agol, BaseController) {
       return
     }
 
+    // hang on to this callback in case it's a JSONP request
     var callback = req.query.callback
-    delete req.query.callback
 
     // support POST requests; map body vals to the query
     // (then all same as GET)
@@ -659,36 +618,18 @@ var Controller = function (agol, BaseController) {
       req.query.layer = 0
     }
 
-    agol.find(req.params.id, function (err, data) {
-      if (err) {
-        return res.status(404).send(err)
+    // set a really high limit so large datasets can be turned into feature services
+    req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
+    req.query.offset = req.query.resultOffset || null
+    agol.getItemData(req.portal, req.params.id, req.params.item, req.key, req.query, function (error, itemJson) {
+      if (error) {
+        return res.status(error.code || 500).send(error.error || error)
       }
 
-      // sort the req.query before we hash so we are consistent
-      var sorted_query = {}
-      _(req.query).keys().sort().each(function (key) {
-        if (key !== 'url_only' && key !== 'format') {
-          sorted_query[key] = req.query[key]
-        }
-      })
-      // build the file key as an MD5 hash that's a join on the paams and look for the file
-      var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-      var key = crypto.createHash('md5').update(toHash).digest('hex')
-      // Get the item
-
-      // set a really high limit so large datasets can be turned into feature services
-      req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
-      req.query.offset = req.query.resultOffset || null
-      agol.getItemData(data.host, req.params.id, req.params.item, key, req.query, function (error, itemJson) {
-        if (error) {
-          return res.status(error.code || 500).send(error.error || error)
-        }
-
-        // pass to the shared logic for FeatureService routing
-        delete req.query.geometry
-        delete req.query.where
-        controller.processFeatureServer(req, res, err, itemJson.data, callback)
-      })
+      // pass to the shared logic for FeatureService routing
+      delete req.query.geometry
+      delete req.query.where
+      controller.processFeatureServer(req, res, null, itemJson.data, callback)
     })
   }
 
@@ -696,67 +637,51 @@ var Controller = function (agol, BaseController) {
    * Handles request for thubmnails
    */
   controller.thumbnail = function (req, res) {
-    var key, dir, layer
+    var dir
+    var layer
 
-    agol.find(req.params.id, function (err, data) {
-      if (err) {
-        return res.status(404).send(err)
+    layer = (req.params.layer || 0)
+
+    // check the image first and return if exists
+    dir = '/thumbs'
+    req.query.width = parseInt(req.query.width, 0) || 150
+    req.query.height = parseInt(req.query.height, 0) || 150
+    req.query.f_base = dir + '/' + req.params.item + '_' + layer + '/' + req.params.item + '::' + req.query.width + '::' + req.query.height
+    var png = req.query.f_base + '.png'
+
+    agol.files.exists(null, png, function (exists) {
+      if (exists) {
+        return res.sendFile(png)
       }
-      layer = (req.params.layer || 0)
 
-      // check the image first and return if exists
-      key = ['agol', req.params.id, req.params.item, layer].join(':')
-      dir = '/thumbs'
-      req.query.width = parseInt(req.query.width, 0) || 150
-      req.query.height = parseInt(req.query.height, 0) || 150
-      req.query.f_base = dir + '/' + req.params.item + '_' + layer + '/' + req.params.item + '::' + req.query.width + '::' + req.query.height
-      var png = req.query.f_base + '.png'
+      // if we have a layer then pass it along
+      if (req.params.layer) {
+        req.query.layer = req.params.layer
+      }
 
-      agol.files.exists(null, png, function (exists) {
-        if (exists) {
-          return res.sendFile(png)
+      // Get the item
+      agol.getItemData(req.portal, req.params.id, req.params.item, req.key, req.query, function (error, itemJson) {
+        if (error) {
+          return res.status(500).send(error)
+        }
+        if (itemJson.extent && itemJson.extent.length) {
+          req.query.extent = {
+            xmin: itemJson.extent[0][0],
+            ymin: itemJson.extent[0][1],
+            xmax: itemJson.extent[1][0],
+            ymax: itemJson.extent[1][1]
+          }
         }
 
-        // if we have a layer then pass it along
-        if (req.params.layer) {
-          req.query.layer = req.params.layer
-        }
-
-        // sort the req.query before we hash so we are consistent
-        var sorted_query = {}
-        _(req.query).keys().sort().each(function (key) {
-          if (key !== 'url_only' && key !== 'format') {
-            sorted_query[key] = req.query[key]
-          }
-        })
-        // build the file key as an MD5 hash that's a join on the paams and look for the file
-        var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-        key = crypto.createHash('md5').update(toHash).digest('hex')
-
-        // Get the item
-        agol.getItemData(data.host, req.params.id, req.params.item, key, req.query, function (error, itemJson) {
-          if (error) {
-            return res.status(500).send(error)
-          }
-          if (itemJson.extent && itemJson.extent.length) {
-            req.query.extent = {
-              xmin: itemJson.extent[0][0],
-              ymin: itemJson.extent[0][1],
-              xmax: itemJson.extent[1][0],
-              ymax: itemJson.extent[1][1]
-            }
+        // generate a thumbnail
+        delete itemJson.data[0].info
+        agol.generateThumbnail(itemJson.data[0], req.params.item + '_' + req.params.layer, req.query, function (err, file) {
+          if (err) {
+            return res.status(500).send(err)
           }
 
-          // generate a thumbnail
-          delete itemJson.data[0].info
-          agol.generateThumbnail(itemJson.data[0], req.params.item + '_' + req.params.layer, req.query, function (err, file) {
-            if (err) {
-              return res.status(500).send(err)
-            }
-
-            // send back image
-            res.sendFile(file)
-          })
+          // send back image
+          res.sendFile(file)
         })
       })
     })
@@ -776,8 +701,6 @@ var Controller = function (agol, BaseController) {
    */
   controller.tiles = function (req, res) {
     var callback = req.query.callback
-    delete req.query.callback
-
     var key
     var layer = req.params.layer || 0
 
@@ -850,49 +773,32 @@ var Controller = function (agol, BaseController) {
     if (fs.existsSync(jsonFile) && !fs.existsSync(file)) {
       _send(null, fs.readFileSync(jsonFile))
     } else if (!fs.existsSync(file)) {
-      agol.find(req.params.id, function (err, data) {
-        if (err) {
-          res.status(404).send(err)
-        } else {
-          // if we have a layer then pass it along
-          if (req.params.layer) {
-            req.query.layer = req.params.layer
-          }
+      // if we have a layer then pass it along
+      if (req.params.layer) {
+        req.query.layer = req.params.layer
+      }
 
-          // sort the req.query before we hash so we are consistent
-          var sorted_query = {}
-          _(req.query).keys().sort().each(function (key) {
-            if (key !== 'url_only' && key !== 'format') {
-              sorted_query[key] = req.query[key]
-            }
-          })
-          // build the file key as an MD5 hash that's a join on the paams and look for the file
-          var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-          var hash = crypto.createHash('md5').update(toHash).digest('hex')
+      var factor = 0.1
+      req.query.simplify = ((Math.abs(req.query.geometry.xmin - req.query.geometry.xmax)) / 256) * factor
 
-          var factor = 0.1
-          req.query.simplify = ((Math.abs(req.query.geometry.xmin - req.query.geometry.xmax)) / 256) * factor
+      // make sure we ignore the query limit of 2k
+      req.query.enforce_limit = false
 
-          // make sure we ignore the query limit of 2k
-          req.query.enforce_limit = false
-
-          // Get the item
-          agol.getItemData(data.host, req.params.id, req.params.item, hash, req.query, function (error, itemJson) {
-            if (error) {
-              if (itemJson && itemJson.type === 'Image Service' && req.params.format === 'png') {
-                agol.getImageServiceTile(req.params, function (err, newFile) {
-                  if (err) {
-                    return res.status(500).send(err)
-                  }
-                  _sendImmediate(newFile)
-                })
-              } else {
-                res.status(error.code || 500).send(error)
+      // Get the item
+      agol.getItemData(req.portal, req.params.id, req.params.item, req.key, req.query, function (error, itemJson) {
+        if (error) {
+          if (itemJson && itemJson.type === 'Image Service' && req.params.format === 'png') {
+            agol.getImageServiceTile(req.params, function (err, newFile) {
+              if (err) {
+                return res.status(500).send(err)
               }
-            } else {
-              _send(error, itemJson.data)
-            }
-          })
+              _sendImmediate(newFile)
+            })
+          } else {
+            res.status(error.code || 500).send(error)
+          }
+        } else {
+          _send(error, itemJson.data)
         }
       })
     } else {
@@ -933,18 +839,9 @@ var Controller = function (agol, BaseController) {
 
     // Determine if we have the file first
     // -------------------------------------
-    // sort the req.query before we hash so we are consistent
-    var sorted_query = {}
-    _(req.query).keys().sort().each(function (key) {
-      sorted_query[key] = req.query[key]
-    })
-
-    // build the file key as an MD5 hash that's a join on the paams and look for the file
-    var toHash = req.params.item + '_' + (req.params.layer || 0) + JSON.stringify(sorted_query)
-    var fileKey = crypto.createHash('md5').update(toHash).digest('hex')
     var key = req.params.item + '_' + req.params.layer
     var filePath = ['latest', 'files', key].join('/')
-    var fileName = fileKey + '.geohash.json'
+    var fileName = req.key + '.geohash.json'
 
     // does it exist?
     agol.files.exists(filePath, fileName, function (exists, path, fileInfo) {

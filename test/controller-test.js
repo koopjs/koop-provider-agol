@@ -258,6 +258,10 @@ describe('AGOL Controller', function () {
         agol.buildGeohash({}, filePath, fileName, {})
         res.send(true)
       })
+
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, 'http://whateva.com')
+      })
       done()
     })
 
@@ -265,6 +269,7 @@ describe('AGOL Controller', function () {
       agol.buildGeohash.restore()
       agol.getInfo.restore()
       agol.files.exists.restore()
+      agol.find.restore()
       controller.createGeohash.restore()
       done()
     })
