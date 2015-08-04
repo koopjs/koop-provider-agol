@@ -2,7 +2,7 @@ var https = require('https')
 var Sm = require('sphericalmercator')
 var merc = new Sm({size: 256})
 var fs = require('fs')
-var Utils = require('../models/utils.js')
+var Utils = require('../lib/utils.js')
 
 var Controller = function (agol, BaseController) {
   /**
@@ -17,7 +17,7 @@ var Controller = function (agol, BaseController) {
   * @param {object} req - the incoming request object
   * @param {object} res - the outgoing response object
   */
-  controller.main = function (req, res, next) {
+  controller.setHostKey = function (req, res, next) {
     // geohash requests don't need to call agol.find because we already have the item
     if (!req.params.id || req.path.indexOf('geohash') > -1) return next()
     req.key = Utils.createCacheKey(req.params, req.query)
@@ -144,12 +144,16 @@ var Controller = function (agol, BaseController) {
     var item = params.item
 
     // Get the item
-    if (!parseInt(options.layer, 0)) {
+    if (!parseInt(options.layer, 10)) {
       options.layer = 0
     }
 
     agol.getItemData(req.portal, id, item, req.key, options, function (error, itemJson) {
-      if (itemJson && itemJson.koop_status === 'processing' && typeof req.params.silent === 'undefined') {
+      var itemExists = typeof itemJson !== 'undefined'
+      var isProcessing = itemExists && itemJson.koop_status === 'processing'
+      var silent = typeof req.params.silent !== 'undefined'
+
+      if (isProcessing && !silent) {
         // callback is never called?
         return controller._returnProcessing(req, res, itemJson, callback)
       }
@@ -317,8 +321,6 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._returnProcessingFile = function (req, res, info) {
-    // // force an override on the format param if given a format in the query
-    // delete req.query.format
     // create the file path
     var path = controller._createFilePath(req.params.key, req.params)
     // get the name of the data; else use the key (md5 hash)
@@ -698,8 +700,6 @@ var Controller = function (agol, BaseController) {
    */
   controller.tiles = function (req, res) {
     var callback = req.query.callback
-    // delete req.query.callback
-
     var key
     var layer = req.params.layer || 0
 

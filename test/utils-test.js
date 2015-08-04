@@ -1,5 +1,5 @@
 /* global it, describe */
-var Utils = require('../models/utils.js')
+var Utils = require('../lib/utils.js')
 
 describe('Utils', function () {
   describe('when creating a cache key', function () {
