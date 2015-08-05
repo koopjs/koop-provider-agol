@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Using [JavaScript Standard Style](https://github.com/feross/standard)
 * Dependency on a new node module: [featureservice](https://github.com/chelm/featureservice)
+* New option to set the number of sockets per process
 
 ### Changed 
 * Refactored `models/agol.js` to extract shared code for paging feature service data.

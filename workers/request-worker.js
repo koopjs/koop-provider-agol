@@ -4,6 +4,15 @@ var koop = require('koop/lib')
 var FeatureService = require('featureservice')
 var pgcache = require('koop-pgcache')
 var config = require('config')
+var http = require('http')
+var https = require('https')
+
+// set global number of sockets if in the config
+// node version > 0.12 sets max sockets to infinity
+if (config.sockets) {
+  http.globalAgent.maxSockets = config.sockets / 2
+  https.globalAgent.maxSocets = config.sockets / 2
+}
 
 // Init Koop with things it needs like a log and Cache
 koop.log = new koop.Logger(config)
