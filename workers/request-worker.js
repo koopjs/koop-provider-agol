@@ -11,7 +11,7 @@ var https = require('https')
 // node version > 0.12 sets max sockets to infinity
 if (config.sockets) {
   http.globalAgent.maxSockets = Math.floor(config.sockets / 2)
-  https.globalAgent.maxSocets = Math.floor(config.sockets / 2)
+  https.globalAgent.maxSockets = Math.floor(config.sockets / 2)
 }
 
 // Init Koop with things it needs like a log and Cache
