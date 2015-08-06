@@ -15,6 +15,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Refactored `controller/index.js` to centralize logic for host lookup and cache-keying
 * Changed syntax for omitting things that shouldn't be in cache key
 
+### Fixed
+* GeoJSON saved to S3 is reused
+
 ### Removed
 * removed the all code for talking to Feature Services from both the model and the request worker. This helps reduce the deplucation of logic and code for paging over service features. 
 

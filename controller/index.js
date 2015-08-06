@@ -385,8 +385,6 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._createName = function (info, key, format) {
-    format = format.replace('geojson', 'json')
-
     var name = (info && info.info) ? info.name || info.info.name || info.info.title : key
     name = (name.length > 150) ? name.substr(0, 150) : name
 

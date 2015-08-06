@@ -11,7 +11,7 @@
     "config": "~0.4.35",
     "csv": "~0.4.0",
     "ejs": "~1.0.0",
-    "featureservice": "^0.1.0",
+    "featureservice": "^0.2.0",
     "kue": "~0.8.9",
     "lodash": "~2.4.1",
     "request": "~2.48.0",
