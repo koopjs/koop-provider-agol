@@ -294,21 +294,26 @@ var AGOL = function (koop) {
       var qKey = ['agol', itemId, layerId].join(':')
 
       self.getInfo(qKey, function (err, info) {
+        // we have nothing in the cache for this item
         if (err) {
           console.log('Data not found in the cache')
+          return self.getData(params, options, callback)
+        } else {
+          // we have something but we need to see if it's expired
+          self.isExpired(info, layerId, function (err, isExpired, serviceInfo) {
+            if (err) {
+              callback(err)
+            }
+
+            params.serviceInfo = serviceInfo
+            // if it's not expired retreive the actual data from the cache
+            if (!isExpired) {
+              return self.getData(params, options, callback)
+            }
+            // else drop what we have and rebuild
+            return _getData(params)
+          })
         }
-        self.isExpired(info, layerId, function (err, isExpired, serviceInfo) {
-          if (err) {
-            callback(err)
-          }
-
-          params.serviceInfo = serviceInfo
-          if (!isExpired) {
-            return self.getData(params, options, callback)
-          }
-          return _getData(params)
-        })
-
       })
 
     })

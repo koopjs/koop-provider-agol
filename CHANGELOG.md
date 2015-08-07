@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Refactored `workers/request-worker.js` to extract shared code for paging feature service data.
 * Refactored `controller/index.js` to redude some of the complexity
 * Refactored `controller/index.js` to centralize logic for host lookup and cache-keying
+* Only check for expiration if we actually have a something in the cache
 * Changed syntax for omitting things that shouldn't be in cache key
 
 ### Fixed

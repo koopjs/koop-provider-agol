@@ -150,7 +150,7 @@ var Controller = function (agol, BaseController) {
     }
 
     agol.getItemData(req.portal, id, item, req.key, options, function (error, itemJson) {
-      var itemExists = typeof itemJson !== 'undefined'
+      var itemExists = typeof itemJson !== 'undefined' && itemJson !== null
       var isProcessing = itemExists && itemJson.koop_status === 'processing'
       var silent = typeof req.params.silent !== 'undefined'
 
