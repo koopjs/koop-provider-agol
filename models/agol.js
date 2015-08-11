@@ -193,14 +193,24 @@ var AGOL = function (koop) {
    */
   agol.getItem = function (host, itemId, options, callback) {
     var url = host + this.agol_path + itemId + '?f=json'
+    var error = {
+      type: 'Item request',
+      request: url
+    }
     this.req(url, function (err, data) {
       if (err) {
-        return callback(err, null)
+        console.trace(err)
+        error.message = 'Failure while trying to communicate with the host portal'
+        error.code = 500
+        return callback(error)
       }
       try {
         var json = JSON.parse(data.body)
         if (json.error) {
-          return callback(json.error.message, null)
+          error.message = 'Failed while trying to get item information'
+          error.code = json.error.code
+          error.response = json.error.message
+          return callback(error)
         }
         if (options.getMetadata && json.typeKeywords && json.typeKeywords.indexOf('Metadata') !== -1) {
           agol.getItemMetadata(host, itemId, json, callback)
@@ -208,7 +218,9 @@ var AGOL = function (koop) {
           callback(null, json)
         }
       } catch (e) {
-        callback('Problem accessing the request host', null)
+        error.code = 500
+        error.message = 'Could not parse the item response'
+        callback(error)
       }
     })
   }
@@ -251,6 +263,46 @@ var AGOL = function (koop) {
    */
   agol.getInfo = function (key, callback) {
     koop.Cache.getInfo(key, callback)
+  }
+
+  /**
+   * Wraps Cache.updateInfo for easier testing
+   * @param {string} key - a table name in the db
+   * @param {object} info - the info to store in the table
+   * @param {function} callback  - calls back with err or nothing
+   */
+  agol.updateInfo = function (key, info, callback) {
+    koop.Cache.getInfo(key, info, callback)
+  }
+
+  /**
+   * Sets a resource in a failed state
+   * @param {string} key - a table in the db
+   * @param {object} error - an error payload to save in the db
+   * @param {function} callback - calls back with an error or nothing
+   */
+  agol.setFail = function (key, error, callback) {
+    // if (!error) return callback(new Error('cannot set a failure without error info'))
+    var self = this
+    self.getInfo(key, function (err, info) {
+      if (err) return callback(err)
+      info = info || {}
+      info.status = 'processing'
+      info.retrieved_at = new Date()
+      // TODO next breaking change version: change the status to 'failed' and change the structure of the error
+      info.generating = {
+        error: {
+          message: error.message,
+          request: error.request,
+          code: error.code,
+          response: error.response,
+          type: error.type
+        }
+      }
+      self.updateInfo(key, error, function (err) {
+        callback(err)
+      })
+    })
   }
 
   /**
@@ -714,9 +766,7 @@ var AGOL = function (koop) {
   agol._page = function (params, options, callback) {
     params.featureService = new FeatureService(utils.forceHttps(params.itemJson.url), options)
     params.featureService.pages(function (err, pages) {
-      if (err) {
-        return callback(err)
-      }
+      if (err) return callback(err)
 
       // add to a separate queue that we can use to add jobs one at a time
       // this prevents the case when we get 2 requests at the same time
@@ -726,6 +776,7 @@ var AGOL = function (koop) {
           // Use the workers is configured...
           if (koop.config.agol && koop.config.agol.request_workers) {
             callback(null, params.itemJson)
+            console.log(pages)
             return agol.sendToWorkers(pages, params, options)
           }
 
@@ -867,6 +918,8 @@ var AGOL = function (koop) {
 
     // track failed jobs and flag them
     job.on('failed', function (jobErr) {
+      console.log(jobErr)
+      console.log(job.pages)
       agol.log('error', 'Request worker job failed ' + jobErr)
 
       koop.Cache.getInfo(key, function (err, info) {

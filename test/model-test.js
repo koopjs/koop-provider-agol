@@ -222,16 +222,26 @@ describe('AGOL Model', function () {
         callback(null, [])
       })
 
+      sinon.stub(agol, '_page', function (params, options, callback) {
+        callback(null, true)
+      })
+
+      sinon.stub(agol, 'req', function (url, callback) {
+        callback(null, {})
+      })
+
       done()
     })
 
     after(function (done) {
       koop.Cache.get.restore()
+      agol._page.restore()
+      agol.req.restore()
       done()
     })
 
-    it('should call Cache.get', function (done) {
-      agol.getItemData('host', 'hostId', 'itemid1', 'dummyhash', {}, function () {
+    it('should not call Cache.get', function (done) {
+      agol.getItemData('http://foo.bar', 'hostId', 'itemid1', 'dummyhash', {}, function () {
         koop.Cache.get.called.should.equal(false)
         done()
       })
