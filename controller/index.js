@@ -19,8 +19,7 @@ var Controller = function (agol, BaseController) {
   * @param {function} next - calls the next route handler
   */
   controller.setHostKey = function (req, res, next) {
-    // geohash requests don't need to call agol.find because we already have the item
-    if (!req.params.id || req.path.indexOf('geohash') > -1) return next()
+    if (!req.params.id) return next()
     req.key = Utils.createCacheKey(req.params, req.query)
     agol.find(req.params.id, function (err, data) {
       if (err) return res.status(404).send(err)
@@ -150,6 +149,7 @@ var Controller = function (agol, BaseController) {
     }
 
     agol.getItemData(req.portal, id, item, req.key, options, function (error, itemJson) {
+      if (error) return callback(error)
       var itemExists = typeof itemJson !== 'undefined' && itemJson !== null
       var isProcessing = itemExists && itemJson.koop_status === 'processing'
       var silent = typeof req.params.silent !== 'undefined'
@@ -158,7 +158,7 @@ var Controller = function (agol, BaseController) {
         // callback is never called?
         return controller._returnProcessing(req, res, itemJson, callback)
       }
-      callback(error, itemJson)
+      callback(null, itemJson)
     })
   }
 
@@ -844,21 +844,8 @@ var Controller = function (agol, BaseController) {
     // does it exist?
     agol.files.exists(filePath, fileName, function (exists, path, fileInfo) {
       agol.getInfo(tableKey, function (err, info) {
-        if (err) {
-          return res.status(500).send(err)
-        }
-        if (!info) {
-          // re-direct to findItemData since we need to cache the data
-          req.params.silent = true
-          controller.findItemData(req, res)
-
-          if (exists) {
-            // send back the geohash, but send fileInfo to set the expired header
-            return controller.returnGeohash(req, res, path, fileInfo)
-          }
-
-          return res.status(202).json({ status: 'processing' })
-
+        if (err || !info) {
+          return controller.findItemData(req, res)
         } else if (info && (info.status === 'processing' || info.geohashStatus === 'processing')) {
           // if we have a file send it, else return processing
           if (exists) {
