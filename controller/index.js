@@ -846,7 +846,6 @@ var Controller = function (agol, BaseController) {
       agol.getInfo(tableKey, function (err, info) {
         if (err || !info) {
           return controller.findItemData(req, res)
-          // res.status(202).json({ status: 'processing' })
         } else if (info && (info.status === 'processing' || info.geohashStatus === 'processing')) {
           // if we have a file send it, else return processing
           if (exists) {
