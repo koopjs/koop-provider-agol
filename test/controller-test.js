@@ -300,14 +300,21 @@ describe('AGOL Controller', function () {
       })
 
       // stub this but dont respond since the geohash method will respond sooner
-      sinon.stub(controller, 'findItemData', function (req, res) { })
+      sinon.stub(controller, 'findItemData', function (req, res) {
+        res.status(202).json({status: 'processing'})
+      })
 
       done()
+
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, {host: 'http://www.arcgis.com'})
+      })
     })
 
     after(function (done) {
       agol.getInfo.restore()
       agol.files.exists.restore()
+      agol.find.restore()
       controller.findItemData.restore()
       done()
     })
