@@ -596,10 +596,7 @@ var Controller = function (agol, BaseController) {
    */
   controller.featureserver = function (req, res) {
     // check for geohash route and redirect
-    if (req.params.method && req.params.method === 'geohash') {
-      controller.getGeohash(req, res)
-      return
-    }
+    if (req.params.method && req.params.method === 'geohash') return controller.getGeohash(req, res)
 
     // hang on to this callback in case it's a JSONP request
     var callback = req.query.callback

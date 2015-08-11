@@ -375,14 +375,14 @@ var AGOL = function (koop) {
           }
           json.features = []
 
-          var dir = [ task.id, (task.options.layer || 0) ].join('_')
+          var dir = [task.id, 0].join('_')
           koop.Cache.remove('agol', task.id, task.options, function (err, res) {
             if (err) return task.callback(err)
             agol._removeExportDirs(dir, function (err, res) {
               if (err) return task.callback(err)
-              koop.Cache.insert('agol', task.id, json, (task.options.layer || 0), function (err, success) {
-                if (!err && res) {
-                  koop.Cache.insertPartial('agol', task.id, geojson, (task.options.layer || 0), function (err, success) {
+              koop.Cache.insert('agol', task.id, json, 0, function (err, success) {
+                if (!err) {
+                  koop.Cache.insertPartial('agol', task.id, geojson, 0, function (err, success) {
                     if (success) {
                       task.itemJson.data = [geojson]
                       task.callback(null, task.itemJson)
@@ -417,47 +417,35 @@ var AGOL = function (koop) {
   agol.getCSV = function (baseUrl, params, options, callback) {
     var self = this
     var task = {}
-    var id = params.id
     var itemJson = params.itemJson
+    var id = itemJson.id
     var hostId = params.hostId
-
-    var qKey = ['agol', id, params.layerId].join(':')
-
     var maxSize = 5000000
 
-    // for large datasets enforce koop's large data limit
-    options.enforce_limit = true
-
-    koop.Cache.getInfo(qKey, function (err, info) {
-      if (err) return callback(err)
-      koop.Cache.get('agol', id, options, function (err, entry) {
-        if (err || (info && info.retrieved_at < itemJson.modified)) {
-          if (itemJson.size < maxSize) {
-            // replace .csv in name
-            itemJson.name = itemJson.name.replace('.csv', '')
-
-            task.url = baseUrl + '/' + id + '/data?f=json'
-            task.itemJson = itemJson
-            task.id = id
-            task.hostId = hostId
-            task.options = options
-            task.expires_at = Date.now() + self.cacheLife
-            task.callback = callback
-            self.csvQueue.push(task, function () {})
-          } else {
-            callback({ code: 413, error: 'The requested CSV exceeds the allowable size of ' + maxSize + ' bytes' }, null)
-          }
+    koop.Cache.get('agol', id, options, function (err, entry) {
+      var geojson
+      if (entry && entry[0]) geojson = entry[0]
+      var cacheMiss = !(geojson && geojson.retrieved_at > itemJson.modified)
+      if (err || cacheMiss) {
+        agol.log('info', 'Request for a new CSV: ' + itemJson.url)
+        if (itemJson.size < maxSize) {
+          // replace .csv in name
+          itemJson.name = itemJson.name.replace('.csv', '')
+          task.url = baseUrl + '/' + id + '/data?f=json'
+          task.itemJson = itemJson
+          task.id = id
+          task.hostId = hostId
+          task.options = options
+          task.expires_at = Date.now() + self.cacheLife
+          task.callback = callback
+          self.csvQueue.push(task, function () {})
         } else {
-          if (entry && entry[0] && entry[0].exceeds_limit) {
-            itemJson.data = entry
-            itemJson.koop_status = 'too big'
-            callback(null, itemJson)
-          } else {
-            itemJson.data = entry
-            callback(null, itemJson)
-          }
+          callback({ code: 413, error: 'The requested CSV exceeds the allowable size of ' + maxSize + ' bytes' }, null)
         }
-      })
+      } else {
+        itemJson.data = entry
+        callback(null, itemJson)
+      }
     })
   }
 

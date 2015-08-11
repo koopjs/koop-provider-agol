@@ -18,9 +18,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * GeoJSON saved to S3 is reused
+* CSVs are only requested when they are expired
 
 ### Removed
 * removed the all code for talking to Feature Services from both the model and the request worker. This helps reduce the deplucation of logic and code for paging over service features. 
+* CSV no longer checks for limit enforcement since there is a size limit of 5mb and feature service code limits requests to 1k
 
 ## [1.0.0] - 2015-07-09
 ### Changed 
