@@ -272,7 +272,7 @@ var AGOL = function (koop) {
    * @param {function} callback  - calls back with err or nothing
    */
   agol.updateInfo = function (key, info, callback) {
-    koop.Cache.getInfo(key, info, callback)
+    koop.Cache.updateInfo(key, info, callback)
   }
 
   /**
@@ -292,6 +292,7 @@ var AGOL = function (koop) {
       // TODO next breaking change version: change the status to 'failed' and change the structure of the error
       info.generating = {
         error: {
+          timestamp: error.timestamp,
           message: error.message,
           request: error.request,
           code: error.code,
