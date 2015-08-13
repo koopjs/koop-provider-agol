@@ -216,10 +216,52 @@ describe('AGOL Model', function () {
     })
   })
 
+  describe('when getting an item that is secured', function () {
+    before(function (done) {
+      sinon.stub(agol, 'req', function (url, callback) {
+        var data = {}
+        var error = {
+          error: {
+            code: 403,
+            messageCode: 'GWM_0003',
+            message: 'You do not have permissions to access this resource or perform this operation.',
+            details: []
+          }
+        }
+        data.body = JSON.stringify(error)
+        callback(null, data)
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.req.restore()
+      done()
+    })
+
+    it('should callback with the error expected up the chain', function (done) {
+      agol.getItem('host', 'id', {}, function (err, item) {
+        should.exist(err)
+        err.message.should.equal('Failed while trying to get item information')
+        err.response.should.equal('You do not have permissions to access this resource or perform this operation.')
+        err.code.should.equal(403)
+        done()
+      })
+    })
+  })
+
   describe('when calling getFeatureService w/o a url', function () {
     before(function (done) {
       sinon.stub(koop.Cache, 'get', function (type, id, options, callback) {
         callback(null, [])
+      })
+
+      sinon.stub(agol, '_page', function (params, options, callback) {
+        callback(null, true)
+      })
+
+      sinon.stub(agol, 'req', function (url, callback) {
+        callback(null, {})
       })
 
       done()
@@ -227,11 +269,13 @@ describe('AGOL Model', function () {
 
     after(function (done) {
       koop.Cache.get.restore()
+      agol._page.restore()
+      agol.req.restore()
       done()
     })
 
-    it('should call Cache.get', function (done) {
-      agol.getItemData('host', 'hostId', 'itemid1', 'dummyhash', {}, function () {
+    it('should not call Cache.get', function (done) {
+      agol.getItemData('http://foo.bar', 'hostId', 'itemid1', 'dummyhash', {}, function () {
         koop.Cache.get.called.should.equal(false)
         done()
       })
@@ -366,59 +410,93 @@ describe('AGOL Model', function () {
     })
   })
 
-  /* describe('when calling pageFeatureService w/statistics', function() {
-    before(function(done){
-      var serviceInfo = JSON.parse(fs.readFileSync('./fixtures/serviceInfo.json').toString())
-      var features = JSON.parse(fs.readFileSync('./fixtures/esriJson.json').toString())
-
-      sinon.stub(agol, '_page', function(count, pageRequests, id, itemJson, layerId){
-
-      })
-
-      sinon.stub(agol, 'req', function(url, callback){
-        callback(null, {body: JSON.stringify({features: [{attributes: {min_oid:1, max_oid: 1001}}]})})
-      })
-      sinon.stub(agol, 'getObjectIDField', function(info){
-        return {name: 'id'}
-      })
-      sinon.stub(agol, 'getFeatureServiceLayerInfo', function(url, layer, callback){
-        serviceInfo.advancedQueryCapabilities = {supportsPagination:false}
-        serviceInfo.supportsStatistics = true
-        serviceInfo.fields = [{ name: 'OBJECTID', type: 'esriFieldTypeOID'}]
-        callback(null, serviceInfo)
-      })
-      sinon.stub(koop.Cache, 'insert', function(type, id, geojson, layer, callback){
-        callback(null, true)
-      })
-      sinon.stub(koop.Cache, 'remove', function(type, id, layer, callback){
-        callback(null, true)
-      })
-      sinon.stub(koop.Cache, 'getInfo', function(key, callback){
-        callback(null, false)
+  describe('when when trying to build a page job', function () {
+    before(function (done) {
+      sinon.stub(agol, '_initFeatureService', function (url, options) {
+        var service = {}
+        service.pages = function (callback) {
+          var error = new Error('Unable to get the layer metadata')
+          error.timestamp = 'timeoclock'
+          error.url = 'http://error.com'
+          error.body = {
+            message: 'Token Required',
+            code: 499,
+            details: []
+          }
+          callback(error)
+        }
+        return service
       })
       done()
     })
 
-    after(function(done){
-      koop.Cache.insert.restore()
-      koop.Cache.remove.restore()
-      koop.Cache.getInfo.restore()
-      agol._page.restore()
-      agol.req.restore()
-      agol.getFeatureServiceLayerInfo.restore()
-      agol.getObjectIDField.restore()
+    after(function (done) {
+      agol._initFeatureService.restore()
       done()
     })
 
-    it('should call _page', function(done){
-      agol.pageFeatureService('test', 'itemid', itemJson, 1001, 'dummyhash', {}, function(err, json){
-        agol.getFeatureServiceLayerInfo.called.should.equal(true)
-        koop.Cache.insert.called.should.equal(true)
-        agol._page.called.should.equal(true)
+    it('should callback with the error expected up the chain', function (done) {
+      var params = {
+        itemJson: {
+          url: 'http://www.foobar.com'
+        }
+      }
+      var options = {}
+      var expected = new Error('Unable to get the layer metadata')
+      expected.code = 500
+      agol._page(params, options, function (err, pages) {
+        should.exist(err)
+        err.message.should.equal('Unable to get the layer metadata')
+        err.timestamp.should.equal('timeoclock')
+        err.code.should.equal(499)
+        err.request.should.equal('http://error.com')
+        err.response.should.equal('Token Required')
         done()
       })
     })
-  }); */
+  })
+
+  describe('when setting a dataset as failed', function () {
+    before(function (done) {
+      sinon.stub(agol, 'getInfo', function (key, callback) {
+        callback(null, {})
+      })
+
+      sinon.stub(agol, 'updateInfo', function (key, info, callback) {
+        callback(info)
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.getInfo.restore()
+      agol.updateInfo.restore()
+      done()
+    })
+
+    it('should update the info doc with the correct failure structure', function (done) {
+      var key = 'datakey'
+      var error = new Error('Failed while paging data')
+      error.url = 'http://www.error.com'
+      error.timestamp = 'time'
+      error.body = {
+        message: 'Failed to perform query operation',
+        code: 999,
+        details: []
+      }
+
+      agol.setFail(key, error, function (info) {
+        info.status.should.equal('processing')
+        info.generating.error.should.exist
+        info.generating.error.timestamp.should.equal('time')
+        info.generating.error.code.should.equal(999)
+        info.generating.error.request.should.equal('http://www.error.com')
+        info.generating.error.response.should.equal('Failed to perform query operation')
+        info.generating.error.message.should.equal('Failed while paging data')
+        done()
+      })
+    })
+  })
 
   describe('when getting a csv item', function () {
     before(function (done) {

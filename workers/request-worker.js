@@ -78,11 +78,15 @@ function makeRequest (job, done) {
   var domain = require('domain').create()
 
   domain.on('error', function (err) {
-    done(err)
+    // set the error message on another property, or else we'll lose it when we stringify
+    err.type = err.message
+    // TODO investigate if this is really the case
+    // we need to stringify because this error is travelling across redis
+    done(JSON.stringify(err))
   })
 
   domain.run(function () {
-    console.log('starting job', job.id, job.data.itemId + '/' + job.data.layerId)
+    console.info('info', 'starting job: ' + job.id + ' ' + job.data.itemId + ':' + job.data.layerId)
     var completed = 0
     var len = job.data.pages.length
     var featureService = new FeatureService(job.data.serviceUrl, {})
@@ -113,7 +117,7 @@ function makeRequest (job, done) {
               return done(err)
             }
             completed++
-            console.log(completed, len, job.data.itemId)
+            console.info(completed, len, job.data.itemId)
             job.progress(completed, len)
 
             if (completed === len) {

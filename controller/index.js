@@ -241,9 +241,8 @@ var Controller = function (agol, BaseController) {
           req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
 
           agol.getItem(req.portal, req.params.item, req.query, function (err, itemJson) {
-            if (err) {
-              return res.status(500).send(err)
-            }
+            // if we cannot get the item assume it was a bad request. no need to set anything in the DB
+            if (err) return res.status(400).json(err)
 
             if (exists) {
               return agol.isExpired(info, req.query.layer, function (err, isExpired) {
@@ -256,6 +255,10 @@ var Controller = function (agol, BaseController) {
                 agol.dropItem(req.portal, req.params.item, req.query, function () {
                   req.query.format = req.params.format
                   controller._getItemData(req, res, function (err, itemJson) {
+                    // if this fails, we should set a failure in the DB and return a failure to the client
+                    agol.setFail(tableKey, err, function (error) {
+                      if (error) console.trace(error)
+                    })
                     fileParams.err = err
                     fileParams.itemJson = itemJson
                     fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
@@ -268,6 +271,11 @@ var Controller = function (agol, BaseController) {
 
             req.query.format = req.params.format
             controller._getItemData(req, res, function (err, itemJson) {
+              if (err) {
+                agol.setFail(tableKey, err, function (error) {
+                  if (error) console.trace(error)
+                })
+              }
               fileParams.err = err
               fileParams.itemJson = itemJson
               fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
@@ -285,14 +293,18 @@ var Controller = function (agol, BaseController) {
           // when silent is sent as a param undefined
           if (typeof req.params.silent === 'undefined') {
             if (err) {
-              return res.status(err.code || 404).send(err.error || err)
+              agol.setFail(tableKey, err, function (e) {
+                console.trace(e)
+              })
+              // if we cannot get the item assume it was a bad request
+              return res.status(502).json(err)
             }
 
             // TODO remove hard coded maxRecCount
             if (itemJson && itemJson.data && itemJson.data[0].features.length > 1000) {
               itemJson.data[0].features = itemJson.data[0].features.splice(0, 1000)
             }
-            return res.send(itemJson)
+            return res.status(200).json(itemJson)
           }
         })
       }
@@ -326,7 +338,7 @@ var Controller = function (agol, BaseController) {
     var path = controller._createFilePath(req.params.key, req.params)
     // get the name of the data; else use the key (md5 hash)
     var fileName = controller._createName(info, req.params.key, req.params.format)
-
+    // TODO why are we checking if the file exists again?
     agol.files.exists(path, fileName, function (exists, path) {
       if (exists) {
         return controller._returnFile(req, res, path, fileName)

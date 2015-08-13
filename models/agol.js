@@ -131,15 +131,19 @@ var AGOL = function (koop) {
         remove: true
       }
 
+      var table = itemId + ':' + layerId
+
       // add the job to the distributed worker pool
-      var job = koop.Exporter.export_q.create('exports', jobData).save(function (err) {
+      koop.Exporter.export_q.create('exports', jobData).save(function (err) {
         if (err) {
+          agol.log('error', 'could not add remove job to the queue ' + table + ' ' + err)
           return callback(err)
         }
-        agol.log('debug', 'added a remove job to the export_q' + job.id)
+        agol.log('info', 'added a remove job to the export_q: ' + table)
         var dir = [ itemId, layerId ].join('_')
         koop.Cache.remove('agol', itemId, options, function (err, res) {
           if (err) {
+            agol.log('error', 'failed to drop: ' + table + err)
             return callback(err)
           }
           agol._removeExportDirs(dir, function (err, success) {
@@ -192,15 +196,26 @@ var AGOL = function (koop) {
    * @param {function} callback - the callback for when all is gone
    */
   agol.getItem = function (host, itemId, options, callback) {
+    var error
     var url = host + this.agol_path + itemId + '?f=json'
+
     this.req(url, function (err, data) {
       if (err) {
-        return callback(err, null)
+        error = new Error('Failure while trying to communicate with the host portal')
+        error.timestamp = new Date()
+        error.url = url
+        error.code = 500
+        return callback(error)
       }
       try {
         var json = JSON.parse(data.body)
         if (json.error) {
-          return callback(json.error.message, null)
+          error = new Error('Failed while trying to get item information')
+          error.timestamp = new Date()
+          error.code = json.error.code
+          error.url = url
+          error.response = json.error.message
+          return callback(error)
         }
         if (options.getMetadata && json.typeKeywords && json.typeKeywords.indexOf('Metadata') !== -1) {
           agol.getItemMetadata(host, itemId, json, callback)
@@ -208,7 +223,11 @@ var AGOL = function (koop) {
           callback(null, json)
         }
       } catch (e) {
-        callback('Problem accessing the request host', null)
+        error = new Error('Could not parse the item response')
+        error.code = 500
+        error.timestamp = new Date()
+        error.url = url
+        callback(error)
       }
     })
   }
@@ -254,6 +273,47 @@ var AGOL = function (koop) {
   }
 
   /**
+   * Wraps Cache.updateInfo for easier testing
+   * @param {string} key - a table name in the db
+   * @param {object} info - the info to store in the table
+   * @param {function} callback  - calls back with err or nothing
+   */
+  agol.updateInfo = function (key, info, callback) {
+    koop.Cache.updateInfo(key, info, callback)
+  }
+
+  /**
+   * Sets a resource in a failed state
+   * @param {string} key - a table in the db
+   * @param {object} error - an error payload to save in the db
+   * @param {function} callback - calls back with an error or nothing
+   */
+  agol.setFail = function (key, error, callback) {
+    // if (!error) return callback(new Error('cannot set a failure without error info'))
+    var self = this
+    self.getInfo(key, function (err, info) {
+      if (err) return callback(err)
+      info = info || {}
+      info.status = 'processing'
+      info.retrieved_at = new Date()
+      error.body = error.body || {}
+      // TODO next breaking change version: change the status to 'failed' and change the structure of the error
+      info.generating = {
+        error: {
+          timestamp: error.timestamp,
+          message: error.message,
+          request: error.url,
+          response: error.body.message,
+          code: error.body.code || 500
+        }
+      }
+      self.updateInfo(key, info, function (err) {
+        callback(err)
+      })
+    })
+  }
+
+  /**
   * Get the actual features and metadata from the DB
   * @param {string} host - the host is needed to tell what dataset to remove
   * @param {string} hostId - the id of the host in the DB
@@ -296,7 +356,7 @@ var AGOL = function (koop) {
       self.getInfo(qKey, function (err, info) {
         // we have nothing in the cache for this item
         if (err) {
-          console.log('Data not found in the cache')
+          agol.log('info', 'No info in cache for ' + qKey)
           return self.getData(params, options, callback)
         } else {
           // we have something but we need to see if it's expired
@@ -702,6 +762,16 @@ var AGOL = function (koop) {
   }, 1)
 
   /**
+   * Wrap FeatureService constructor so it's easier to test
+   * @param {string} url - A feature or map service url
+   * @param {object} options - Options for initializing the feature service
+   * @returns {object} FeatureService - a new feature service object
+   */
+  agol._initFeatureService = function (url, options) {
+    return new FeatureService(utils.forceHttps(url), options)
+  }
+
+  /**
    * Add pages of requests through the throttle Q
    * @param {number} count - the total number of features in the service
    * @param {string} pageRequests - an array of page urls to be requested
@@ -712,18 +782,24 @@ var AGOL = function (koop) {
    * @param {string} hash - the sha1 hash of the params and querystring
   */
   agol._page = function (params, options, callback) {
-    params.featureService = new FeatureService(utils.forceHttps(params.itemJson.url), options)
+    params.featureService = agol._initFeatureService(params.itemJson.url, options)
     params.featureService.pages(function (err, pages) {
-      if (err) {
-        return callback(err)
-      }
+      // standardize the error that gets sent back to the client
+      // be defensive about malformed errors from featureService.js
+      if (!err.body) err.body = {}
+      var error = err
+      error.code = err.body.code
+      error.response = err.body.message
+      error.request = err.url
+      error.timestamp = err.timestamp || new Date()
+      if (err) return callback(err)
 
       // add to a separate queue that we can use to add jobs one at a time
       // this prevents the case when we get 2 requests at the same time
       var key = ['agol', params.itemId, params.layerId].join(':')
       agol._throttleQ.push(key, function (locked) {
         if (!locked) {
-          // Use the workers is configured...
+          // Use the workers if configured...
           if (koop.config.agol && koop.config.agol.request_workers) {
             callback(null, params.itemJson)
             return agol.sendToWorkers(pages, params, options)
@@ -852,52 +928,33 @@ var AGOL = function (koop) {
 
     // add the job to the distributed worker pool
     var job = agol.worker_q.create('agol', jobData).save(function (err) {
-      agol.log('debug', 'added page requests to job-queue ' + job.id, err)
+      if (err) return agol.log('error', 'failed to add job ' + job.id + ' to the request queue.')
+      agol.log('debug', 'added page requests to job-queue ' + job.id)
     })
 
     var removeJob = function (job) {
       job.remove(function (err) {
-        if (err) {
-          agol.log('debug', 'could not remove failed job #' + job.id + ' Error: ' + err)
-          return
-        }
+        if (err) return agol.log('error', 'could not remove failed job #' + job.id + ' Error: ' + err)
         agol.log('debug', 'removed failed request job #' + job.id + ' - ' + params.itemId)
       })
     }
 
     // track failed jobs and flag them
     job.on('failed', function (jobErr) {
-      agol.log('error', 'Request worker job failed ' + jobErr)
+      agol.log('error', 'Request paging job failed for: ' + key + ' ' + jobErr)
 
-      koop.Cache.getInfo(key, function (err, info) {
-        if (err || !info) {
+      // fetch some information about how this job failed
+      kue.Job.get(job.id, function (err, job) {
+        if (err) return agol.log('error', 'Could not get job from queue ' + err)
+        try {
+          var error = JSON.parse(job._error)
+        } catch (e) {
+          agol.log('error', 'Unknown failure from paging job ' + e)
           return removeJob(job)
         }
-
-        kue.Job.get(job.id, function (err, job) {
-          if (err) agol.log('error', 'Could not get job from queue ' + err)
-          var errJson
-          try {
-            errJson = JSON.parse(job._error)
-            info.paging_failed = {error: errJson}
-          } catch (e) {
-            errJson = {response: job._error}
-          }
-          info.paging_failed = {error: errJson}
-          info.generating = {
-            error: {
-              code: errJson.code,
-              request: errJson.request,
-              response: errJson.response,
-              message: 'Failed to cache the data'
-            }
-          }
-          koop.Cache.updateInfo(key, info, function (err, success) {
-            if (err) {
-              return
-            }
-            removeJob(job)
-          })
+        agol.setFail(key, error, function (err) {
+          if (err) agol.log('error', 'Unable to set this dataset as failed ' + err)
+          removeJob(job)
         })
       })
     })
