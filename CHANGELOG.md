@@ -333,6 +333,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   * working on tests
 
 [1.1.1]: https://github.com/koopjs/koop-agol/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/koopjs/koop-agol/compare/v1.0.0...v1.1.0
 [1.0.1]: https://github.com/koopjs/koop-agol/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/koopjs/koop-agol/compare/v0.4.1...v1.0.0
 [0.4.1]: https://github.com/koopjs/koop-agol/compare/v0.4.0...v0.4.1
