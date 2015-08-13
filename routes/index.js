@@ -19,8 +19,8 @@ module.exports = {
   'get /agol/:id/:item/:layer/tiles/:z/:x/:y.:format': 'tiles',
   'get /agol/:id/:item/:layer/tiles/:z/:x/:y': 'tiles',
   'get /agol/:id/:item/FeatureServer/:layer': 'featureserver',
-  'get /agol/:ite/:item/FeatureServer/:layer/:method': 'featureserver',
-  'post /agol/:ite/:item/FeatureServer/:layer/:method': 'featureserver',
+  'get /agol/:id/:item/FeatureServer/:layer/:method': 'featureserver',
+  'post /agol/:id/:item/FeatureServer/:layer/:method': 'featureserver',
   'get /agol/:id/:item/FeatureServer/:layer/geohash': 'getGeohash'
 }
 
