@@ -122,6 +122,7 @@ var Controller = function (agol, BaseController) {
       req.query.layer = req.params.layer
     }
     // Get the item
+    console.log('dropping meow')
     agol.dropItem(req.portal, req.params.item, req.query, function (error, itemJson) {
       if (error) {
         return res.status(error.code || 400).send(error)
