@@ -201,7 +201,6 @@ var AGOL = function (koop) {
 
     this.req(url, function (err, data) {
       if (err) {
-        console.trace(err)
         error = new Error('Failure while trying to communicate with the host portal')
         error.timestamp = new Date()
         error.url = url
@@ -297,17 +296,18 @@ var AGOL = function (koop) {
       info = info || {}
       info.status = 'processing'
       info.retrieved_at = new Date()
+      error.body = error.body || {}
       // TODO next breaking change version: change the status to 'failed' and change the structure of the error
       info.generating = {
         error: {
           timestamp: error.timestamp,
           message: error.message,
           request: error.url,
-          code: error.code || 500
+          response: error.body.message,
+          code: error.body.code || 500
         }
       }
-      if (error.body) info.generating.error.response = error.body.message
-      self.updateInfo(key, error, function (err) {
+      self.updateInfo(key, info, function (err) {
         callback(err)
       })
     })
@@ -762,6 +762,16 @@ var AGOL = function (koop) {
   }, 1)
 
   /**
+   * Wrap FeatureService constructor so it's easier to test
+   * @param {string} url - A feature or map service url
+   * @param {object} options - Options for initializing the feature service
+   * @returns {object} FeatureService - a new feature service object
+   */
+  agol._initFeatureService = function (url, options) {
+    return new FeatureService(utils.forceHttps(url), options)
+  }
+
+  /**
    * Add pages of requests through the throttle Q
    * @param {number} count - the total number of features in the service
    * @param {string} pageRequests - an array of page urls to be requested
@@ -772,8 +782,16 @@ var AGOL = function (koop) {
    * @param {string} hash - the sha1 hash of the params and querystring
   */
   agol._page = function (params, options, callback) {
-    params.featureService = new FeatureService(utils.forceHttps(params.itemJson.url), options)
+    params.featureService = agol._initFeatureService(params.itemJson.url, options)
     params.featureService.pages(function (err, pages) {
+      // standardize the error that gets sent back to the client
+      // be defensive about malformed errors from featureService.js
+      if (!err.body) err.body = {}
+      var error = err
+      error.code = err.body.code
+      error.response = err.body.message
+      error.request = err.url
+      error.timestamp = err.timestamp || new Date()
       if (err) return callback(err)
 
       // add to a separate queue that we can use to add jobs one at a time
@@ -781,7 +799,7 @@ var AGOL = function (koop) {
       var key = ['agol', params.itemId, params.layerId].join(':')
       agol._throttleQ.push(key, function (locked) {
         if (!locked) {
-          // Use the workers is configured...
+          // Use the workers if configured...
           if (koop.config.agol && koop.config.agol.request_workers) {
             callback(null, params.itemJson)
             return agol.sendToWorkers(pages, params, options)
@@ -924,38 +942,19 @@ var AGOL = function (koop) {
     // track failed jobs and flag them
     job.on('failed', function (jobErr) {
       agol.log('error', 'Request paging job failed for: ' + key + ' ' + jobErr)
-      // what kind of error was this?
-      koop.Cache.getInfo(key, function (err, info) {
-        if (err || !info) {
+
+      // fetch some information about how this job failed
+      kue.Job.get(job.id, function (err, job) {
+        if (err) return agol.log('error', 'Could not get job from queue ' + err)
+        try {
+          var error = JSON.parse(job._error)
+        } catch (e) {
+          agol.log('error', 'Unknown failure from paging job ' + e)
           return removeJob(job)
         }
-
-        kue.Job.get(job.id, function (err, job) {
-          if (err) return agol.log('error', 'Could not get job from queue ' + err)
-
-          try {
-            var error = JSON.parse(job._error)
-          } catch (e) {
-            agol.log('error', 'Unknown failure from paging job ' + e.message)
-            return removeJob(job)
-          }
-
-          // defend against malformed errors in featureservice.js
-          if (!error.body) error.body = {}
-
-          info.generating = {
-            error: {
-              timestamp: error.timestamp,
-              code: error.body.code || 500,
-              message: error.message,
-              request: error.url,
-              response: error.body.response
-            }
-          }
-          koop.Cache.updateInfo(key, info, function (err, success) {
-            if (err) agol.log('error', 'Failed to update info for: ' + key + ' ' + err)
-            removeJob(job)
-          })
+        agol.setFail(key, error, function (err) {
+          if (err) agol.log('error', 'Unable to set this dataset as failed ' + err)
+          removeJob(job)
         })
       })
     })
