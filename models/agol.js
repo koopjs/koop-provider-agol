@@ -771,16 +771,17 @@ var AGOL = function (koop) {
   */
   agol._page = function (params, options, callback) {
     params.featureService = agol._initFeatureService(params.itemJson.url, options)
-    params.featureService.pages(function (err, pages) {
+    params.featureService.pages(function (error, pages) {
       // standardize the error that gets sent back to the client
       // be defensive about malformed errors from featureService.js
-      if (!err.body) err.body = {}
-      var error = err
-      error.code = err.body.code
-      error.response = err.body.message
-      error.request = err.url
-      error.timestamp = err.timestamp || new Date()
-      if (err) return callback(err)
+      if (error) {
+        error.body = error.body || {}
+        error.code = error.body.code
+        error.response = error.body.message
+        error.request = error.url
+        error.timestamp = error.timestamp || new Date()
+        return callback(error)
+      }
 
       // add to a separate queue that we can use to add jobs one at a time
       // this prevents the case when we get 2 requests at the same time
