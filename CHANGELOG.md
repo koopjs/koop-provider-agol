@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased 
+### Fixed
+* No longer throwing an exception on good page requests
+
 ## [1.1.1] - 2015-08-13
 ### Fixed
 * Use the correct version of Featureservice.js
