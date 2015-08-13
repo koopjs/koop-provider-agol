@@ -2,13 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased](https://github.com/koopjs/koop-agol/compare/v1.0.0...HEAD)
+## [1.1.0] - 2015-08-13
 ### Added
 * Using [JavaScript Standard Style](https://github.com/feross/standard)
 * Dependency on a new node module: [featureservice](https://github.com/chelm/featureservice)
 * New option to set the number of sockets per process
 
-### Changed 
+### Changed
 * Refactored `models/agol.js` to extract shared code for paging feature service data.
 * Refactored `workers/request-worker.js` to extract shared code for paging feature service data.
 * Refactored `controller/index.js` to redude some of the complexity
@@ -21,11 +21,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * CSVs are only requested when they are expired
 
 ### Removed
-* removed the all code for talking to Feature Services from both the model and the request worker. This helps reduce the deplucation of logic and code for paging over service features. 
+* removed the all code for talking to Feature Services from both the model and the request worker. This helps reduce the deplucation of logic and code for paging over service features.
 * CSV no longer checks for limit enforcement since there is a size limit of 5mb and feature service code limits requests to 1k
 
 ## [1.0.0] - 2015-07-09
-### Changed 
+### Changed
 * Turned off auto-projections, instead passing outSR to file exports to handle projections on demand via query string.
 * using console.time and console.timeEnd to debug request and insert times in the workers
 
@@ -40,7 +40,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Made retry of failed requests be 3 instead of 2
 
-### Added 
+### Added
 * added a backoff for re-requests of failed feature pages
 
 
@@ -50,7 +50,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * passing metadata to koops file exporters
 * tests for getItemMetadata
 
-### Changed 
+### Changed
 * updated calls to file export methods to have less inputs. This is in anticipation of a larger controller and model refactor that is going to happen soon.
 
 ### Changed
@@ -72,7 +72,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * A bug with workers where json containing NaN in response JSON was choking the json parsing. Now they get replaced with `null`.
 
-### Added 
+### Added
 * Wrapped workers functions in a domain to try to force clean exits on any unhandled errors
 * Added a new route for accessing geohashes from `.../item/FeatureServer/0/geohash`.
 
@@ -328,6 +328,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[1.0.1]: https://github.com/koopjs/koop-agol/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/koopjs/koop-agol/compare/v0.4.1...v1.0.0
 [0.4.1]: https://github.com/koopjs/koop-agol/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/koopjs/koop-agol/compare/v0.3.2...v0.4.0
