@@ -8,7 +8,6 @@ var koop = require('koop/lib')
 var config = {}
 
 var itemJson = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemJson.json').toString())
-var largeCSV = fs.readFileSync(__dirname + '/fixtures/largeCSV.csv').toString()
 
 // setup koop
 config.data_dir = __dirname + '/output/'
@@ -500,8 +499,7 @@ describe('AGOL Model', function () {
 
   describe('when getting a csv item', function () {
     before(function (done) {
-      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
-      itemInfo.type = 'CSV'
+      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/csvItem.json'))
       sinon.stub(agol, 'getItem', function (host, itemId, options, callback) {
         itemJson.type = 'CSV'
         callback(null, itemJson)
@@ -570,44 +568,10 @@ describe('AGOL Model', function () {
     it('should call cache.get and cache.insert, and should return GeoJSON', function (done) {
       agol.getCSV('base-url', {itemJson: {name: 'testname', size: 1}}, {}, function (err, data) {
         should.not.exist(err)
-        // koop.Cache.get.called.should.equal(true)
-        // agol.req.called.should.equal(true)
-        // Cache.insert.called.should.equal(true)
-        // Cache.insertPartial.called.should.equal(true)
-        done()
-      })
-    })
-  })
-
-  describe('when calling getCSV with large data', function () {
-    before(function (done) {
-      sinon.stub(agol, 'req', function (base_url, callback) {
-        callback(null, {body: largeCSV})
-      })
-      sinon.stub(koop.Cache, 'get', function (type, id, options, callback) {
-        callback(null, {info: {status: 'too big'}})
-      })
-      var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
-      sinon.stub(koop.Cache, 'getInfo', function (key, callback) {
-        callback(null, itemInfo)
-      })
-      done()
-    })
-
-    after(function (done) {
-      koop.Cache.get.restore()
-      koop.Cache.getInfo.restore()
-      agol.req.restore()
-      done()
-    })
-
-    it('should call cache.get and cache.insert, and should return GeoJSON', function (done) {
-      agol.getCSV('base-url', {itemJson: {}}, {}, function (err, entry) {
-        should.not.exist(err)
-        entry.data.info.status.should.equal('too big')
         koop.Cache.get.called.should.equal(true)
-        // agol.req.called.should.equal(true)
-        // koop.Cache.insert.called.should.equal(true)
+        agol.req.called.should.equal(true)
+        koop.Cache.insert.called.should.equal(true)
+        koop.Cache.insertPartial.called.should.equal(true)
         done()
       })
     })
