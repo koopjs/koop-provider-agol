@@ -241,13 +241,8 @@ var Controller = function (agol, BaseController) {
           req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
 
           agol.getItem(req.portal, req.params.item, req.query, function (err, itemJson) {
-            if (err) {
-              agol.setFail(tableKey, err, function (e) {
-                console.trace(e)
-              })
-              // if we cannot get the item assume it was a bad request
-              return res.status(400).json(err)
-            }
+            // if we cannot get the item assume it was a bad request. no need to set anything in the DB
+            if (err) return res.status(400).json(err)
 
             if (exists) {
               return agol.isExpired(info, req.query.layer, function (err, isExpired) {
