@@ -592,7 +592,7 @@ var Controller = function (agol, BaseController) {
    * @returns {object} response
    */
   controller._setHeaders = function (res, name, format) {
-    res.setHeader('Content-disposition', 'attachment; filename=' + (encodeURIComponent(name) + '.' + format))
+    res.setHeader('Content-disposition', 'attachment; filename=' + (encodeURIComponent(name))
     var formats = {
       json: 'application/json',
       geojson: 'application/json',
