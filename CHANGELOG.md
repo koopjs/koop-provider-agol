@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Format is added to file name only once
+
 ## [1.1.2] - 2015-08-13
 ### Fixed
 * No longer throwing an exception on good page requests
