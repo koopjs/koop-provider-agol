@@ -336,11 +336,18 @@ describe('AGOL Controller', function () {
       var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
-        callback(null, { data: [{info: {name: 'dummy'}, features: [{}]}]})
+        callback(null, {
+          data: [{
+            info: {
+              name: 'dummy'
+            },
+            features: [{}]
+          }]
+        })
       })
 
       sinon.stub(agol, 'find', function (id, callback) {
-        callback(null, {id: 'test', host: 'http://dummy.host.com'})
+        callback(null, { id: 'test', host: 'http://dummy.host.com' })
       })
 
       sinon.stub(agol, 'getItem', function (host, id, options, callback) {
@@ -392,11 +399,21 @@ describe('AGOL Controller', function () {
       })
 
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
-        callback(null, { koop_status: 'too big', name: 'test', info: {}, data: [{ info: {name: 'dummy'}, features: [{}]}]})
+        callback(null, {
+          koop_status: 'too big',
+          name: 'test',
+          info: {},
+          data: [{
+            info: {
+              name: 'dummy'
+            },
+            features: [{}]
+          }]
+        })
       })
 
       sinon.stub(agol, 'find', function (id, callback) {
-        callback(null, {id: 'test', host: 'http://dummy.host.com'})
+        callback(null, { id: 'test', host: 'http://dummy.host.com' })
       })
 
       sinon.stub(agol, 'getInfo', function (key, callback) {
@@ -437,7 +454,13 @@ describe('AGOL Controller', function () {
       var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
-        callback(null, { koop_status: 'too big', data: [{info: 'dummy', features: [{}]}]})
+        callback(null, {
+          koop_status: 'too big',
+          data: [{
+            info: 'dummy',
+            features: [{}]
+          }]
+        })
       })
 
       sinon.stub(agol, 'find', function (id, callback) {
@@ -481,11 +504,19 @@ describe('AGOL Controller', function () {
       var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
 
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
-        callback(null, { name: '', koop_status: 'too big', data: [{name: '', info: 'dummy', features: [{}]}]})
+        callback(null, {
+          name: '',
+          koop_status: 'too big',
+          data: [{
+            name: '',
+            info: 'dummy',
+            features: [{}]
+          }]
+        })
       })
 
       sinon.stub(agol, 'find', function (id, callback) {
-        callback(null, {id: 'test', host: 'http://dummy.host.com'})
+        callback(null, { id: 'test', host: 'http://dummy.host.com' })
       })
 
       sinon.stub(agol, 'getInfo', function (key, callback) {
@@ -564,10 +595,18 @@ describe('AGOL Controller', function () {
   describe('when calling controller._getItemData with a processing dataset', function () {
     before(function (done) {
       sinon.stub(agol, 'getItemData', function (host, hostId, item, key, options, callback) {
-        callback(null, { name: '', koop_status: 'processing', data: [{name: '', info: 'dummy', features: [{}]}]})
+        callback(null, {
+          name: '',
+          koop_status: 'processing',
+          data: [{
+            name: '',
+            info: 'dummy',
+            features: [{}]
+          }]
+        })
       })
       sinon.stub(agol, 'find', function (id, callback) {
-        callback(null, {id: 'test', host: 'http://dummy.host.com'})
+        callback(null, { id: 'test', host: 'http://dummy.host.com' })
       })
       sinon.stub(controller, '_returnProcessing', function (req, res, json, callback) {
         callback(null, json)

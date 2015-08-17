@@ -121,7 +121,7 @@ function makeRequest (job, done) {
             job.progress(completed, len)
 
             if (completed === len) {
-              var key = ['agol', job.data.itemId, job.data.layerId ].join(':')
+              var key = ['agol', job.data.itemId, job.data.layerId].join(':')
               koop.Cache.getInfo(key, function (err, info) {
                 if (err) {
                   return done(err)

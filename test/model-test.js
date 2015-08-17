@@ -386,7 +386,7 @@ describe('AGOL Model', function () {
   describe('when calling featureServiceRequest with more than 1000 features', function () {
     before(function (done) {
       sinon.stub(agol, 'req', function (url, callback) {
-        callback(null, {body: '{"count":1001}' })
+        callback(null, { body: '{"count":1001}' })
       })
       sinon.stub(agol, '_page', function (params, options, callback) {
         callback(null, {})

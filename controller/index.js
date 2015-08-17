@@ -236,7 +236,6 @@ var Controller = function (agol, BaseController) {
 
         // does the data export already exist?
         agol.files.exists(path, fileParams.fileName, function (exists, path) {
-
           // save the item layer
           req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
 

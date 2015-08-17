@@ -23,4 +23,3 @@ module.exports = {
   'post /agol/:id/:item/FeatureServer/:layer/:method': 'featureserver',
   'get /agol/:id/:item/FeatureServer/:layer/geohash': 'getGeohash'
 }
-
