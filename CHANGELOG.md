@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+* bumped version of leaflet/esri leaflet used by preview
+
 ## [1.1.3] - 2015-08-17 
 ### Fixed
 * Format is added to file name only once
