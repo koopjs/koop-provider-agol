@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [1.1.3] - 2015-08-17 
 ### Fixed
 * Format is added to file name only once
 
@@ -340,6 +340,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[1.1.3]: https://github.com/koopjs/koop-agol/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/koopjs/koop-agol/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/koopjs/koop-agol/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/koopjs/koop-agol/compare/v1.0.0...v1.1.0
