@@ -416,24 +416,30 @@ var AGOL = function (koop) {
 
       csv.parse(data.body, function (err, csv_data) {
         if (err) {
-          task.callback({ code: 400, error: 'Trouble parsing the CSV data'}, null)
+          task.callback({ code: 400, error: 'Trouble parsing the CSV data' }, null)
           return cb()
         }
         koop.GeoJSON.fromCSV(csv_data, function (err, geojson) {
           if (err) {
             return task.callback(err)
           }
+
           // store metadata with the data
-          var json = {}
-          json.name = task.itemJson.name || task.itemJson.title
-          json.updated_at = task.itemJson.modified
-          json.expires_at = task.expires_at
-          json.retrieved_at = Date.now()
-          json.info = { name: json.name, fields: csv_data[0]}
-          json.host = {
-            id: task.hostId
+          var name = task.itemJson.name || task.itemJson.title
+          var json = {
+            name: name,
+            updated_at: task.itemJson.modified,
+            expires_at: task.expires_at,
+            retrieved_at: Date.now(),
+            info: {
+              name: name,
+              fields: csv_data[0]
+            },
+            host: {
+              id: task.hostId
+            },
+            features: []
           }
-          json.features = []
 
           var dir = [task.id, 0].join('_')
           koop.Cache.remove('agol', task.id, task.options, function (err, res) {
@@ -958,7 +964,6 @@ var AGOL = function (koop) {
    * @param {function} callback - called when the service info comes back
    */
   agol.getFeatureServiceLayerInfo = function (url, layer, callback) {
-
     var urlLayer = url.split('/').pop()
     if (parseInt(urlLayer, 0) >= 0) {
       var len = ('' + urlLayer).length

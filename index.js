@@ -1,8 +1,14 @@
-var pjson = require('./package.json')
+var pkg = require('./package.json')
 
-exports.name = 'agol'
-exports.hosts = true
-exports.controller = require('./controller')
-exports.routes = require('./routes')
-exports.model = require('./models/agol.js')
-exports.status = { version: pjson.version}
+var provider = {
+  name: 'agol',
+  hosts: true,
+  controller: require('./controller'),
+  routes: require('./routes'),
+  model: require('./models/agol.js'),
+  status: {
+    version: pkg.version
+  }
+}
+
+module.exports = provider
