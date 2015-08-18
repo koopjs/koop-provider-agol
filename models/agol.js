@@ -315,7 +315,7 @@ var AGOL = function (koop) {
       info.expires_at = expiration
       // finally update the info doc with our well-formed and validated expiration
       agol.updateInfo(key, info, function (err) {
-        callback(err)
+        callback(err, expiration)
       })
     })
   }

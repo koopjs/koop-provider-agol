@@ -160,19 +160,17 @@ describe('AGOL Controller', function () {
     })
 
     it('should respond with a UTC String when the resource exists', function (done) {
-      var expires = new Date()
+      var expires = '2099'
       sinon.stub(agol, 'getExpiration', function (key, callback) {
         callback(null, expires)
       })
 
       request(koop)
         .get('/agol/test/itemid/0/expiration')
+        .expect(200, {expires_at: new Date('2099').toISOString()})
         .end(function (err, res) {
           agol.getExpiration.restore()
           should.not.exist(err)
-          res.should.have.status(200)
-          var returned = new Date(res.body).toString()
-          returned.should.equal(expires.toString())
           done()
         })
     })
@@ -198,7 +196,7 @@ describe('AGOL Controller', function () {
 
       request(koop)
         .put('/agol/test/itemid/0/expiration')
-        .send('foo')
+        .send({expires_at: 'foo'})
         .expect(400, 'Invalid input')
         .end(function (err, res) {
           agol.setExpiration.restore()
@@ -208,24 +206,26 @@ describe('AGOL Controller', function () {
     })
 
     it('should return 200 when the inputs are well formed and the resource exists in the cache', function (done) {
+      var date = new Date()
       sinon.stub(agol, 'setExpiration', function (key, expiration, callback) {
-        callback(null)
+        callback(null, date)
       })
 
       request(koop)
         .put('/agol/test/itemid/0/expiration')
-        .send(Date.now().toString())
+        .send({expires_at: date.toISOString()})
+        .expect(200, {expires_at: date.toISOString()})
         .end(function (err, res) {
           agol.setExpiration.restore()
           should.not.exist(err)
-          res.should.have.status(200)
           done()
         })
     })
 
     it('should return 201 and kick off a request for the remote resource if the resource is not found in the cache', function (done) {
+      var date = new Date()
       sinon.stub(agol, 'setExpiration', function (key, expiration, callback) {
-        callback(new Error('Resource not found'))
+        callback(new Error('Resource not found'), date.getTime())
       })
 
       sinon.stub(agol, 'getItemData', function (host, hostId, itemId, hash, options, callback) {
@@ -234,7 +234,8 @@ describe('AGOL Controller', function () {
 
       request(koop)
         .put('/agol/test/itemid/0/expiration')
-        .send(Date.now().toString())
+        .send({expires_at: date.toISOString()})
+        .expect(201, {status: 'processing', expires_at: date.toISOString()})
         .end(function (err, res) {
           agol.setExpiration.restore()
           should.not.exist(err)

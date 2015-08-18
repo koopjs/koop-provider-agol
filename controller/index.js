@@ -319,7 +319,7 @@ var Controller = function (agol, BaseController) {
   controller.getExpiration = function (req, res) {
     agol.getExpiration(req.tableKey, function (err, expiration) {
       if (err) return res.status(404).send(err.message)
-      res.status(200).send(new Date(expiration))
+      res.status(200).json({expires_at: new Date(expiration)})
     })
   }
 
@@ -329,24 +329,29 @@ var Controller = function (agol, BaseController) {
    * @params {object} res - the outgoing response
    */
   controller.setExpiration = function (req, res) {
-    agol.setExpiration(req.tableKey, req.body, function (err) {
+    agol.setExpiration(req.tableKey, req.body.expires_at, function (err, timestamp) {
       if (err) {
         if (err.message === 'Resource not found') {
           var options = {
             layer: req.params.layer,
             // todo this needs to pass through the same validation
-            expiration: req.body
+            expiration: timestamp
           }
           agol.getItemData(req.id, req.portal, req.item, req.optionsKey, options, function (err, json) {
             if (err) return res.status(500).send(err)
-            res.status(201).json({status: 'processing'})
+            // we need to convert the date from unix time only for the response
+            return res.status(201).json({
+              status: 'processing',
+              expires_at: new Date(timestamp).toISOString()
+            })
           })
         } else {
           // This will trigger if the expiration doesn't validate
           return res.status(400).send(err.message)
         }
+      } else {
+        res.status(200).json({expires_at: new Date(timestamp).toISOString()})
       }
-      res.status(200).send()
     })
   }
 
