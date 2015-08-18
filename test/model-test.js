@@ -97,7 +97,7 @@ describe('AGOL Model', function () {
           callback(new Error('Resource not found'))
         })
 
-        agol.setExpiration('testkey', new Date(), function (err) {
+        agol.setExpiration('testkey', new Date('2099'), function (err) {
           should.exist(err)
           err.message.should.equal('Resource not found')
           agol.getInfo.restore()

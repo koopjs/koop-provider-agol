@@ -151,7 +151,7 @@ describe('AGOL Controller', function () {
 
       request(koop)
         .get('/agol/test/itemid/0/expiration')
-        .expect(404, 'Resource not found')
+        .expect(404, {error: 'Resource not found'})
         .end(function (err, res) {
           agol.getExpiration.restore()
           should.not.exist(err)
@@ -197,7 +197,7 @@ describe('AGOL Controller', function () {
       request(koop)
         .put('/agol/test/itemid/0/expiration')
         .send({expires_at: 'foo'})
-        .expect(400, 'Invalid input')
+        .expect(400, {error: 'Invalid input'})
         .end(function (err, res) {
           agol.setExpiration.restore()
           should.not.exist(err)

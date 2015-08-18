@@ -21,7 +21,6 @@ var Controller = function (agol, BaseController) {
   controller.setHostKey = function (req, res, next) {
     if (!req.params.id) return next()
     req.optionKey = Utils.createCacheKey(req.params, req.query)
-    req.tableKey = controller._createTableKey('agol', req.params)
     agol.find(req.params.id, function (err, data) {
       if (err) return res.status(404).send(err)
       req.portal = data.host
@@ -317,8 +316,9 @@ var Controller = function (agol, BaseController) {
    * @params {object} res - the outgoing response
    */
   controller.getExpiration = function (req, res) {
-    agol.getExpiration(req.tableKey, function (err, expiration) {
-      if (err) return res.status(404).send(err.message)
+    var table = controller._createTableKey('agol', req.params)
+    agol.getExpiration(table, function (err, expiration) {
+      if (err) return res.status(404).json({error: err.message})
       res.status(200).json({expires_at: new Date(expiration)})
     })
   }
@@ -329,7 +329,8 @@ var Controller = function (agol, BaseController) {
    * @params {object} res - the outgoing response
    */
   controller.setExpiration = function (req, res) {
-    agol.setExpiration(req.tableKey, req.body.expires_at, function (err, timestamp) {
+    var table = controller._createTableKey('agol', req.params)
+    agol.setExpiration(table, req.body.expires_at, function (err, timestamp) {
       if (err) {
         if (err.message === 'Resource not found') {
           var options = {
@@ -337,7 +338,7 @@ var Controller = function (agol, BaseController) {
             // todo this needs to pass through the same validation
             expiration: timestamp
           }
-          agol.getItemData(req.id, req.portal, req.item, req.optionsKey, options, function (err, json) {
+          agol.getItemData(req.portal, req.params.id, req.params.item, req.optionsKey, options, function (err, json) {
             if (err) return res.status(500).send(err)
             // we need to convert the date from unix time only for the response
             return res.status(201).json({
@@ -347,7 +348,7 @@ var Controller = function (agol, BaseController) {
           })
         } else {
           // This will trigger if the expiration doesn't validate
-          return res.status(400).send(err.message)
+          return res.status(400).send({error: err.message})
         }
       } else {
         res.status(200).json({expires_at: new Date(timestamp).toISOString()})

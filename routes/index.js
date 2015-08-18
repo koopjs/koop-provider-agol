@@ -4,6 +4,7 @@ module.exports = {
   'get /agolworkers': 'getQueueCounts',
   'get /agol/:id': 'find',
   'get /agol/:id/*': 'setHostKey',
+  'put /agol/:id/*': 'setHostKey',
   'delete /agol/:id': 'del',
   'delete /agol/:id/:item/:layer': 'deleteItemData',
   'get /agol/:id/:item/:layer/geohash': 'getGeohash',
