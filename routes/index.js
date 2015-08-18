@@ -5,6 +5,7 @@ module.exports = {
   'get /agol/:id': 'find',
   'get /agol/:id/*': 'setHostKey',
   'put /agol/:id/*': 'setHostKey',
+  'post /agol/:id/*': 'setHostKey',
   'delete /agol/:id': 'del',
   'delete /agol/:id/:item/:layer': 'deleteItemData',
   'get /agol/:id/:item/:layer/geohash': 'getGeohash',
@@ -24,5 +25,6 @@ module.exports = {
   'post /agol/:id/:item/FeatureServer/:layer/:method': 'featureserver',
   'get /agol/:id/:item/FeatureServer/:layer/geohash': 'getGeohash',
   'get /agol/:id/:item/:layer/expiration': 'getExpiration',
-  'put /agol/:id/:item/:layer/expiration': 'setExpiration'
+  'put /agol/:id/:item/:layer/expiration': 'setExpiration',
+  'post /agol/:id/:item/:layer/expiration': 'setExpiration'
 }
