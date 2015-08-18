@@ -130,6 +130,122 @@ describe('AGOL Controller', function () {
         })
     })
   })
+
+  describe('getting a resource\'s expiration', function () {
+    before(function (done) {
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, 'http://www.host.com')
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.find.restore()
+      done()
+    })
+
+    it('should return 404 when the resource does not exist', function (done) {
+      sinon.stub(agol, 'getExpiration', function (key, callback) {
+        callback(new Error('Resource not found'))
+      })
+
+      request(koop)
+        .get('/agol/test/itemid/0/expiration')
+        .expect(404, {error: 'Resource not found'})
+        .end(function (err, res) {
+          agol.getExpiration.restore()
+          should.not.exist(err)
+          done()
+        })
+    })
+
+    it('should respond with a UTC String when the resource exists', function (done) {
+      var expires = '2099'
+      sinon.stub(agol, 'getExpiration', function (key, callback) {
+        callback(null, expires)
+      })
+
+      request(koop)
+        .get('/agol/test/itemid/0/expiration')
+        .expect(200, {expires_at: new Date('2099').toISOString()})
+        .end(function (err, res) {
+          agol.getExpiration.restore()
+          should.not.exist(err)
+          done()
+        })
+    })
+  })
+
+  describe('setting a resource\'s expiration', function () {
+    before(function (done) {
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, 'http://www.host.com')
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.find.restore()
+      done()
+    })
+
+    it('should return 400 when the inputs are malformed', function (done) {
+      sinon.stub(agol, 'setExpiration', function (key, expiration, callback) {
+        callback(new Error('Invalid input'))
+      })
+
+      request(koop)
+        .put('/agol/test/itemid/0/expiration')
+        .send({expires_at: 'foo'})
+        .expect(400, {error: 'Invalid input'})
+        .end(function (err, res) {
+          agol.setExpiration.restore()
+          should.not.exist(err)
+          done()
+        })
+    })
+
+    it('should return 200 when the inputs are well formed and the resource exists in the cache', function (done) {
+      var date = new Date()
+      sinon.stub(agol, 'setExpiration', function (key, expiration, callback) {
+        callback(null, date)
+      })
+
+      request(koop)
+        .put('/agol/test/itemid/0/expiration')
+        .send({expires_at: date.toISOString()})
+        .expect(200, {expires_at: date.toISOString()})
+        .end(function (err, res) {
+          agol.setExpiration.restore()
+          should.not.exist(err)
+          done()
+        })
+    })
+
+    it('should return 201 and kick off a request for the remote resource if the resource is not found in the cache', function (done) {
+      var date = new Date()
+      sinon.stub(agol, 'setExpiration', function (key, expiration, callback) {
+        callback(new Error('Resource not found'), date.getTime())
+      })
+
+      sinon.stub(agol, 'getItemData', function (host, hostId, itemId, hash, options, callback) {
+        callback(null, {})
+      })
+
+      request(koop)
+        .put('/agol/test/itemid/0/expiration')
+        .send({expires_at: date.toISOString()})
+        .expect(201, {status: 'processing', expires_at: date.toISOString()})
+        .end(function (err, res) {
+          agol.setExpiration.restore()
+          should.not.exist(err)
+          res.should.have.status(201)
+          agol.getItemData.called.should.equal(true)
+          agol.getItemData.restore()
+          done()
+        })
+    })
+  })
   describe('dropping item metadata', function () {
     before(function (done) {
       sinon.stub(agol, 'dropItem', function (host, item, options, callback) {

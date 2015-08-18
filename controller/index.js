@@ -20,7 +20,7 @@ var Controller = function (agol, BaseController) {
   */
   controller.setHostKey = function (req, res, next) {
     if (!req.params.id) return next()
-    req.key = Utils.createCacheKey(req.params, req.query)
+    req.optionKey = Utils.createCacheKey(req.params, req.query)
     agol.find(req.params.id, function (err, data) {
       if (err) return res.status(404).send(err)
       req.portal = data.host
@@ -148,7 +148,7 @@ var Controller = function (agol, BaseController) {
       options.layer = 0
     }
 
-    agol.getItemData(req.portal, id, item, req.key, options, function (error, itemJson) {
+    agol.getItemData(req.portal, id, item, req.optionKey, options, function (error, itemJson) {
       if (error) return callback(error)
       var itemExists = typeof itemJson !== 'undefined' && itemJson !== null
       var isProcessing = itemExists && itemJson.koop_status === 'processing'
@@ -193,7 +193,7 @@ var Controller = function (agol, BaseController) {
         }
       }
 
-      req.params.key = req.key
+      req.params.key = req.optionKey
 
       // determine if this request is for a filtered dataset
       req.query.isFiltered = (req.query.where || req.query.geometry)
@@ -213,7 +213,7 @@ var Controller = function (agol, BaseController) {
           req: req,
           res: res,
           dir: dir,
-          key: req.key,
+          key: req.optionKey,
           format: req.params.format,
           id: req.params.item,
           type: 'agol'
@@ -230,9 +230,9 @@ var Controller = function (agol, BaseController) {
         }
 
         // create the file path
-        path = controller._createFilePath(req.key, req.params)
+        path = controller._createFilePath(req.optionKey, req.params)
         // the file name for the export
-        fileParams.fileName = controller._createName(info, req.key, req.params.format)
+        fileParams.fileName = controller._createName(info, req.optionKey, req.params.format)
 
         // does the data export already exist?
         agol.files.exists(path, fileParams.fileName, function (exists, path) {
@@ -306,6 +306,52 @@ var Controller = function (agol, BaseController) {
             return res.status(200).json(itemJson)
           }
         })
+      }
+    })
+  }
+
+  /**
+   * Get the expiration date for a resource
+   * @params {object} req - the incoming request
+   * @params {object} res - the outgoing response
+   */
+  controller.getExpiration = function (req, res) {
+    var table = controller._createTableKey('agol', req.params)
+    agol.getExpiration(table, function (err, expiration) {
+      if (err) return res.status(404).json({error: err.message})
+      res.status(200).json({expires_at: new Date(expiration)})
+    })
+  }
+
+  /**
+   * Set the expiration date for a resource
+   * @params {object} req - the incoming request
+   * @params {object} res - the outgoing response
+   */
+  controller.setExpiration = function (req, res) {
+    var table = controller._createTableKey('agol', req.params)
+    agol.setExpiration(table, req.body.expires_at, function (err, timestamp) {
+      if (err) {
+        if (err.message === 'Resource not found') {
+          var options = {
+            layer: req.params.layer,
+            // todo this needs to pass through the same validation
+            expiration: timestamp
+          }
+          agol.getItemData(req.portal, req.params.id, req.params.item, req.optionsKey, options, function (err, json) {
+            if (err) return res.status(500).send(err)
+            // we need to convert the date from unix time only for the response
+            return res.status(201).json({
+              status: 'processing',
+              expires_at: new Date(timestamp).toISOString()
+            })
+          })
+        } else {
+          // This will trigger if the expiration doesn't validate
+          return res.status(400).send({error: err.message})
+        }
+      } else {
+        res.status(200).json({expires_at: new Date(timestamp).toISOString()})
       }
     })
   }
@@ -627,7 +673,7 @@ var Controller = function (agol, BaseController) {
     // set a really high limit so large datasets can be turned into feature services
     req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
     req.query.offset = req.query.resultOffset || null
-    agol.getItemData(req.portal, req.params.id, req.params.item, req.key, req.query, function (error, itemJson) {
+    agol.getItemData(req.portal, req.params.id, req.params.item, req.optionKey, req.query, function (error, itemJson) {
       if (error) {
         return res.status(error.code || 500).send(error.error || error)
       }
@@ -666,7 +712,7 @@ var Controller = function (agol, BaseController) {
       }
 
       // Get the item
-      agol.getItemData(req.portal, req.params.id, req.params.item, req.key, req.query, function (error, itemJson) {
+      agol.getItemData(req.portal, req.params.id, req.params.item, req.optionKey, req.query, function (error, itemJson) {
         if (error) {
           return res.status(500).send(error)
         }
@@ -791,7 +837,7 @@ var Controller = function (agol, BaseController) {
       req.query.enforce_limit = false
 
       // Get the item
-      agol.getItemData(req.portal, req.params.id, req.params.item, req.key, req.query, function (error, itemJson) {
+      agol.getItemData(req.portal, req.params.id, req.params.item, req.optionKey, req.query, function (error, itemJson) {
         if (error) {
           if (itemJson && itemJson.type === 'Image Service' && req.params.format === 'png') {
             agol.getImageServiceTile(req.params, function (err, newFile) {
@@ -847,7 +893,7 @@ var Controller = function (agol, BaseController) {
     // -------------------------------------
     var key = req.params.item + '_' + req.params.layer
     var filePath = ['latest', 'files', key].join('/')
-    var fileName = req.key + '.geohash.json'
+    var fileName = req.optionKey + '.geohash.json'
 
     // does it exist?
     agol.files.exists(filePath, fileName, function (exists, path, fileInfo) {

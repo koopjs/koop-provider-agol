@@ -90,6 +90,101 @@ describe('AGOL Model', function () {
 
   })
 
+  describe('when setting the expiration date on a resource', function () {
+    describe('that does not exist', function () {
+      it('should call back with an error', function (done) {
+        sinon.stub(agol, 'getInfo', function (key, callback) {
+          callback(new Error('Resource not found'))
+        })
+
+        agol.setExpiration('testkey', new Date('2099'), function (err) {
+          should.exist(err)
+          err.message.should.equal('Resource not found')
+          agol.getInfo.restore()
+          done()
+        })
+      })
+    })
+
+    describe('that does exist', function () {
+      before(function (done) {
+        sinon.stub(agol, 'getInfo', function (key, callback) {
+          callback(null, {})
+        })
+        sinon.stub(agol, 'updateInfo', function (key, info, callback) {
+          callback(null)
+        })
+        done()
+      })
+
+      after(function (done) {
+        agol.getInfo.restore()
+        agol.updateInfo.restore()
+        done()
+      })
+
+      it('should update the info doc when the input is a unix timestamp', function (done) {
+        agol.setExpiration('testkey', new Date('2099').getTime(), function (err) {
+          should.not.exist(err)
+          done()
+        })
+      })
+
+      it('should update the info doc when the input is a UTC String', function (done) {
+        agol.setExpiration('testkey', new Date('2099').toString(), function (err) {
+          should.not.exist(err)
+          done()
+        })
+      })
+
+      it('should call back with an error when the input cannot be parsed into a date', function (done) {
+        agol.setExpiration('testkey', 'foo', function (err) {
+          should.exist(err)
+          err.message.should.equal('Invalid input')
+          done()
+        })
+      })
+
+      it('should callback with an error when the expiration date is in the past', function (done) {
+        agol.setExpiration('testkey', '2011', function (err) {
+          should.exist(err)
+          err.message.should.equal('Expiration cannot be in the past')
+          done()
+        })
+      })
+    })
+  })
+
+  describe('when getting the expiration date on a resource', function () {
+    it('should call back with an error when the resource does not exist', function (done) {
+      sinon.stub(agol, 'getInfo', function (key, callback) {
+        callback(new Error('Resource not found'))
+      })
+
+      agol.getExpiration('testkey', function (err, expiration) {
+        should.exist(err)
+        err.message.should.equal('Resource not found')
+        agol.getInfo.restore()
+        done()
+      })
+    })
+
+    it('should call back with a Unix timestamp from the db when the resource exists', function (done) {
+      var time = new Date().getTime()
+      sinon.stub(agol, 'getInfo', function (key, callback) {
+        var info = {expires_at: time}
+        callback(null, info)
+      })
+
+      agol.getExpiration('testkey', function (err, expiration) {
+        should.not.exist(err)
+        expiration.should.equal(time)
+        agol.getInfo.restore()
+        done()
+      })
+    })
+  })
+
   describe('when getting a an expired feature service item', function () {
     before(function (done) {
       var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())

@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+* Get endpoint for cache expiration
+* Put/Post endpoint for cache expiration
+
 ### Changed
 * bumped version of leaflet/esri leaflet used by preview
 * bumped standard to v5
