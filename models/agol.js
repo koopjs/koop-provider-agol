@@ -283,6 +283,57 @@ var AGOL = function (koop) {
   }
 
   /**
+   * Get the expiration date of a resource from the info doc in the db
+   * @params {string} key - the table key for the resource
+   * @params {function} callback - calls back with an error or the expiration date
+   */
+  agol.getExpiration = function (key, callback) {
+    agol.getInfo(key, function (err, info) {
+      if (err || !info) return callback(err || new Error('Resource not found'))
+      callback(null, info.expires_at)
+    })
+  }
+
+  /**
+   * Sets the expiration date of a resource on the info doc in the db
+   * @params {string} key - the table key for the resource
+   * @params {string/integer} - A UTC string or a Unix Timestamp
+   * @params {function} callback - calls back with an error or nothing
+   */
+  agol.setExpiration = function (key, expiration, callback) {
+    // validate the expiration first because we cannot update or create a new resource if it fails
+    try {
+      expiration = agol._validateExpiration(expiration)
+    } catch (e) {
+      agol.log('error', 'Invalid expiration input: ' + expiration + ' ' + e)
+      return callback(e)
+    }
+    agol.getInfo(key, function (err, info) {
+      // send the expiration back with this error because we will need it set on the new resource
+      if (err) return callback(err, expiration)
+
+      info.expires_at = expiration
+      // finally update the info doc with our well-formed and validated expiration
+      agol.updateInfo(key, info, function (err) {
+        callback(err)
+      })
+    })
+  }
+
+  /**
+   * Validates an incoming expiration date
+   * @params {integer/string} expiration - A UNIX timestamp or a UTC String
+   * @returns {integer} - a UNIX timestamp representing the parsed and validated expiration date
+   */
+  agol._validateExpiration = function (expiration) {
+    expiration = new Date(expiration)
+    if (expiration.toString() === 'Invalid Date') throw new Error('Invalid input')
+    if (expiration < new Date()) throw new Error('Expiration cannot be in the past')
+
+    return expiration.getTime()
+  }
+
+  /**
    * Sets a resource in a failed state
    * @param {string} key - a table in the db
    * @param {object} error - an error payload to save in the db
@@ -502,7 +553,7 @@ var AGOL = function (koop) {
           task.id = id
           task.hostId = hostId
           task.options = options
-          task.expires_at = Date.now() + self.cacheLife
+          task.expires_at = options.expiration || (Date.now() + self.cacheLife)
           task.callback = callback
           self.csvQueue.push(task, function () {})
         } else {
@@ -670,7 +721,7 @@ var AGOL = function (koop) {
     var info = {
       status: 'processing',
       updated_at: params.itemJson.modified,
-      expires_at: Date.now() + self.cacheLife,
+      expires_at: options.expiration || (Date.now() + self.cacheLife),
       retrieved_at: Date.now(),
       name: options.name,
       geomType: self.geomTypes[params.itemJson.geometryType],
