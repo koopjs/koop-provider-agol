@@ -2,14 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.2.0] - 2015-08-19
 ### Added
 * Get endpoint for cache expiration
 * Put/Post endpoint for cache expiration
 
 ### Changed
-* bumped version of leaflet/esri leaflet used by preview
-* bumped standard to v5
+* Bumped version of leaflet/esri leaflet used by preview
+* Bumped standard to v5
+* Upgrade to Kue 0.9.4
 
 ## [1.1.3] - 2015-08-17
 ### Fixed
@@ -349,6 +350,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[1.1.4]: https://github.com/koopjs/koop-agol/compare/v1.1.3...v1.2.0
 [1.1.3]: https://github.com/koopjs/koop-agol/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/koopjs/koop-agol/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/koopjs/koop-agol/compare/v1.1.0...v1.1.1
