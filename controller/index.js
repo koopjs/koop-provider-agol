@@ -394,7 +394,7 @@ var Controller = function (agol, BaseController) {
    * Stub a method for test route than can be easily wrapped
    */
   controller.testMethod = function (req, res) {
-    res.status(419).send('Nothing to see here.')
+    res.status(418).send('Nothing to see here.')
   }
 
   /**
