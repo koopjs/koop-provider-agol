@@ -544,7 +544,6 @@ describe('AGOL Model', function () {
         err.timestamp.should.equal('timeoclock')
         err.body.code.should.equal(499)
         err.url.should.equal('http://error.com')
-        console.log(err)
         err.body.message.should.equal('Token Required')
         done()
       })

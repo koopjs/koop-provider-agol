@@ -458,32 +458,12 @@ var Controller = function (agol, BaseController) {
         if (info.generating) response.generating = info.generating
 
         // tack on information from a passed in error if it's available
-        if (error && error.message) response.generating = controller._failureMsg(error)
+        if (error && error.message) response.generating = Utils.failureMsg(error)
 
         agol.log('debug', JSON.stringify({status: code, item: req.params.item, layer: (req.params.layer || 0)}))
         res.status(code).json(response)
       })
     }
-  }
-
-  /**
-   * Builds a failure message to the client
-   * @param {object} req - the incoming request
-   * @param {object} res - the outgoing response
-   * @param {object} error - an error object from some attempt to get data
-   */
-  controller._failureMsg = function (error) {
-    // todo change the outgoing format to something flat that makes sense
-    // be defensive about errors that don't have a body
-    error.body = error.body || {}
-    return {
-      message: error.message,
-      code: error.body.code,
-      request: error.url,
-      response: error.body.message,
-      timestamp: error.timestamp || new Date()
-    }
-
   }
 
   /**
