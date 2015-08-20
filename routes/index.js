@@ -26,5 +26,6 @@ module.exports = {
   'get /agol/:id/:item/FeatureServer/:layer/geohash': 'getGeohash',
   'get /agol/:id/:item/:layer/expiration': 'getExpiration',
   'put /agol/:id/:item/:layer/expiration': 'setExpiration',
-  'post /agol/:id/:item/:layer/expiration': 'setExpiration'
+  'post /agol/:id/:item/:layer/expiration': 'setExpiration',
+  'get /test': 'testRoute'
 }

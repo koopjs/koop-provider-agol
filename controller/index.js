@@ -152,11 +152,12 @@ var Controller = function (agol, BaseController) {
       if (error) return callback(error)
       var itemExists = typeof itemJson !== 'undefined' && itemJson !== null
       var isProcessing = itemExists && itemJson.koop_status === 'processing'
+      var isFailed = itemExists && itemJson.koop_status === 'Failed'
       var silent = typeof req.params.silent !== 'undefined'
 
-      if (isProcessing && !silent) {
+      if ((isProcessing || isFailed) && !silent) {
         // callback is never called?
-        return controller._returnProcessing(req, res, itemJson, callback)
+        return controller._returnStatus(req, res, itemJson, callback)
       }
       callback(null, itemJson)
     })
@@ -174,14 +175,14 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.findItemData = function (req, res) {
-    var tableKey = controller._createTableKey('agol', req.params)
-    var dir = req.params.item + '_' + (req.params.layer || 0)
-    var path
+    req.tableKey = controller._createTableKey('agol', req.params)
 
     // returns data in the data
-    agol.getInfo(tableKey, function (err, info) {
-      if (err) {
-        agol.log('error', err)
+    agol.getInfo(req.tableKey, function (err, info) {
+      if (err) agol.log('error', err)
+      if (info && info.status && info.status === 'Failed') {
+        // TODO logic so that things don't stay failed for more than x amount of time
+        return controller._returnStatus(req, res, info)
       }
 
       // parse the spatial ref if we have one,
@@ -201,119 +202,132 @@ var Controller = function (agol, BaseController) {
       // if the status is processing we either return with a file or a 202
       if (info && info.status === 'processing') {
         if (req.params.format) {
-          return controller._returnProcessingFile(req, res, info)
+          return controller._returnStatusFile(req, res, info)
         }
-        return controller._returnProcessing(req, res, info)
+        return controller._returnStatus(req, res, info)
       }
 
       // check format for exporting data
-      if (req.params.format) {
-        // file params for building an export file
-        var fileParams = {
-          req: req,
-          res: res,
-          dir: dir,
-          key: req.optionKey,
-          format: req.params.format,
-          id: req.params.item,
-          type: 'agol'
+      if (req.params.format) return controller.download(req, res, info)
+
+      // if we have a layer then append it to the query params
+      if (req.params.layer) {
+        req.query.layer = req.params.layer
+      }
+      // get the esri json data for the service
+      controller._getItemData(req, res, function (err, itemJson) {
+        // when silent is sent as a param undefined
+        if (typeof req.params.silent === 'undefined') {
+          if (err) {
+            agol.setFail(req.tableKey, err, function (e) {
+              console.trace(e)
+            })
+            // if we cannot get the item assume it was a bad request
+            return res.status(502).json(err)
+          }
+
+          // TODO remove hard coded maxRecCount
+          if (itemJson && itemJson.data && itemJson.data[0].features.length > 1000) {
+            itemJson.data[0].features = itemJson.data[0].features.splice(0, 1000)
+          }
+          return res.status(200).json(itemJson)
         }
+      })
+    })
+  }
 
-        // force an override on the format param if given a format in the query
-        if (req.query.format) {
-          req.params.format = req.query.format
-        }
+  /**
+   * Handles the process for downloads
+   * @param {object} req - the incoming request object
+   * @param {object} res - the outgoing response object
+   * @param {object} info - information about a arcgis online item
+   */
+  controller.download = function (req, res, info) {
+    var dir = req.params.item + '_' + (req.params.layer || 0)
+    var path
+    // file params for building an export file
+    var fileParams = {
+      req: req,
+      res: res,
+      dir: dir,
+      key: req.optionKey,
+      format: req.params.format,
+      id: req.params.item,
+      type: 'agol'
+    }
 
-        // redirect to thumbnail for png access
-        if (req.params.format === 'png') {
-          return controller.thumbnail(req, res)
-        }
+    // force an override on the format param if given a format in the query
+    if (req.query.format) {
+      req.params.format = req.query.format
+    }
 
-        // create the file path
-        path = controller._createFilePath(req.optionKey, req.params)
-        // the file name for the export
-        fileParams.fileName = controller._createName(info, req.optionKey, req.params.format)
+    // redirect to thumbnail for png access
+    if (req.params.format === 'png') {
+      return controller.thumbnail(req, res)
+    }
 
-        // does the data export already exist?
-        agol.files.exists(path, fileParams.fileName, function (exists, path) {
-          // save the item layer
-          req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
+    // create the file path
+    path = controller._createFilePath(req.optionKey, req.params)
+    // the file name for the export
+    fileParams.fileName = controller._createName(info, req.optionKey, req.params.format)
 
-          agol.getItem(req.portal, req.params.item, req.query, function (err, itemJson) {
-            // if we cannot get the item assume it was a bad request. no need to set anything in the DB
-            if (err) return res.status(400).json(err)
+    // does the data export already exist?
+    agol.files.exists(path, fileParams.fileName, function (exists, path) {
+      // save the item layer
+      req.query.layer = (!parseInt(req.params.layer, 0)) ? 0 : req.params.layer
 
-            if (exists) {
-              return agol.isExpired(info, req.query.layer, function (err, isExpired) {
-                fileParams.err = err
-                if (!isExpired) {
-                  return controller._returnFile(req, res, path, fileParams.fileName)
-                }
+      agol.getItem(req.portal, req.params.item, req.query, function (err, itemJson) {
+        // if we cannot get the item assume it was a bad request. no need to set anything in the DB
+        if (err) return res.status(400).json(err)
 
-                // if it's expired, then remove the data and request a new file
-                agol.dropItem(req.portal, req.params.item, req.query, function () {
-                  req.query.format = req.params.format
-                  controller._getItemData(req, res, function (err, itemJson) {
-                    // if this fails, we should set a failure in the DB and return a failure to the client
-                    agol.setFail(tableKey, err, function (error) {
-                      if (error) console.trace(error)
-                    })
-                    fileParams.err = err
-                    fileParams.itemJson = itemJson
-                    fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
-                    // var used to request new files if needed.
-                    controller._requestNewFile(fileParams)
+        if (exists) {
+          agol.isExpired(info, req.query.layer, function (err, isExpired) {
+            // if we got an error on this, we don't want to set anything in the DB because we've seen this file before
+            // the problem may only be temporary
+            if (err) return controller._returnStatus(req, res, info, err)
+            if (!isExpired) return controller._returnFile(req, res, path, fileParams.fileName)
+
+            // if it's expired, then remove the data and request a new file
+            agol.dropItem(req.portal, req.params.item, req.query, function () {
+              req.query.format = req.params.format
+              controller._getItemData(req, res, function (err, itemJson) {
+                // if this fails, we should set a failure in the DB and return a failure to the client
+                // the failure below happened while actually trying to get data, that's why we set it in the DB
+                if (err) {
+                  agol.setFail(req.tableKey, err, function (e) {
+                    if (e) console.trace(e)
                   })
-                })
+                  return controller._returnStatus(req, res, info, err)
+                }
+                fileParams.itemJson = itemJson
+                fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
+                // var used to request new files if needed.
+                controller._requestNewFile(fileParams)
               })
-            }
-
-            req.query.format = req.params.format
-            controller._getItemData(req, res, function (err, itemJson) {
-              if (err) {
-                agol.setFail(tableKey, err, function (error) {
-                  if (error) console.trace(error)
-                })
-              }
-              fileParams.err = err
-              fileParams.itemJson = itemJson
-              fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
-              controller._requestNewFile(fileParams)
             })
           })
-        })
-      } else {
-        // if we have a layer then append it to the query params
-        if (req.params.layer) {
-          req.query.layer = req.params.layer
-        }
-        // get the esri json data for the service
-        controller._getItemData(req, res, function (err, itemJson) {
-          // when silent is sent as a param undefined
-          if (typeof req.params.silent === 'undefined') {
+        } else {
+          req.query.format = req.params.format
+          controller._getItemData(req, res, function (err, itemJson) {
             if (err) {
-              agol.setFail(tableKey, err, function (e) {
-                console.trace(e)
+              agol.setFail(req.tableKey, err, function (error) {
+                if (error) console.trace(error)
               })
-              // if we cannot get the item assume it was a bad request
-              return res.status(502).json(err)
             }
-
-            // TODO remove hard coded maxRecCount
-            if (itemJson && itemJson.data && itemJson.data[0].features.length > 1000) {
-              itemJson.data[0].features = itemJson.data[0].features.splice(0, 1000)
-            }
-            return res.status(200).json(itemJson)
-          }
-        })
-      }
+            fileParams.err = err
+            fileParams.itemJson = itemJson
+            fileParams.data = (itemJson && itemJson.data && itemJson.data[0]) ? itemJson.data[0] : null
+            controller._requestNewFile(fileParams)
+          })
+        }
+      })
     })
   }
 
   /**
    * Get the expiration date for a resource
-   * @params {object} req - the incoming request
-   * @params {object} res - the outgoing response
+   * @param {object} req - the incoming request
+   * @param {object} res - the outgoing response
    */
   controller.getExpiration = function (req, res) {
     var table = controller._createTableKey('agol', req.params)
@@ -370,6 +384,20 @@ var Controller = function (agol, BaseController) {
   }
 
   /**
+   * Stub a route redirect to make testing private functions easier
+   */
+  controller.testRoute = function (req, res) {
+    controller.testMethod(req, res)
+  }
+
+  /**
+   * Stub a method for test route than can be easily wrapped
+   */
+  controller.testMethod = function (req, res) {
+    res.status(419).send('Nothing to see here.')
+  }
+
+  /**
    * Respond to a request for file downloads when a dataset is still "processing"
    * if the file exists send it, else return processing 202
    *
@@ -378,7 +406,7 @@ var Controller = function (agol, BaseController) {
    * @params {object} info - item metadata from the cache
    * @private
    */
-  controller._returnProcessingFile = function (req, res, info) {
+  controller._returnStatusFile = function (req, res, info) {
     // create the file path
     var path = controller._createFilePath(req.params.key, req.params)
     // get the name of the data; else use the key (md5 hash)
@@ -388,7 +416,7 @@ var Controller = function (agol, BaseController) {
       if (exists) {
         return controller._returnFile(req, res, path, fileName)
       }
-      controller._returnProcessing(req, res, info)
+      controller._returnStatus(req, res, info)
     })
     return
   }
@@ -401,35 +429,61 @@ var Controller = function (agol, BaseController) {
    * @params {object} info - item metadata from the cache
    * @private
    */
-  controller._returnProcessing = function (req, res, info) {
+  controller._returnStatus = function (req, res, info, error) {
     var table = controller._createTableKey('agol', req.params)
 
     if (typeof req.params.silent === 'undefined') {
       agol.getCount(table, {}, function (err, count) {
         if (err) {
-          return res.status(500).send(err)
+          agol.log('error', 'Failed to get count of rows in the DB' + ' ' + err)
+          // don't let db messages leak out
+          return res.status(500).json({error: 'Unknown failure'})
         }
-        var code = 202
+        // if we have a passed in error or the info doc says error then this request is errored and we should send a 502 with status failed
+        var errored = (error && error.message) || (info.generating && info.generating.error)
+        var code = errored ? 502 : 202
+        var status = errored ? 'Failed' : (info.status || 'Processing')
 
         // we need some logic around handling long standing processing times
         var processingTime = (Date.now() - info.retrieved_at) / 1000 || 0
 
+        // set up a shell of the response
         var response = {
-          status: 'processing',
+          status: status,
           processing_time: processingTime,
           count: count
         }
-        if (info.generating) {
-          response.generating = info.generating
-          if (info.generating.error) {
-            code = 502
-          }
-        }
+
+        // tack on info from the DB if it's available
+        if (info.generating) response.generating = info.generating
+
+        // tack on information from a passed in error if it's available
+        if (error && error.message) response.generating = controller._failureMsg(error)
 
         agol.log('debug', JSON.stringify({status: code, item: req.params.item, layer: (req.params.layer || 0)}))
         res.status(code).json(response)
       })
     }
+  }
+
+  /**
+   * Builds a failure message to the client
+   * @param {object} req - the incoming request
+   * @param {object} res - the outgoing response
+   * @param {object} error - an error object from some attempt to get data
+   */
+  controller._failureMsg = function (error) {
+    // todo change the outgoing format to something flat that makes sense
+    // be defensive about errors that don't have a body
+    error.body = error.body || {}
+    return {
+      message: error.message,
+      code: error.body.code,
+      request: error.url,
+      response: error.body.message,
+      timestamp: error.timestamp || new Date()
+    }
+
   }
 
   /**
@@ -539,7 +593,7 @@ var Controller = function (agol, BaseController) {
         return res.status(err.code || 400).send(err)
       }
 
-      return controller._returnProcessing(req, res, itemJson)
+      return controller._returnStatus(req, res, itemJson)
     })
   }
 
