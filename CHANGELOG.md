@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+* Feature service logic is fully delegated to featureservice.js
+* Extracts a method called `controller.download` that was previously subsumed in `findItemData`
+* Renamed `_returnProcessing` to `_returnStatus`, method now handles passed in errors
+* Added table keys to many logging statements
+* Resources have a status of processing or failed, check for that status at the top of any request
+
 ## [1.2.0] - 2015-08-19
 ### Added
 * Get endpoint for cache expiration
