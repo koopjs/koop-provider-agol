@@ -542,9 +542,9 @@ describe('AGOL Model', function () {
         should.exist(err)
         err.message.should.equal('Unable to get the layer metadata')
         err.timestamp.should.equal('timeoclock')
-        err.code.should.equal(499)
-        err.request.should.equal('http://error.com')
-        err.response.should.equal('Token Required')
+        err.body.code.should.equal(499)
+        err.url.should.equal('http://error.com')
+        err.body.message.should.equal('Token Required')
         done()
       })
     })
@@ -580,7 +580,7 @@ describe('AGOL Model', function () {
       }
 
       agol.setFail(key, error, function (info) {
-        info.status.should.equal('processing')
+        info.status.should.equal('Failed')
         info.generating.error.should.exist
         info.generating.error.timestamp.should.equal('time')
         info.generating.error.code.should.equal(999)

@@ -345,7 +345,7 @@ var AGOL = function (koop) {
     self.getInfo(key, function (err, info) {
       if (err) return callback(err)
       info = info || {}
-      info.status = 'processing'
+      info.status = 'Failed'
       info.retrieved_at = new Date()
       error.body = error.body || {}
       // TODO next breaking change version: change the status to 'failed' and change the structure of the error
@@ -829,17 +829,7 @@ var AGOL = function (koop) {
   agol._page = function (params, options, callback) {
     params.featureService = agol._initFeatureService(params.itemJson.url, options)
     params.featureService.pages(function (err, pages) {
-      // standardize the error that gets sent back to the client
-      // be defensive about malformed errors from featureService.js
-      if (err) {
-        var error = new Error(err.message)
-        err.body = err.body || {}
-        error.code = err.body.code
-        error.response = err.body.message
-        error.request = err.url
-        error.timestamp = err.timestamp || new Date()
-        return callback(error)
-      }
+      if (err) return callback(err)
 
       // add to a separate queue that we can use to add jobs one at a time
       // this prevents the case when we get 2 requests at the same time
@@ -976,31 +966,31 @@ var AGOL = function (koop) {
     // add the job to the distributed worker pool
     var job = agol.worker_q.create('agol', jobData).save(function (err) {
       if (err) return agol.log('error', 'failed to add job ' + job.id + ' to the request queue.')
-      agol.log('debug', 'added page requests to job-queue ' + job.id)
+      agol.log('debug', 'added page requests to job-queue ' + job.id + ' ' + key)
     })
 
     var removeJob = function (job) {
       job.remove(function (err) {
-        if (err) return agol.log('error', 'could not remove failed job #' + job.id + ' Error: ' + err)
-        agol.log('debug', 'removed failed request job #' + job.id + ' - ' + params.itemId)
+        if (err) return agol.log('error', 'could not remove failed job #' + job.id + ' Error: ' + err + ' ' + key)
+        agol.log('debug', 'removed failed request job #' + job.id + ' - ' + key)
       })
     }
 
     // track failed jobs and flag them
     job.on('failed', function (jobErr) {
-      agol.log('error', 'Request paging job failed for: ' + key + ' ' + jobErr)
+      agol.log('error', 'Request paging job failed ' + jobErr + ' ' + key)
 
       // fetch some information about how this job failed
       kue.Job.get(job.id, function (err, job) {
-        if (err) return agol.log('error', 'Could not get job from queue ' + err)
+        if (err) return agol.log('error', 'Could not get job from queue ' + err + ' ' + key)
         try {
           var error = JSON.parse(job._error)
         } catch (e) {
-          agol.log('error', 'Unknown failure from paging job ' + e)
+          agol.log('error', 'Unknown failure from paging job ' + e + ' ' + key)
           return removeJob(job)
         }
         agol.setFail(key, error, function (err) {
-          if (err) agol.log('error', 'Unable to set this dataset as failed ' + err)
+          if (err) agol.log('error', 'Unable to set this dataset as failed ' + err + ' ' + key)
           removeJob(job)
         })
       })
@@ -1010,27 +1000,15 @@ var AGOL = function (koop) {
 
   /**
    * Gets the feature service info
-   * @param {string} url - the max number of features in the service
+   * @param {string} url - the url for the service
    * @param {number} layer - the id of the service layer
    * @param {function} callback - called when the service info comes back
    */
   agol.getFeatureServiceLayerInfo = function (url, layer, callback) {
-    var urlLayer = url.split('/').pop()
-    if (parseInt(urlLayer, 0) >= 0) {
-      var len = ('' + urlLayer).length
-      url = url.substring(0, url.length - ((len || 2) + 1))
-    }
-
-    url = url + '/' + layer + '?f=json'
-
-    agol.req(url, function (err, res) {
-      try {
-        var json = JSON.parse(res.body)
-        json.url = url
-        callback(err, json)
-      } catch (e) {
-        callback('failed to parse service info')
-      }
+    // TODO just pass a URL, layers get parsed down in featureservice
+    var service = new FeatureService(url, {layer: layer})
+    service.layerInfo(function (err, info) {
+      callback(err, info)
     })
   }
 

@@ -724,7 +724,7 @@ describe('AGOL Controller', function () {
       sinon.stub(agol, 'find', function (id, callback) {
         callback(null, { id: 'test', host: 'http://dummy.host.com' })
       })
-      sinon.stub(controller, '_returnProcessing', function (req, res, json, callback) {
+      sinon.stub(controller, '_returnStatus', function (req, res, json, callback) {
         callback(null, json)
       })
       done()
@@ -733,15 +733,15 @@ describe('AGOL Controller', function () {
     after(function (done) {
       agol.getItemData.restore()
       agol.find.restore()
-      controller._returnProcessing.restore()
+      controller._returnStatus.restore()
       done()
     })
 
-    it('should call controller._returnProcessing', function (done) {
+    it('should call controller._returnStatus', function (done) {
       controller._getItemData(req, res, function (err, json) {
         should.not.exist(err)
         should.exist(json)
-        controller._returnProcessing.called.should.equal(true)
+        controller._returnStatus.called.should.equal(true)
         done()
       })
     })
@@ -771,6 +771,98 @@ describe('AGOL Controller', function () {
         agol.getItemData.called.should.equal(true)
         done()
       })
+    })
+  })
+
+  describe('when returning status to the client', function () {
+    before(function (done) {
+      sinon.stub(agol, 'getCount', function (key, options, callback) {
+        callback(null, 100)
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.getCount.restore()
+      done()
+    })
+
+    it('should return 202 when the resource is processing', function (done) {
+      sinon.stub(controller, 'testMethod', function (req, res) {
+        var info = {
+          status: 'processing',
+          retrieved_at: Date.now()
+        }
+        controller._returnStatus(req, res, info)
+      })
+
+      request(koop)
+        .get('/test')
+        .expect(202)
+        .end(function (err, res) {
+          controller.testMethod.restore()
+          should.not.exist(err)
+          done()
+        })
+
+    })
+
+    it('should return 502 when the info doc says the resource has failed', function (done) {
+      sinon.stub(controller, 'testMethod', function (req, res) {
+        var info = {
+          status: 'Failed',
+          retrieved_at: Date.now(),
+          generating: {
+            error: {
+              code: 400,
+              response: 'Failed to perform query operation',
+              url: 'http://www.failure.com',
+              message: 'Failed while paging'
+            }
+          }
+        }
+        controller._returnStatus(req, res, info)
+      })
+
+      request(koop)
+        .get('/test')
+        .expect(502)
+        .end(function (err, res) {
+          controller.testMethod.restore()
+          should.not.exist(err)
+          done()
+        })
+    })
+
+    it('should return 502 when an error is passed in', function (done) {
+      sinon.stub(controller, 'testMethod', function (req, res) {
+        var info = {
+          status: 'Processing',
+          retrieved_at: Date.now()
+        }
+        var error = new Error('Failed to get layer metadata')
+        error.url = 'http://www.failure.com'
+        error.body = {
+          code: 500,
+          message: 'Failed to perform query',
+          details: []
+        }
+        controller._returnStatus(req, res, info, error)
+      })
+
+      request(koop)
+        .get('/test')
+        .expect(502)
+        .end(function (err, res) {
+          res.body.status.should.equal('Failed')
+          should.exist(res.body.generating)
+          res.body.generating.code.should.equal(500)
+          res.body.generating.response.should.equal('Failed to perform query')
+          res.body.generating.request.should.equal('http://www.failure.com')
+          controller.testMethod.restore()
+          should.not.exist(err)
+          done()
+        })
     })
   })
 
