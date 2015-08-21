@@ -108,6 +108,8 @@ var AGOL = function (koop) {
     url = utils.forceHttps(url)
     request({
       url: encodeURI(decodeURI(url)),
+      forever: true,
+      timeout: 30 * 1000,
       headers: { 'User-Agent': 'esri-koop' }
     }, callback)
   }
@@ -204,30 +206,34 @@ var AGOL = function (koop) {
         error = new Error('Failure while trying to communicate with the host portal')
         error.timestamp = new Date()
         error.url = url
+        error.code = data.statusCode
+        return callback(error)
+      }
+      var json
+      try {
+        json = JSON.parse(data.body)
+      } catch (e) {
+        // TODO detect when parsing failed because the response is some kind of HTML
+        // could be 404 could be 500
+        console.trace(e)
+        error = new Error('Could not parse the item response')
+        error.timestamp = new Date()
+        error.url = url
         error.code = 500
         return callback(error)
       }
-      try {
-        var json = JSON.parse(data.body)
-        if (json.error) {
-          error = new Error('Failed while trying to get item information')
-          error.timestamp = new Date()
-          error.code = json.error.code
-          error.url = url
-          error.response = json.error.message
-          return callback(error)
-        }
-        if (options.getMetadata && json.typeKeywords && json.typeKeywords.indexOf('Metadata') !== -1) {
-          agol.getItemMetadata(host, itemId, json, callback)
-        } else {
-          callback(null, json)
-        }
-      } catch (e) {
-        error = new Error('Could not parse the item response')
-        error.code = 500
+      if (json.error) {
+        error = new Error('Failed while trying to get item information')
         error.timestamp = new Date()
+        error.body = json.error
+        error.code = 502
         error.url = url
-        callback(error)
+        return callback(error)
+      }
+      if (options.getMetadata && json.typeKeywords && json.typeKeywords.indexOf('Metadata') !== -1) {
+        agol.getItemMetadata(host, itemId, json, callback)
+      } else {
+        callback(null, json)
       }
     })
   }
@@ -348,14 +354,14 @@ var AGOL = function (koop) {
       info.status = 'Failed'
       info.retrieved_at = new Date()
       error.body = error.body || {}
-      // TODO next breaking change version: change the status to 'failed' and change the structure of the error
+      // TODO next breaking change version: change the structure of the error
       info.generating = {
         error: {
           timestamp: error.timestamp,
-          message: error.message,
+          message: error.msg || error.message,
           request: error.url,
           response: error.body.message,
-          code: error.body.code || 500
+          code: error.code || error.body.code || 500
         }
       }
       self.updateInfo(key, info, function (err) {
@@ -983,15 +989,21 @@ var AGOL = function (koop) {
       // fetch some information about how this job failed
       kue.Job.get(job.id, function (err, job) {
         if (err) return agol.log('error', 'Could not get job from queue ' + err + ' ' + key)
-        try {
-          var error = JSON.parse(job._error)
-        } catch (e) {
-          agol.log('error', 'Unknown failure from paging job ' + e + ' ' + key)
-          return removeJob(job)
-        }
-        agol.setFail(key, error, function (err) {
-          if (err) agol.log('error', 'Unable to set this dataset as failed ' + err + ' ' + key)
-          removeJob(job)
+        job.get('koopError', function (err, value) {
+          var error
+          if (err) console.trace(err)
+          try {
+            error = JSON.parse(value)
+          } catch (e) {
+            error = new Error('Unknown failure while paging')
+            agol.log('error', 'Unknown failure from paging job ' + e + ' ' + key)
+          }
+          // if we don't have a good error, don't set anything in the DB
+          // TODO should we drop here too?
+          agol.setFail(key, error, function (err) {
+            if (err) agol.log('error', 'Unable to set this dataset as failed ' + err + ' ' + key)
+            removeJob(job)
+          })
         })
       })
     })

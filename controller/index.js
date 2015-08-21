@@ -278,7 +278,7 @@ var Controller = function (agol, BaseController) {
 
       agol.getItem(req.portal, req.params.item, req.query, function (err, itemJson) {
         // if we cannot get the item assume it was a bad request. no need to set anything in the DB
-        if (err) return res.status(400).json(err)
+        if (err) return controller._returnStatus(req, res, info, err)
 
         if (exists) {
           agol.isExpired(info, req.query.layer, function (err, isExpired) {
@@ -313,6 +313,7 @@ var Controller = function (agol, BaseController) {
               agol.setFail(req.tableKey, err, function (error) {
                 if (error) console.trace(error)
               })
+              return controller._returnStatus(req, res, info, err)
             }
             fileParams.err = err
             fileParams.itemJson = itemJson
@@ -437,13 +438,15 @@ var Controller = function (agol, BaseController) {
         if (err) {
           agol.log('error', 'Failed to get count of rows in the DB' + ' ' + err)
           // don't let db messages leak out
-          return res.status(500).json({error: 'Unknown failure'})
         }
         // if we have a passed in error or the info doc says error then this request is errored and we should send a 502 with status failed
         var errored = (error && error.message) || (info.generating && info.generating.error)
         var code = errored ? 502 : 202
         var status = errored ? 'Failed' : (info.status || 'Processing')
-
+        if (!info) {
+          info = {retrieved_at: Date.now()}
+          status = 'Failed'
+        }
         // we need some logic around handling long standing processing times
         var processingTime = (Date.now() - info.retrieved_at) / 1000 || 0
 

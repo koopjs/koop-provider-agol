@@ -30,7 +30,7 @@ describe('AGOL Model', function () {
       })
 
       sinon.stub(agol, 'req', function (url, callback) {
-        callback(null, '')
+        callback(null, {body: JSON.stringify({})})
       })
       done()
     })
@@ -337,8 +337,8 @@ describe('AGOL Model', function () {
       agol.getItem('host', 'id', {}, function (err, item) {
         should.exist(err)
         err.message.should.equal('Failed while trying to get item information')
-        err.response.should.equal('You do not have permissions to access this resource or perform this operation.')
-        err.code.should.equal(403)
+        err.body.message.should.equal('You do not have permissions to access this resource or perform this operation.')
+        err.body.code.should.equal(403)
         done()
       })
     })
@@ -355,7 +355,7 @@ describe('AGOL Model', function () {
       })
 
       sinon.stub(agol, 'req', function (url, callback) {
-        callback(null, {})
+        callback(null, {body: JSON.stringify({})})
       })
 
       done()
