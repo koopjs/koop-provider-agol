@@ -439,15 +439,16 @@ var Controller = function (agol, BaseController) {
           agol.log('error', 'Failed to get count of rows in the DB' + ' ' + err)
           // don't let db messages leak out
         }
+
+        // if we failed to get info from AGOL the info object will be null so initialize it
+        if (!info) info = {retrieved_at: Date.now(), status: 'Failed'}
+
         // if we have a passed in error or the info doc says error then this request is errored and we should send a 502 with status failed
         var errored = (error && error.message) || (info.generating && info.generating.error)
         var code = errored ? 502 : 202
         var status = errored ? 'Failed' : (info.status || 'Processing')
-        if (!info) {
-          info = {retrieved_at: Date.now()}
-          status = 'Failed'
-        }
-        // we need some logic around handling long standing processing times
+
+        // TODO: we need some logic around reporting long processing times
         var processingTime = (Date.now() - info.retrieved_at) / 1000 || 0
 
         // set up a shell of the response
