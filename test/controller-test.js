@@ -856,9 +856,9 @@ describe('AGOL Controller', function () {
         .end(function (err, res) {
           res.body.status.should.equal('Failed')
           should.exist(res.body.generating)
-          res.body.generating.code.should.equal(500)
-          res.body.generating.response.should.equal('Failed to perform query')
-          res.body.generating.request.should.equal('http://www.failure.com')
+          res.body.generating.error.code.should.equal(500)
+          res.body.generating.error.response.should.equal('Failed to perform query')
+          res.body.generating.error.request.should.equal('http://www.failure.com')
           controller.testMethod.restore()
           should.not.exist(err)
           done()

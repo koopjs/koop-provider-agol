@@ -64,7 +64,16 @@ process.once('SIGINT', function (sig) {
 })
 
 jobs.process('agol', function (job, done) {
-  makeRequest(job, done)
+  makeRequest(job, function (err) {
+    // we need to stringify because this error is travelling across redis
+    if (err) {
+      // set the error message on another property, or else we'll lose it when we stringify
+      err.msg = err.message
+      job.set('koopError', JSON.stringify(err))
+      return done(err)
+    }
+    done()
+  })
 })
 
 setInterval(function () {
@@ -74,15 +83,11 @@ setInterval(function () {
 }, 5000)
 
 // makes the request to the feature service and inserts the Features
-function makeRequest (job, done) {
+function makeRequest (job, callback) {
   var domain = require('domain').create()
 
   domain.on('error', function (err) {
-    // set the error message on another property, or else we'll lose it when we stringify
-    err.type = err.message
-    // TODO investigate if this is really the case
-    // we need to stringify because this error is travelling across redis
-    done(JSON.stringify(err))
+    callback(err)
   })
 
   domain.run(function () {
@@ -94,51 +99,37 @@ function makeRequest (job, done) {
     // aggregate responses into one json and call done we have all of them
     // start the requests
     featureService.pageQueue.push(job.data.pages, function (error, json) {
-      if (error) {
+      if (error || !json) {
         featureService.pageQueue.kill()
-        return done(error || 'Feature page JSON is undefined')
+        throw error
       }
 
-      if (json) {
-        if (json.error) {
-          featureService.pageQueue.kill()
-          return done(json.error)
-        }
-
-        // insert a partial
-        koop.GeoJSON.fromEsri(job.data.fields || [], json, function (err, geojson) {
+      // transform the data into geojson
+      koop.GeoJSON.fromEsri(job.data.fields || [], json, function (err, geojson) {
+        if (err) return callback(err)
+        koop.Cache.insertPartial('agol', job.data.itemId, geojson, job.data.layerId, function (err) {
           if (err) {
-            done(err)
+            featureService.pageQueue.kill()
+            throw err
           }
-          // concat the features so we return the full json
-          koop.Cache.insertPartial('agol', job.data.itemId, geojson, job.data.layerId, function (err) {
-            if (err) {
-              featureService.pageQueue.kill()
-              return done(err)
-            }
-            completed++
-            console.info(completed, len, job.data.itemId)
-            job.progress(completed, len)
+          completed++
+          console.info(completed, len, job.data.itemId)
+          job.progress(completed, len)
 
-            if (completed === len) {
-              var key = ['agol', job.data.itemId, job.data.layerId].join(':')
-              koop.Cache.getInfo(key, function (err, info) {
-                if (err) {
-                  return done(err)
-                }
+          if (completed === len) {
+            var key = ['agol', job.data.itemId, job.data.layerId].join(':')
+            koop.Cache.getInfo(key, function (err, info) {
+              if (err) throw err
+              if (info && info.status) delete info.status
 
-                if (info && info.status) {
-                  delete info.status
-                }
-
-                koop.Cache.updateInfo(key, info, function () {
-                  return done()
-                })
+              // if we've made it this far it's a success so return done with no argument
+              koop.Cache.updateInfo(key, info, function () {
+                return callback()
               })
-            }
-          })
+            })
+          }
         })
-      }
+      })
     })
   })
 

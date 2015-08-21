@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Errors on trying to fetch items pass through `_returnStatus`
+* Socket connections to portals are kept alive
+* Errors in request workers are handled centrally
+
+### Fixed
+* Errors are now passed correctly from feature service to the db and the client
+
 ## [1.3.0] - 2015-08-20
 ### Changed
 * Feature service logic is fully delegated to featureservice.js
