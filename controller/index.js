@@ -18,6 +18,7 @@ var Controller = function (agol, BaseController) {
   * @param {object} res - the outgoing response object
   * @param {function} next - calls the next route handler
   */
+  // TODO remove this and just call it from different functions
   controller.setHostKey = function (req, res, next) {
     if (!req.params.id) return next()
     req.optionKey = Utils.createCacheKey(req.params, req.query)
@@ -432,7 +433,6 @@ var Controller = function (agol, BaseController) {
    */
   controller._returnStatus = function (req, res, info, error) {
     var table = controller._createTableKey('agol', req.params)
-
     if (typeof req.params.silent === 'undefined') {
       agol.getCount(table, {}, function (err, count) {
         if (err) {

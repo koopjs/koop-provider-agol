@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Cache keys are set with the proper layer
+* Item/FeatureServer directs to feature server controller
+* Failure messages are built with the right error
+
 ## [1.3.2] - 2015-08-26
 ### Fixed
 * Feature server without a layer responds correctly

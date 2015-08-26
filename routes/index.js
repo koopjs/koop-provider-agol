@@ -3,16 +3,19 @@ module.exports = {
   'get /agol': 'list',
   'get /agolworkers': 'getQueueCounts',
   'get /agol/:id': 'find',
-  'get /agol/:id/*': 'setHostKey',
-  'put /agol/:id/*': 'setHostKey',
-  'post /agol/:id/*': 'setHostKey',
+  'get /agol/:id/:item/*': 'setHostKey',
+  'put /agol/:id/:item/*': 'setHostKey',
+  'post /agol/:id/:item/*': 'setHostKey',
+  // these methods need to come before layer/format
+  'get /agol/:id/:item/FeatureServer': 'featureserver',
+  'get /agol/:id/:item/FeatureServer/:method': 'featureserver',
+  // end methods that need to be before layer/format
   'delete /agol/:id': 'del',
   'delete /agol/:id/:item/:layer': 'deleteItemData',
   'get /agol/:id/:item/:layer/geohash': 'getGeohash',
   'get /agol/:id/:item.:format': 'findItemData',
   'get /agol/:id/:item/:layer.:format': 'findItemData',
   'get /agol/:id/:item/:layer': 'findItemData',
-  'get /agol/:id/:item': 'findItem',
   'get /agol/:id/:item/:layer/drop': 'dropItem',
   'get /agol/:id/:item/data/:layer': 'findItemData',
   'get /agol/:id/:item/data': 'findItemData',
@@ -20,8 +23,6 @@ module.exports = {
   'get /agol/:id/:item/thumbnail/:layer': 'thumbnail',
   'get /agol/:id/:item/:layer/tiles/:z/:x/:y.:format': 'tiles',
   'get /agol/:id/:item/:layer/tiles/:z/:x/:y': 'tiles',
-  'get /agol/:id/:item/FeatureServer': 'featureserver',
-  'get /agol/:id/:item/FeatureServer/:method': 'featureserver',
   'get /agol/:id/:item/FeatureServer/geohash': 'getGeohash',
   'get /agol/:id/:item/FeatureServer/:layer': 'featureserver',
   'get /agol/:id/:item/FeatureServer/:layer/:method': 'featureserver',
@@ -30,5 +31,7 @@ module.exports = {
   'get /agol/:id/:item/:layer/expiration': 'getExpiration',
   'put /agol/:id/:item/:layer/expiration': 'setExpiration',
   'post /agol/:id/:item/:layer/expiration': 'setExpiration',
-  'get /test': 'testRoute'
+  'get /test': 'testRoute',
+  'get /agol/:id/*': 'setHostKey',
+  'get /agol/:id/:item': 'findItem'
 }
