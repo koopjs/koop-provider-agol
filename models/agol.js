@@ -352,7 +352,7 @@ var AGOL = function (koop) {
       if (err) return callback(err)
       info = info || {}
       info.status = 'Failed'
-      info.retrieved_at = new Date()
+      info.retrieved_at = Date.now()
       error.body = error.body || {}
       // TODO next breaking change version: change the structure of the error
       info.generating = {
