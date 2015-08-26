@@ -122,7 +122,6 @@ describe('AGOL Controller', function () {
       request(koop)
         .get('/agol/test/itemid')
         .end(function (err, res) {
-          console.log(err, res)
           should.not.exist(err)
           res.should.have.status(200)
           agol.find.called.should.equal(true)
