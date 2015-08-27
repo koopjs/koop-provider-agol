@@ -6,10 +6,9 @@ module.exports = {
   'get /agol/:id/:item/*': 'setHostKey',
   'put /agol/:id/:item/*': 'setHostKey',
   'post /agol/:id/:item/*': 'setHostKey',
-  // these methods need to come before layer/format
+  // this method needs to come before layer/format
   'get /agol/:id/:item/FeatureServer': 'featureserver',
-  'get /agol/:id/:item/FeatureServer/:method': 'featureserver',
-  // end methods that need to be before layer/format
+  // end method that needs to be before layer/format
   'delete /agol/:id': 'del',
   'delete /agol/:id/:item/:layer': 'deleteItemData',
   'get /agol/:id/:item/:layer/geohash': 'getGeohash',
