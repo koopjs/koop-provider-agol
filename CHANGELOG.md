@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [1.3.5]
 ### Changed
 * Metadata is always downloaded if available
 
@@ -385,6 +385,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[1.3.5]: https://github.com/koopjs/koop-agol/compare/v1.3.4..v1.3.5
 [1.3.4]: https://github.com/koopjs/koop-agol/compare/v1.3.3..v1.3.4
 [1.3.3]: https://github.com/koopjs/koop-agol/compare/v1.3.2..v1.3.3
 [1.3.2]: https://github.com/koopjs/koop-agol/compare/v1.3.1..v1.3.2
