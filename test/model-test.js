@@ -81,7 +81,7 @@ describe('AGOL Model', function () {
     })
 
     it('should call getItemMetadata to json', function (done) {
-      agol.getItem('host1', 'item1', {getMetadata: true}, function (err, json) {
+      agol.getItem('host1', 'item1', {}, function (err, json) {
         should.not.exist(err)
         json.metadata.should.equal(true)
         done()
