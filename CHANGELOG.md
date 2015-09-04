@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Metadata is always downloaded if available
+
 ## [1.3.4]
 ### Fixed
 * Feature server layer info is routed correctly

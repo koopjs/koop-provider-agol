@@ -230,7 +230,7 @@ var AGOL = function (koop) {
         error.url = url
         return callback(error)
       }
-      if (options.getMetadata && json.typeKeywords && json.typeKeywords.indexOf('Metadata') !== -1) {
+      if (json.typeKeywords && json.typeKeywords.indexOf('Metadata') !== -1) {
         agol.getItemMetadata(host, itemId, json, callback)
       } else {
         callback(null, json)
