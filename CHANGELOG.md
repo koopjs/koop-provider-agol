@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Logging throughout the download request cycle
 * Logging expiration get/set/check
 
+### Changed
+* Use koop.log instead of console in request worker
+
 ## [1.3.5]
 ### Changed
 * Metadata is always downloaded if available
