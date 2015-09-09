@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Failed resources do not stay failed permanently, instead they drop after 30 minutes
+
 ## [1.4.0] 
 ### Added
 * Logging throughout the download request cycle

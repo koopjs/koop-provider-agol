@@ -25,6 +25,7 @@
     "documentation": "^2.0.1",
     "istanbul": "^0.3.17",
     "koop": "^2.7.0",
+    "lodash": "^2.4.2",
     "mocha": "~2.2.5",
     "should": "~3.3.1",
     "sinon": "~1.10.2",
