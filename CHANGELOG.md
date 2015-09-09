@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* Logging throughout the download request cycle
+* Logging expiration get/set/check
+
 ## [1.3.5]
 ### Changed
 * Metadata is always downloaded if available

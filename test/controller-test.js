@@ -3,13 +3,11 @@ var should = require('should') // eslint-disable-line
 var sinon = require('sinon')
 var request = require('supertest')
 var fs = require('fs')
-var kooplib = require('koop/lib')
-
-var koop = require('koop')({})
+var koop = require('koop')({logfile: './test.log'})
 
 var Provider = require('../index.js')
-var agol = Provider.model(kooplib)
-var controller = Provider.controller(agol, kooplib.BaseController)
+var agol = Provider.model(koop)
+var controller = Provider.controller(agol, koop.BaseController)
 koop._bindRoutes(Provider.routes, controller)
 
 describe('AGOL Controller', function () {

@@ -6,3 +6,4 @@ coverage
 *.zip
 *.geojson
 ..*
+test.log.*

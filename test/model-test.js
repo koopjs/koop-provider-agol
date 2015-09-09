@@ -12,7 +12,7 @@ var itemJson = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemJson.json')
 // setup koop
 config.data_dir = __dirname + '/output/'
 koop.config = config
-koop.log = new koop.Logger({logfile: './'})
+koop.log = new koop.Logger({logfile: './test.log'})
 
 koop.Cache = new koop.DataCache(koop)
 koop.Cache.db = koop.LocalDB
