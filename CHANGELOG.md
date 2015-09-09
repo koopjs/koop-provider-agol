@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 * Use koop.log instead of console in request worker
+* Pass koop logger to featureservice
 
 ## [1.3.5]
 ### Changed
