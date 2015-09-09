@@ -12,6 +12,7 @@ var AGOL = function (koop) {
    */
   var agol = new koop.BaseModel(koop)
   agol.log = koop.log
+
   // base path to use for every host
   agol.agol_path = '/sharing/rest/content/items/'
 
@@ -819,6 +820,8 @@ var AGOL = function (koop) {
    * @returns {object} FeatureService - a new feature service object
    */
   agol._initFeatureService = function (url, options) {
+    if (!options) options = {}
+    options.logger = agol.log
     return new FeatureService(utils.forceHttps(url), options)
   }
 
@@ -1018,7 +1021,7 @@ var AGOL = function (koop) {
    */
   agol.getFeatureServiceLayerInfo = function (url, layer, callback) {
     // TODO just pass a URL, layers get parsed down in featureservice
-    var service = new FeatureService(url, {layer: layer})
+    var service = this._initFeatureService(url, {layer: layer})
     service.layerInfo(function (err, info) {
       callback(err, info)
     })
