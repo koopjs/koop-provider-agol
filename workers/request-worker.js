@@ -6,6 +6,7 @@ var pgcache = require('koop-pgcache')
 var config = require('config')
 var http = require('http')
 var https = require('https')
+var util = require('util')
 
 // set global number of sockets if in the config
 // node version > 0.12 sets max sockets to infinity
@@ -34,18 +35,18 @@ var jobs = kue.createQueue({
 process.once('SIGINT', function (sig) {
   jobs.active(function (err, ids) {
     if (err) {
-      console.log(err)
+      koop.log.error(util.inspect(err))
     }
     if (ids.length) {
       ids.forEach(function (id) {
         kue.Job.get(id, function (err, job) {
           if (err) {
-            console.log(err)
+            koop.log.error(util.inspect(err))
           }
           job.inactive()
           jobs.active(function (err, activeIds) {
             if (err) {
-              console.log(err)
+              koop.log.error(util.inspect(err))
             }
             if (!activeIds.length) {
               jobs.shutdown(function () {
@@ -91,7 +92,7 @@ function makeRequest (job, callback) {
   })
 
   domain.run(function () {
-    console.info('info', 'starting job: ' + job.id + ' ' + job.data.itemId + ':' + job.data.layerId)
+    koop.log.info('starting job ' + job.id + ': ' + job.data.itemId + '_' + job.data.layerId)
     var completed = 0
     var len = job.data.pages.length
     var featureService = new FeatureService(job.data.serviceUrl, {})
@@ -113,7 +114,7 @@ function makeRequest (job, callback) {
             throw err
           }
           completed++
-          console.info(completed, len, job.data.itemId)
+          koop.log.info(completed + ' pages of ' + len + ' completed. ' + job.id + ': ' + job.data.itemId + '_' + job.data.layerId)
           job.progress(completed, len)
 
           if (completed === len) {

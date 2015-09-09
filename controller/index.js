@@ -20,6 +20,12 @@ var Controller = function (agol, BaseController) {
   */
   // TODO remove this and just call it from different functions
   controller.setHostKey = function (req, res, next) {
+    agol.log.debug(JSON.stringify({
+      route: 'setHostKey',
+      params: req.params,
+      query: req.query
+    }))
+
     if (!req.params.id) return next()
     req.optionKey = Utils.createCacheKey(req.params, req.query)
     agol.find(req.params.id, function (err, data) {
@@ -139,6 +145,12 @@ var Controller = function (agol, BaseController) {
    * @param {function} callback
    */
   controller._getItemData = function (req, res, callback) {
+    agol.log.debug(JSON.stringify({
+      route: '_getItemData',
+      params: req.params,
+      query: req.query
+    }))
+
     var params = req.params
     var options = req.query
     var id = params.id
@@ -157,7 +169,6 @@ var Controller = function (agol, BaseController) {
       var silent = typeof req.params.silent !== 'undefined'
 
       if ((isProcessing || isFailed) && !silent) {
-        // callback is never called?
         return controller._returnStatus(req, res, itemJson, callback)
       }
       callback(null, itemJson)
@@ -176,11 +187,17 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.findItemData = function (req, res) {
+    agol.log.debug(JSON.stringify({
+      route: 'findItemData',
+      params: req.params,
+      query: req.query
+    }))
+
     req.tableKey = controller._createTableKey('agol', req.params)
 
     // returns data in the data
     agol.getInfo(req.tableKey, function (err, info) {
-      if (err) agol.log('error', err)
+      if (err) agol.log.info(err.message)
       if (info && info.status && info.status === 'Failed') {
         // TODO logic so that things don't stay failed for more than x amount of time
         return controller._returnStatus(req, res, info)
@@ -221,7 +238,7 @@ var Controller = function (agol, BaseController) {
         if (typeof req.params.silent === 'undefined') {
           if (err) {
             agol.setFail(req.tableKey, err, function (e) {
-              console.trace(e)
+              agol.log.error(e.message)
             })
             // if we cannot get the item assume it was a bad request
             return res.status(502).json(err)
@@ -244,6 +261,12 @@ var Controller = function (agol, BaseController) {
    * @param {object} info - information about a arcgis online item
    */
   controller.download = function (req, res, info) {
+    agol.log.debug(JSON.stringify({
+      route: 'download',
+      params: req.params,
+      query: req.query
+    }))
+
     var dir = req.params.item + '_' + (req.params.layer || 0)
     var path
     // file params for building an export file
@@ -296,7 +319,7 @@ var Controller = function (agol, BaseController) {
                 // the failure below happened while actually trying to get data, that's why we set it in the DB
                 if (err) {
                   agol.setFail(req.tableKey, err, function (e) {
-                    if (e) console.trace(e)
+                    if (e) agol.log.error(e.message)
                   })
                   return controller._returnStatus(req, res, info, err)
                 }
@@ -312,7 +335,7 @@ var Controller = function (agol, BaseController) {
           controller._getItemData(req, res, function (err, itemJson) {
             if (err) {
               agol.setFail(req.tableKey, err, function (error) {
-                if (error) console.trace(error)
+                if (error) agol.log.error(error.message)
               })
               return controller._returnStatus(req, res, info, err)
             }
@@ -463,8 +486,6 @@ var Controller = function (agol, BaseController) {
 
         // tack on information from a passed in error if it's available
         if (error && error.message) response.generating = Utils.failureMsg(error)
-
-        agol.log('debug', JSON.stringify({status: code, item: req.params.item, layer: (req.params.layer || 0)}))
         res.status(code).json(response)
       })
     }
@@ -513,6 +534,12 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._requestNewFile = function (params) {
+    agol.log.debug(JSON.stringify({
+      route: '_requestNewFile',
+      params: params.req.params,
+      query: params.req.query
+    }))
+
     var res = params.res
     var itemJson = params.itemJson
 
@@ -559,6 +586,12 @@ var Controller = function (agol, BaseController) {
    * @param {objects} params - file export parameters
    */
   controller._exportLarge = function (params) {
+    agol.log.debug(JSON.stringify({
+      route: '_requestNewFile',
+      params: params.req.params,
+      query: params.req.query
+    }))
+
     var req = params.req
     var res = params.res
     var itemJson = params.itemJson
@@ -639,6 +672,14 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._returnFile = function (req, res, path, name) {
+    agol.log.debug(JSON.stringify({
+      route: '_returnFile',
+      params: req.params,
+      query: req.query,
+      path: path,
+      name: name
+    }))
+
     var format = req.params.format
     if (req.query.url_only) {
       var origUrl = req.originalUrl.split('?')
@@ -690,6 +731,12 @@ var Controller = function (agol, BaseController) {
    * Handles all requests for FeatureServices
    */
   controller.featureserver = function (req, res) {
+    agol.log.debug(JSON.stringify({
+      route: 'featureserver',
+      params: req.params,
+      query: req.query
+    }))
+
     // check for geohash route and redirect
     if (req.params.method && req.params.method === 'geohash') return controller.getGeohash(req, res)
 
@@ -924,6 +971,12 @@ var Controller = function (agol, BaseController) {
   *
   */
   controller.getGeohash = function (req, res) {
+    agol.log.debug(JSON.stringify({
+      route: 'getGeohash',
+      params: req.params,
+      query: req.query
+    }))
+
     // used for asking if we have the data already
     var tableKey = controller._createTableKey('agol', req.params)
 

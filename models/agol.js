@@ -4,13 +4,14 @@ var csv = require('csv')
 var FeatureService = require('featureservice')
 var async = require('async')
 var utils = require('../lib/utils.js')
+var util = require('util')
 
 var AGOL = function (koop) {
   /**
    * inherits from the base model
    */
   var agol = new koop.BaseModel(koop)
-
+  agol.log = koop.log
   // base path to use for every host
   agol.agol_path = '/sharing/rest/content/items/'
 
@@ -36,17 +37,15 @@ var AGOL = function (koop) {
       kue.Job.get(id, function (err, job) {
         if (err) return
         job.remove(function (err) {
-          if (err) {
-            agol.log('debug', 'could not remove completed job #' + job.id)
-          }
-          agol.log('debug', 'removed completed job #' + job.id + ' - ' + id)
+          if (err) return agol.log.error('could not remove completed job #' + job.id)
+          agol.log.info('removed completed job #' + job.id + ' - ' + id)
         })
       })
     })
 
     // track and log job progress, just handy to have
     agol.worker_q.on('job progress', function (id, progress) {
-      agol.log('debug', 'progress ' + id + ' - ' + progress + '%')
+      agol.log.info('progress ' + id + ' - ' + progress + '%')
     })
 
   }
@@ -141,11 +140,11 @@ var AGOL = function (koop) {
           agol.log('error', 'could not add remove job to the queue ' + table + ' ' + err)
           return callback(err)
         }
-        agol.log('info', 'added a remove job to the export_q: ' + table)
+        agol.log.info('added a remove job to the export_q: ' + table)
         var dir = [ itemId, layerId ].join('_')
         koop.Cache.remove('agol', itemId, options, function (err, res) {
           if (err) {
-            agol.log('error', 'failed to drop: ' + table + err)
+            agol.log.error('failed to drop: ' + table + err)
             return callback(err)
           }
           agol._removeExportDirs(dir, function (err, success) {
@@ -207,6 +206,7 @@ var AGOL = function (koop) {
         error.timestamp = new Date()
         error.url = url
         error.code = data.statusCode
+        agol.log.error(util.inspect(error))
         return callback(error)
       }
       var json
@@ -215,11 +215,11 @@ var AGOL = function (koop) {
       } catch (e) {
         // TODO detect when parsing failed because the response is some kind of HTML
         // could be 404 could be 500
-        console.trace(e)
         error = new Error('Could not parse the item response')
         error.timestamp = new Date()
         error.url = url
         error.code = 500
+        agol.log.error(util.inspect(error))
         return callback(error)
       }
       if (json.error) {
@@ -228,6 +228,7 @@ var AGOL = function (koop) {
         error.body = json.error
         error.code = 502
         error.url = url
+        agol.log.error(util.inspect(error))
         return callback(error)
       }
       if (json.typeKeywords && json.typeKeywords.indexOf('Metadata') !== -1) {
@@ -251,6 +252,7 @@ var AGOL = function (koop) {
     var url = [host, this.agol_path, item, '/info/metadata/metadata.xml?format=default'].join('')
     this.req(url, function (err, data) {
       if (err) {
+        agol.log.error(util.inspect(err))
         return callback(err)
       }
       json.metadata = data.body
@@ -311,7 +313,7 @@ var AGOL = function (koop) {
     try {
       expiration = agol._validateExpiration(expiration)
     } catch (e) {
-      agol.log('error', 'Invalid expiration input: ' + expiration + ' ' + e)
+      agol.log.error('Invalid expiration input: ' + expiration + ' ' + e.message)
       return callback(e)
     }
     agol.getInfo(key, function (err, info) {
@@ -321,7 +323,9 @@ var AGOL = function (koop) {
       info.expires_at = expiration
       // finally update the info doc with our well-formed and validated expiration
       agol.updateInfo(key, info, function (err) {
-        callback(err, expiration)
+        if (err) return callback(err)
+        agol.log.info('Set expiration: ' + key + ', ' + expiration)
+        callback(null, expiration)
       })
     })
   }
@@ -365,7 +369,8 @@ var AGOL = function (koop) {
         }
       }
       self.updateInfo(key, info, function (err) {
-        callback(err)
+        if (err) return callback(err)
+        agol.log.info(key + ' set as failed in the DB')
       })
     })
   }
@@ -383,18 +388,14 @@ var AGOL = function (koop) {
     var self = this
     var _getData = function (params) {
       koop.Cache.remove('agol', itemId, options, function (err, res) {
-        if (err) {
-          return callback(err)
-        }
+        if (err) return callback(err)
         self.getData(params, options, callback)
       })
     }
 
     this.getItem(host, itemId, options, function (err, itemJson) {
       var layerId = options.layer || 0
-      if (err) {
-        return callback(err, null)
-      }
+      if (err) return callback(err, null)
 
       var params = {
         itemJson: itemJson,
@@ -413,7 +414,7 @@ var AGOL = function (koop) {
       self.getInfo(qKey, function (err, info) {
         // we have nothing in the cache for this item
         if (err) {
-          agol.log('info', 'No info in cache for ' + qKey)
+          agol.log.info('No info in cache for ' + qKey)
           return self.getData(params, options, callback)
         } else {
           // we have something but we need to see if it's expired
@@ -550,7 +551,7 @@ var AGOL = function (koop) {
       if (entry && entry[0]) geojson = entry[0]
       var cacheMiss = !(geojson && geojson.retrieved_at > itemJson.modified)
       if (err || cacheMiss) {
-        agol.log('info', 'Request for a new CSV: ' + itemJson.url)
+        agol.log.info('Request for a new CSV: ' + itemJson.url)
         if (itemJson.size < maxSize) {
           // replace .csv in name
           itemJson.name = itemJson.name.replace('.csv', '')
@@ -742,9 +743,8 @@ var AGOL = function (koop) {
     info.info.fields = (params.serviceInfo) ? params.serviceInfo.fields.map(function (f) { return f.name }) : []
 
     koop.Cache.insert('agol', params.itemId, info, params.layerId, function (err) {
-      if (err) {
-        return callback(err)
-      }
+      if (err) return callback(err)
+
       // return in a processing state, but continue on
       params.itemJson.data = [{ features: [] }]
       params.itemJson.koop_status = 'processing'
@@ -971,24 +971,24 @@ var AGOL = function (koop) {
 
     // add the job to the distributed worker pool
     var job = agol.worker_q.create('agol', jobData).save(function (err) {
-      if (err) return agol.log('error', 'failed to add job ' + job.id + ' to the request queue.')
-      agol.log('debug', 'added page requests to job-queue ' + job.id + ' ' + key)
+      if (err) return agol.log.error('failed to add job ' + job.id + ' to the request queue.')
+      agol.log.debug('added page requests to job-queue ' + job.id + ' ' + key)
     })
 
     var removeJob = function (job) {
       job.remove(function (err) {
-        if (err) return agol.log('error', 'could not remove failed job #' + job.id + ' Error: ' + err + ' ' + key)
-        agol.log('debug', 'removed failed request job #' + job.id + ' - ' + key)
+        if (err) return agol.log.error('could not remove failed job #' + job.id + ' Error: ' + err + ' ' + key)
+        agol.log.error('removed failed request job #' + job.id + ' - ' + key)
       })
     }
 
     // track failed jobs and flag them
     job.on('failed', function (jobErr) {
-      agol.log('error', 'Request paging job failed ' + jobErr + ' ' + key)
+      agol.log.error('Request paging job failed ' + jobErr + ' ' + key)
 
       // fetch some information about how this job failed
       kue.Job.get(job.id, function (err, job) {
-        if (err) return agol.log('error', 'Could not get job from queue ' + err + ' ' + key)
+        if (err) return agol.log.error('Could not get job from queue ' + err + ' ' + key)
         job.get('koopError', function (err, value) {
           var error
           if (err) console.trace(err)
@@ -996,12 +996,12 @@ var AGOL = function (koop) {
             error = JSON.parse(value)
           } catch (e) {
             error = new Error('Unknown failure while paging')
-            agol.log('error', 'Unknown failure from paging job ' + e + ' ' + key)
+            agol.log.error('Unknown failure from paging job ' + e + ' ' + key)
           }
           // if we don't have a good error, don't set anything in the DB
           // TODO should we drop here too?
           agol.setFail(key, error, function (err) {
-            if (err) agol.log('error', 'Unable to set this dataset as failed ' + err + ' ' + key)
+            if (err) agol.log.error('Unable to set this dataset as failed ' + err + ' ' + key)
             removeJob(job)
           })
         })
@@ -1141,6 +1141,13 @@ var AGOL = function (koop) {
             // if the retrieved at date is greater than the lastEditDate then the data are still good
             isExpired = false
           }
+          agol.log.debug(JSON.stringify({
+            isExpired: isExpired,
+            url: info.info.url,
+            editingInfo: serviceInfo.editingInfo,
+            retrieved_at: info.retrieved_at,
+            modified: info.info.modified
+          }))
         }
         callback(null, isExpired, serviceInfo)
       })
