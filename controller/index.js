@@ -195,12 +195,19 @@ var Controller = function (agol, BaseController) {
 
     req.tableKey = controller._createTableKey('agol', req.params)
 
-    // returns data in the data
     agol.getInfo(req.tableKey, function (err, info) {
       if (err) agol.log.info(err.message)
+
       if (info && info.status && info.status === 'Failed') {
-        // TODO logic so that things don't stay failed for more than x amount of time
-        return controller._returnStatus(req, res, info)
+        if (Date.now() - info.retrieved_at > (30 * 60 * 1000)) {
+          agol.dropItem(req.params.id, req.params.item, {layer: req.params.layer}, function (err) {
+            if (err) agol.log.error('Unabled to drop failed resource: ' + req.params.item + '_' + req.params.layer)
+            agol.log.info('Successfully reset failed resource: ' + req.params.item + '_' + req.params.layer)
+            return controller.findItemData(req, res)
+          })
+        } else {
+          return controller._returnStatus(req, res, info)
+        }
       }
 
       // parse the spatial ref if we have one,
@@ -998,12 +1005,11 @@ var Controller = function (agol, BaseController) {
             return controller.returnGeohash(req, res, path, fileInfo)
           }
           return res.status(202).json({ status: 'processing' })
-
         } else {
           // need to know if the data are expired or not
-          var isExpired = (info.retrieved_at && fileInfo && fileInfo.LastModified) ?
-            (new Date(info.retrieved_at) > new Date(fileInfo.LastModified)) :
-            false
+          var isExpired = (info.retrieved_at && fileInfo && fileInfo.LastModified)
+            ? (new Date(info.retrieved_at) > new Date(fileInfo.LastModified))
+            : false
 
           if (!exists) {
             // doesnt exist; must create the new aggregation file
@@ -1056,7 +1062,6 @@ var Controller = function (agol, BaseController) {
   }
 
   return controller
-
 }
 
 module.exports = Controller

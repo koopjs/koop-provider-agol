@@ -48,7 +48,6 @@ var AGOL = function (koop) {
     agol.worker_q.on('job progress', function (id, progress) {
       agol.log.info('progress ' + id + ' - ' + progress + '%')
     })
-
   }
 
   // check to see if koop is configured to force workers on all data
@@ -159,7 +158,6 @@ var AGOL = function (koop) {
           })
         })
       })
-
     } else {
       var dir = [ itemId, layerId ].join('_')
       koop.Cache.remove('agol', itemId, options, function (err, res) {
@@ -168,10 +166,8 @@ var AGOL = function (koop) {
         }
         agol._removeExportDirs(dir, callback)
       })
-
     }
   }
-
   /**
    * Method to remove all the data in each export dir
    * this logic is being used in 4 places
@@ -431,7 +427,6 @@ var AGOL = function (koop) {
           })
         }
       })
-
     })
   }
 
@@ -622,7 +617,6 @@ var AGOL = function (koop) {
           })
         })
       })
-
     })
   }
 
@@ -693,7 +687,6 @@ var AGOL = function (koop) {
 
       itemJson.data = entry
       callback(null, itemJson)
-
     })
   }
 
@@ -1010,7 +1003,6 @@ var AGOL = function (koop) {
         })
       })
     })
-
   }
 
   /**

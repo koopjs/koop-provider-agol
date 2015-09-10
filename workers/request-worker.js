@@ -133,5 +133,4 @@ function makeRequest (job, callback) {
       })
     })
   })
-
 }

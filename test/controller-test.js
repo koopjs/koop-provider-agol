@@ -1,9 +1,10 @@
-/* global before, after, it, describe, should */
+/* global before, beforeEach, after, afterEach, it, describe, should */
 var should = require('should') // eslint-disable-line
 var sinon = require('sinon')
 var request = require('supertest')
 var fs = require('fs')
 var koop = require('koop')({logfile: './test.log'})
+var _ = require('lodash')
 
 var Provider = require('../index.js')
 var agol = Provider.model(koop)
@@ -316,6 +317,81 @@ describe('AGOL Controller', function () {
     })
   })
 
+  describe('getting an item that is in a failed state', function () {
+    beforeEach(function (done) {
+      sinon.stub(controller, '_returnStatus', function (req, res, info) {
+        res.status(500).send({})
+      })
+
+      sinon.stub(agol, 'dropItem', function (id, item, options, callback) {
+        callback(null)
+      })
+
+      sinon.stub(controller, 'download', function (req, res, info) {
+        res.status(202).send({})
+      })
+
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, {id: 'test', host: 'http://dummy.host.com'})
+      })
+
+      done()
+    })
+
+    afterEach(function (done) {
+      controller._returnStatus.restore()
+      agol.dropItem.restore()
+      controller.download.restore()
+      agol.find.restore()
+      done()
+    })
+
+    it('should call drop item and getItemData if failure was more than 30 minutes ago', function (done) {
+      // yes is this a hack, but onSecondCall is not available when you instantiate sinon.stub with an object and method
+      var infoFunc = _.clone(agol.getInfo)
+      var stub = sinon.stub()
+      stub.onFirstCall().callsArgWith(1, null, {
+        status: 'Failed',
+        retrieved_at: Date.now() - (45 * 60 * 1000)
+      })
+      stub.onSecondCall().callsArgWith(1, new Error())
+      agol.getInfo = stub
+
+      request(koop)
+        .get('/agol/test/itemId/3.zip')
+        .expect(202)
+        .end(function (err, res) {
+          should.not.exist(err)
+          agol.dropItem.called.should.equal(true)
+          controller._returnStatus.called.should.equal(false)
+          controller.download.called.should.equal(true)
+          agol.getInfo = infoFunc
+          done()
+        })
+    })
+
+    it('should call _returnStatus if failure was less than 30 minutes ago', function (done) {
+      sinon.stub(agol, 'getInfo', function (key, callback) {
+        callback(null, {
+          status: 'Failed',
+          retrieved_at: Date.now() - (15 * 60 * 1000)
+        })
+      })
+
+      request(koop)
+        .get('/agol/test/itemId/3.zip')
+        .expect(500)
+        .end(function (err, res) {
+          agol.getInfo.restore()
+          should.not.exist(err)
+          agol.dropItem.called.should.equal(false)
+          controller._returnStatus.called.should.equal(true)
+          controller.download.called.should.equal(false)
+          done()
+        })
+    })
+  })
+
   describe('getting item feature data w/o a format', function () {
     before(function (done) {
       var itemInfo = JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json').toString())
@@ -399,7 +475,6 @@ describe('AGOL Controller', function () {
           done()
         })
     })
-
   })
 
   describe('getting geohash json', function () {
@@ -802,7 +877,6 @@ describe('AGOL Controller', function () {
           should.not.exist(err)
           done()
         })
-
     })
 
     it('should return 502 when the info doc says the resource has failed', function (done) {
@@ -863,5 +937,4 @@ describe('AGOL Controller', function () {
         })
     })
   })
-
 })
