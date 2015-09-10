@@ -1005,12 +1005,11 @@ var Controller = function (agol, BaseController) {
             return controller.returnGeohash(req, res, path, fileInfo)
           }
           return res.status(202).json({ status: 'processing' })
-
         } else {
           // need to know if the data are expired or not
-          var isExpired = (info.retrieved_at && fileInfo && fileInfo.LastModified) ?
-            (new Date(info.retrieved_at) > new Date(fileInfo.LastModified)) :
-            false
+          var isExpired = (info.retrieved_at && fileInfo && fileInfo.LastModified)
+            ? (new Date(info.retrieved_at) > new Date(fileInfo.LastModified))
+            : false
 
           if (!exists) {
             // doesnt exist; must create the new aggregation file
@@ -1063,7 +1062,6 @@ var Controller = function (agol, BaseController) {
   }
 
   return controller
-
 }
 
 module.exports = Controller

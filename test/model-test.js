@@ -87,7 +87,6 @@ describe('AGOL Model', function () {
         done()
       })
     })
-
   })
 
   describe('when setting the expiration date on a resource', function () {
@@ -720,7 +719,5 @@ describe('AGOL Model', function () {
         done()
       })
     })
-
   })
-
 })

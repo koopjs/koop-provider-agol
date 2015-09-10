@@ -475,7 +475,6 @@ describe('AGOL Controller', function () {
           done()
         })
     })
-
   })
 
   describe('getting geohash json', function () {
@@ -878,7 +877,6 @@ describe('AGOL Controller', function () {
           should.not.exist(err)
           done()
         })
-
     })
 
     it('should return 502 when the info doc says the resource has failed', function (done) {
@@ -939,5 +937,4 @@ describe('AGOL Controller', function () {
         })
     })
   })
-
 })
