@@ -196,13 +196,13 @@ var Controller = function (agol, BaseController) {
     req.tableKey = controller._createTableKey('agol', req.params)
 
     agol.getInfo(req.tableKey, function (err, info) {
-      console.log('hi', err, info)
       if (err) agol.log.info(err.message)
 
       if (info && info.status && info.status === 'Failed') {
         if (Date.now() - info.retrieved_at > (30 * 60 * 1000)) {
           agol.dropItem(req.params.id, req.params.item, {layer: req.params.layer}, function (err) {
-            if (err) agol.log.error('foo')
+            if (err) agol.log.error('Unabled to drop failed resource: ' + req.params.item + '_' + req.params.layer)
+            agol.log.info('Successfully reset failed resource: ' + req.params.item + '_' + req.params.layer)
             return controller.findItemData(req, res)
           })
         } else {
