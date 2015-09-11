@@ -137,7 +137,7 @@ var AGOL = function (koop) {
       // add the job to the distributed worker pool
       koop.Exporter.export_q.create('exports', jobData).save(function (err) {
         if (err) {
-          agol.log('error', 'could not add remove job to the queue ' + table + ' ' + err)
+          agol.log.error('could not add remove job to the queue ' + table + ' ' + err)
           return callback(err)
         }
         agol.log.info('added a remove job to the export_q: ' + table)
@@ -941,7 +941,7 @@ var AGOL = function (koop) {
       }
     }
 
-    agol.log('info', params.itemId + ' # of requests:' + pages.length)
+    agol.log.info(params.itemId + ' # of requests:' + pages.length)
     params.featureService.pageQueue.push(pages, collect)
   }
 
@@ -987,7 +987,7 @@ var AGOL = function (koop) {
         if (err) return agol.log.error('Could not get job from queue ' + err + ' ' + key)
         job.get('koopError', function (err, value) {
           var error
-          if (err) console.trace(err)
+          if (err) agol.log.error(err)
           try {
             error = JSON.parse(value)
           } catch (e) {

@@ -466,7 +466,7 @@ var Controller = function (agol, BaseController) {
     if (typeof req.params.silent === 'undefined') {
       agol.getCount(table, {}, function (err, count) {
         if (err) {
-          agol.log('error', 'Failed to get count of rows in the DB' + ' ' + err)
+          agol.log.error('Failed to get count of rows in the DB' + ' ' + err)
           // don't let db messages leak out
         }
 
@@ -835,7 +835,7 @@ var Controller = function (agol, BaseController) {
    * renders the preview map view
    */
   controller.preview = function (req, res) {
-    agol.log('info', 'Render preview ' + JSON.stringify(req.params))
+    agol.log.info('Render preview ' + JSON.stringify(req.params))
     res.render(__dirname + '/../views/demo', { locals: { host: req.params.id, item: req.params.item } })
   }
 
