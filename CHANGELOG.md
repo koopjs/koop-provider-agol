@@ -2,11 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.4.1]
+## [1.4.2] - 2015-09-11
+### Fixed
+* Koop logger is called correctly (and the same way) everywhere
+
+## [1.4.1] - 2015-09-10
 ### Fixed
 * Failed resources do not stay failed permanently, instead they drop after 30 minutes
 
-## [1.4.0] 
+## [1.4.0] - 2015-09-08
 ### Added
 * Logging throughout the download request cycle
 * Logging expiration get/set/check
@@ -398,6 +402,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[1.4.2]: https://github.com/koopjs/koop-agol/compare/v1.4.1..v1.4.2
 [1.4.1]: https://github.com/koopjs/koop-agol/compare/v1.4.0..v1.4.1
 [1.4.0]: https://github.com/koopjs/koop-agol/compare/v1.3.5..v1.4.0
 [1.3.5]: https://github.com/koopjs/koop-agol/compare/v1.3.4..v1.3.5
