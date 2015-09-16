@@ -17,7 +17,7 @@ describe('Utils', function () {
     }
     var params4 = {
       item: 'item',
-      0: '0.csv'
+      0: '1.csv'
     }
     var reference_query = {
       foo: 1,
@@ -27,12 +27,12 @@ describe('Utils', function () {
       bar: 1,
       foo: 1
     }
-    var test_query3 = {
+    var test_query2 = {
       foo: 1,
       bar: 2,
       where: 'where clause1'
     }
-    var test_query2 = {
+    var test_query3 = {
       foo: 1,
       bar: 2,
       where: 'where clause2'
@@ -60,7 +60,7 @@ describe('Utils', function () {
     })
 
     it('should create the same cache key when formats are included in the request', function (done) {
-      var key1 = Utils.createCacheKey(params, reference_query)
+      var key1 = Utils.createCacheKey(params2, reference_query)
       var key2 = Utils.createCacheKey(params4, reference_query)
       key1.should.equal(key2)
       done()
