@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * No longer continuing execution after handling a failed resource
 * Cache keys are the same when formats are passed in
+* Cache keys are no longer the same when different where clauses are passed in
 
 ### Changed
 * Removed some cruft and unused logic from the controller
