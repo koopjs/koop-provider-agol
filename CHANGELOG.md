@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [1.4.3] - 2015-09-16 
 ### Fixed
 * No longer continuing execution after handling a failed resource
 * Cache keys are the same when formats are passed in
@@ -411,6 +411,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[1.4.3]: https://github.com/koopjs/koop-agol/compare/v1.4.2..v1.4.3
 [1.4.2]: https://github.com/koopjs/koop-agol/compare/v1.4.1..v1.4.2
 [1.4.1]: https://github.com/koopjs/koop-agol/compare/v1.4.0..v1.4.1
 [1.4.0]: https://github.com/koopjs/koop-agol/compare/v1.3.5..v1.4.0
