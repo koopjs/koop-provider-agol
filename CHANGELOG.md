@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* No longer continuing execution after handling a failed resource
+* Cache keys are the same when formats are passed in
+
+### Changed
+* Removed some cruft and unused logic from the controller
+
 ## [1.4.2] - 2015-09-11
 ### Fixed
 * Koop logger is called correctly (and the same way) everywhere

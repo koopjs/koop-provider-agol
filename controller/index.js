@@ -201,63 +201,52 @@ var Controller = function (agol, BaseController) {
       if (info && info.status && info.status === 'Failed') {
         if (Date.now() - info.retrieved_at > (30 * 60 * 1000)) {
           agol.dropItem(req.params.id, req.params.item, {layer: req.params.layer}, function (err) {
-            if (err) agol.log.error('Unabled to drop failed resource: ' + req.params.item + '_' + req.params.layer)
+            if (err) agol.log.error('Unable to drop failed resource: ' + req.params.item + '_' + req.params.layer)
             agol.log.info('Successfully reset failed resource: ' + req.params.item + '_' + req.params.layer)
-            return controller.findItemData(req, res)
+            controller.findItemData(req, res)
           })
         } else {
+          controller._returnStatus(req, res, info)
+        }
+      } else {
+        // parse the spatial ref if we have one,
+        // if its whitelisted remove it from the query object
+        req.params.key = req.optionKey
+        // if the status is processing we either return with a file or a 202
+        if (info && info.status === 'processing') {
+          if (req.params.format) {
+            return controller._returnStatusFile(req, res, info)
+          }
           return controller._returnStatus(req, res, info)
         }
-      }
 
-      // parse the spatial ref if we have one,
-      // if its whitelisted remove it from the query object
-      if (req.query.outSR) {
-        var sr = agol.parseSpatialReference(req.query.outSR)
-        if (sr && sr.wkid && [3785, 3857, 4326, 102100].indexOf(sr.wkid) !== -1) {
-          delete req.query.outSR
+        // check format for exporting data
+        if (req.params.format) return controller.download(req, res, info)
+
+        // if we have a layer then append it to the query params
+        if (req.params.layer) {
+          req.query.layer = req.params.layer
         }
-      }
+        // get the esri json data for the service
+        controller._getItemData(req, res, function (err, itemJson) {
+          // when silent is sent as a param undefined
+          if (typeof req.params.silent === 'undefined') {
+            if (err) {
+              agol.setFail(req.tableKey, err, function (e) {
+                agol.log.error(e.message)
+              })
+              // if we cannot get the item assume it was a bad request
+              return res.status(502).json(err)
+            }
 
-      req.params.key = req.optionKey
-
-      // determine if this request is for a filtered dataset
-      req.query.isFiltered = (req.query.where || req.query.geometry)
-
-      // if the status is processing we either return with a file or a 202
-      if (info && info.status === 'processing') {
-        if (req.params.format) {
-          return controller._returnStatusFile(req, res, info)
-        }
-        return controller._returnStatus(req, res, info)
-      }
-
-      // check format for exporting data
-      if (req.params.format) return controller.download(req, res, info)
-
-      // if we have a layer then append it to the query params
-      if (req.params.layer) {
-        req.query.layer = req.params.layer
-      }
-      // get the esri json data for the service
-      controller._getItemData(req, res, function (err, itemJson) {
-        // when silent is sent as a param undefined
-        if (typeof req.params.silent === 'undefined') {
-          if (err) {
-            agol.setFail(req.tableKey, err, function (e) {
-              agol.log.error(e.message)
-            })
-            // if we cannot get the item assume it was a bad request
-            return res.status(502).json(err)
+            // TODO remove hard coded maxRecCount
+            if (itemJson && itemJson.data && itemJson.data[0].features.length > 1000) {
+              itemJson.data[0].features = itemJson.data[0].features.splice(0, 1000)
+            }
+            return res.status(200).json(itemJson)
           }
-
-          // TODO remove hard coded maxRecCount
-          if (itemJson && itemJson.data && itemJson.data[0].features.length > 1000) {
-            itemJson.data[0].features = itemJson.data[0].features.splice(0, 1000)
-          }
-          return res.status(200).json(itemJson)
-        }
-      })
+        })
+      }
     })
   }
 
@@ -274,6 +263,9 @@ var Controller = function (agol, BaseController) {
       query: req.query
     }))
 
+    // redirect to thumbnail for png access
+    if (req.params.format === 'png') return controller.thumbnail(req, res)
+
     var dir = req.params.item + '_' + (req.params.layer || 0)
     var path
     // file params for building an export file
@@ -287,14 +279,16 @@ var Controller = function (agol, BaseController) {
       type: 'agol'
     }
 
+    if (req.query.outSR) {
+      var sr = agol.parseSpatialReference(req.query.outSR)
+      if (sr && sr.wkid && [3785, 3857, 4326, 102100].indexOf(sr.wkid) !== -1) {
+        delete req.query.outSR
+      }
+    }
+
     // force an override on the format param if given a format in the query
     if (req.query.format) {
       req.params.format = req.query.format
-    }
-
-    // redirect to thumbnail for png access
-    if (req.params.format === 'png') {
-      return controller.thumbnail(req, res)
     }
 
     // create the file path
@@ -631,7 +625,7 @@ var Controller = function (agol, BaseController) {
 
     var format = req.params.format
     var options = {
-      isFiltered: req.query.isFiltered,
+      isFiltered: (req.query.where || req.query.geometry),
       name: params.name,
       outSR: req.query.outSR
     }

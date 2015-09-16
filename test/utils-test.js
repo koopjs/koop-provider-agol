@@ -15,6 +15,10 @@ describe('Utils', function () {
       item: 'item',
       0: 'FeatureServer/0'
     }
+    var params4 = {
+      item: 'item',
+      0: '0.csv'
+    }
     var reference_query = {
       foo: 1,
       bar: 1
@@ -41,6 +45,13 @@ describe('Utils', function () {
     it('should not include the featureserver method in cache keys', function (done) {
       var key1 = Utils.createCacheKey(params, reference_query)
       var key2 = Utils.createCacheKey(params3, reference_query)
+      key1.should.equal(key2)
+      done()
+    })
+
+    it('should create the same cache key when formats are included in the request', function (done) {
+      var key1 = Utils.createCacheKey(params, reference_query)
+      var key2 = Utils.createCacheKey(params4, reference_query)
       key1.should.equal(key2)
       done()
     })
