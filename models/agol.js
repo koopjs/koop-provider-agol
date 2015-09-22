@@ -12,6 +12,7 @@ var AGOL = function (koop) {
    */
   var agol = new koop.BaseModel(koop)
   agol.log = koop.log
+  console.log(agol.log)
 
   // base path to use for every host
   agol.agol_path = '/sharing/rest/content/items/'
@@ -990,6 +991,7 @@ var AGOL = function (koop) {
           if (err) agol.log.error(err)
           try {
             error = JSON.parse(value)
+            if (error.type === 'db') return removeJob(job)
           } catch (e) {
             error = new Error('Unknown failure while paging')
             agol.log.error('Unknown failure from paging job ' + e + ' ' + key)
