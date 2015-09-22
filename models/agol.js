@@ -12,7 +12,6 @@ var AGOL = function (koop) {
    */
   var agol = new koop.BaseModel(koop)
   agol.log = koop.log
-  console.log(agol.log)
 
   // base path to use for every host
   agol.agol_path = '/sharing/rest/content/items/'
