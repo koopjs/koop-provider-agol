@@ -990,6 +990,7 @@ var AGOL = function (koop) {
           if (err) agol.log.error(err)
           try {
             error = JSON.parse(value)
+            if (error.type === 'db') return removeJob(job)
           } catch (e) {
             error = new Error('Unknown failure while paging')
             agol.log.error('Unknown failure from paging job ' + e + ' ' + key)

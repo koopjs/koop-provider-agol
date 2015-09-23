@@ -95,7 +95,7 @@ function makeRequest (job, callback) {
     koop.log.info('starting job ' + job.id + ': ' + job.data.itemId + '_' + job.data.layerId)
     var completed = 0
     var len = job.data.pages.length
-    var featureService = new FeatureService(job.data.serviceUrl, {})
+    var featureService = new FeatureService(job.data.serviceUrl, {logger: koop.log})
 
     // aggregate responses into one json and call done we have all of them
     // start the requests
@@ -111,7 +111,10 @@ function makeRequest (job, callback) {
         koop.Cache.insertPartial('agol', job.data.itemId, geojson, job.data.layerId, function (err) {
           if (err) {
             featureService.pageQueue.kill()
-            throw err
+            koop.log.error('err')
+            var error = new Error('Error inserting rows into the db')
+            error.type = 'db'
+            throw error
           }
           completed++
           koop.log.info(completed + ' pages of ' + len + ' completed. ' + job.id + ': ' + job.data.itemId + '_' + job.data.layerId)
