@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [1.4.4] - 2015-09-23
 ### Changed
 * Logger is passed to featureservice
 * On error inserting after a drop call, failure status is not set in db
