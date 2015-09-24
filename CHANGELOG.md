@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [1.4.5] - 2015-09-24
 ### Changed
 * Now sending 500 if geohash on AWS is empty
 * Force override of agol.worker_q prefix
@@ -421,6 +421,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[1.4.4]: https://github.com/koopjs/koop-agol/compare/v1.4.3..v1.4.4
 [1.4.3]: https://github.com/koopjs/koop-agol/compare/v1.4.2..v1.4.3
 [1.4.2]: https://github.com/koopjs/koop-agol/compare/v1.4.1..v1.4.2
 [1.4.1]: https://github.com/koopjs/koop-agol/compare/v1.4.0..v1.4.1
