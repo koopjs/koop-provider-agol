@@ -1033,6 +1033,7 @@ var Controller = function (agol, BaseController) {
     if (path.substr(0, 4) === 'http') {
       // Proxy to s3 urls allows us to not show the URL
       https.get(path, function (proxyRes) {
+        if (proxyRes.headers['content-length'] === 0) return res.status(500).json({error: 'Empty geohash'})
         proxyRes.pipe(res)
       })
     } else {
