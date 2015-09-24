@@ -25,13 +25,14 @@ var AGOL = function (koop) {
   // create a request queue if configured to page large data sets to workers
   if (koop.config.agol && koop.config.agol.request_workers) {
     agol.worker_q = kue.createQueue({
-      prefix: koop.config.agol.request_workers.redis.prefix || 'q',
       disableSearch: true,
       redis: {
         port: koop.config.agol.request_workers.redis.port || 6379,
         host: koop.config.agol.request_workers.redis.host || '127.0.0.1'
       }
     })
+    // Note there is a bug in kue where multiple queues in the same process with step on the other's prefix
+    agol.worker_q.client.prefix = koop.config.agol.request_workers.redis.prefix || 'q'
 
     // remove completed jobs from the queue
     agol.worker_q.on('job complete', function (id) {

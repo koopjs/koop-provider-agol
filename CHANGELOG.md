@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Changed
 * Now sending 500 if geohash on AWS is empty
+* Force override of agol.worker_q prefix
 
 ## [1.4.4] - 2015-09-23
 ### Changed
