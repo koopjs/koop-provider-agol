@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Now sending 500 if geohash on AWS is empty
+
 ## [1.4.4] - 2015-09-23
 ### Changed
 * Logger is passed to featureservice
