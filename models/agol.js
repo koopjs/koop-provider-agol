@@ -26,6 +26,48 @@ var AGOL = function (koop) {
       agol_path: Utils.agol_path
     }
     agol.featureQueue = FeatureQueue.create(qOpts)
+
+    /**
+     * Drops the resource from any failed jobs and removes the job from the queue
+     *
+     * @param {function} callback - calls back with an error or the failed jobs
+     */
+    agol.dropAndRemoveFailed = function (callback) {
+      agol.log.info('Dropping resources and removing jobs from failures')
+      var report = {
+        sucessful: [],
+        failed: []
+      }
+      agol.featureQueue.failed(0, 9999999, function (err, failed) {
+        if (err) {
+          agol.log.error('Error while trying to fetch failed jobs', err)
+          return finish(err)
+        }
+        async.each(failed, function (job, callback) {
+          var params = job.payload.args[0]
+          agol.cache.drop(params.item, params.layer, {}, function (err) {
+            if (err) {
+              agol.log.error('Error while trying to drop failed resource', params.item, params.layer, err)
+              report.failed.push(job)
+              return callback()
+            }
+            agol.featureQueue.removeFailed(job, function (err) {
+              if (err) {
+                agol.log.error('Error while trying to remove failed job', params.item, params.layer, err)
+                report.failed.push(job)
+                return callback()
+              }
+              report.success.push(job)
+              callback()
+            })
+          })
+        }, finish)
+      })
+
+      function finish (err) {
+        if (callback) callback(err, report)
+      }
+    }
     // every 30 minutes clear out resources where the job failed
     // currently we don't fail any jobs on purpose so this *should* only happen
     // if the process crashes
@@ -237,41 +279,44 @@ var AGOL = function (koop) {
    * @private
    */
   agol.buildGeohash = function (info, options, callback) {
+    var filtered = (options.query.where || options.query.geometry)
     info.geohashStatus = 'Processing'
     agol.cache.updateInfo(options.key, info, function (err, success) {
       if (err) return callback(err)
       // trigger the callback right away so we can return 202 until it done
       // if we dont have a where filter then we return with processing
-      if (!options.query.where && !options.query.geometry) callback()
-      agol._getAndSaveGeohash(options, function (err, agg) {
-        if (err) return callback(err)
+      if (!filtered) callback()
+      getAndSaveGeohash(function (err, agg) {
+        if (err) return done(err)
         agol.cache.getInfo(options.key, function (err, info) {
-          if (err) return callback(err)
+          if (err) return done(err)
           delete info.geohashStatus
           agol.cache.updateInfo(options.key, info, function (err, success) {
-            if (err) return callback(err)
+            if (err) return done(err)
             // if we DO have a where filter then we can return the agg right away
-            if (options.query.where || options.query.geometry) callback(null, agg)
+            if (options.query.where || options.query.geometry) done(null, agg)
           })
         })
       })
     })
-  }
 
-  /**
-   * Gets a geohash from the DB and saves it to the file system
-   *
-   * @param {object} options - describes the item and filters to apply
-   * @param {function} callback - calls back with an error or the geohash
-   * @private
-   */
-  agol._getAndSaveGeohash = function (options, callback) {
-    agol.getGeoHash(options.key, options.query, function (err, agg) {
-      if (err) return callback(err)
-      agol.saveFile(options.filePath, options.fileName, JSON.stringify(agg), function (err) {
-        callback(err, agg)
+    function getAndSaveGeohash (callback) {
+      agol.getGeoHash(options.key, options.query, function (err, agg) {
+        if (err) return callback(err)
+        agol.saveFile(options.filePath, options.fileName, JSON.stringify(agg), function (err) {
+          callback(err, agg)
+        })
       })
-    })
+    }
+
+    // callback is already called in the case where we have a non-filtered request
+    // so this will only fire if the request is filtered
+    function done (err, agg) {
+      if (filtered) {
+        if (err) return callback(err)
+        callback(null, agg)
+      }
+    }
   }
 
   /**
@@ -329,46 +374,6 @@ var AGOL = function (koop) {
     return expiration.getTime()
   }
 
-  /**
-   * Drops the resource from any failed jobs and removes the job from the queue
-   *
-   * @param {function} callback - calls back with an error or the failed jobs
-   */
-  agol.dropAndRemoveFailed = function (callback) {
-    var report = {
-      sucessful: [],
-      failed: []
-    }
-    agol.featureQueue.failed(0, 9999999, function (err, failed) {
-      if (err) {
-        agol.log.error('Error while trying to fetch failed jobs', err)
-        return finish(err)
-      }
-      async.each(failed, function (job, callback) {
-        var params = job.payload.args[0]
-        agol.cache.drop(params.item, params.layer, {}, function (err) {
-          if (err) {
-            agol.log.error('Error while trying to drop failed resource', params.item, params.layer, err)
-            report.failed.push(job)
-            return callback()
-          }
-          agol.featureQueue.removeFailed(job, function (err) {
-            if (err) {
-              agol.log.error('Error while trying to remove failed job', params.item, params.layer, err)
-              report.failed.push(job)
-              return callback()
-            }
-            report.success.push(job)
-            callback()
-          })
-        })
-      }, finish)
-    })
-
-    function finish (err) {
-      if (callback) callback(err, report)
-    }
-  }
   return agol
 }
 

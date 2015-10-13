@@ -25,7 +25,7 @@ var Controller = function (agol, BaseController) {
     // support POST requests; map body vals to the query
     // (then all same as GET)
     for (var k in req.body) if (req.body[k]) req.query[k] = req.body[k]
-
+    req.params.silent = false
     if (!req.params.id) return next()
     req.optionKey = Utils.createCacheKey(req.params, req.query)
     agol.find(req.params.id, function (err, data) {
@@ -200,11 +200,12 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._returnStatus = function (req, res, info, error) {
-    if (typeof req.params.silent !== 'undefined') return
+    if (req.params.silent) return
     var table = Utils.createTableKey(req.params)
     agol.cache.getCount(table, {}, function (err, count) {
       if (err) agol.log.error('Failed to get count of rows in the DB' + ' ' + err)
 
+      info = info || {}
       // if we have a passed in error or the info doc says error
       // then this request is errored and we should send a 502 with status failed
       var errored = (error && error.message) || (info.generating && info.generating.error)
@@ -361,7 +362,7 @@ var Controller = function (agol, BaseController) {
   controller.featureserver = function (req, res) {
     agol.log.debug(JSON.stringify({route: 'featureserver', params: req.params, query: req.query}))
     var table = Utils.createTableKey(req.params)
-    agol.getInfo({key: table, item: req.params.item}, function (err, info) {
+    agol.getInfo({key: table, item: req.params.item, host: req.portal}, function (err, info) {
       if (err) return res.status(500).json({error: err.message})
       if (info.status === 'Expired') return controller._expireServiceData(req, res)
       controller._fetchServiceData(req, res)
@@ -411,7 +412,7 @@ var Controller = function (agol, BaseController) {
 
     var hashOpts = Utils.createGeohashOptions(req)
     agol.files.exists(hashOpts.filePath, hashOpts.fileName, function (exists, path, fileInfo) {
-      var options = {key: hashOpts.infoKey, host: req.portal, item: req.params.item, layer: req.params.layer || 0}
+      var options = {key: hashOpts.key, host: req.portal, item: req.params.item, layer: req.params.layer || 0}
       agol.getInfo(options, function (err, info) {
         if (err) return res.status(500).send(err)
         if (exists) {
@@ -479,8 +480,8 @@ var Controller = function (agol, BaseController) {
    */
   controller._createGeohash = function (req, res, options, info) {
     agol.buildGeohash(info, options, function (err, agg) {
-      if (err) return res.status(500).send(err)
       if (req.params.silent) return
+      if (err) return res.status(500).send(err)
       if (!agg) return res.status(202).json({status: 'Generating Geohash'})
       res.status(200).json(agg)
     })

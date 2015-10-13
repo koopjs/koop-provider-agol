@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Reduce verbosity of worker logging
+* Field indexing defaults to false
+
+### Fixed
+* CSV download requests return proper info after insert
+* CSV item names are cleansed of illegal characters
+* FeatureServer requests pass the correct options to `getInfo`
+* Correct key is passed for geohash
+* `DropAndRemoveFailed` works when called by timer
+* Geohash files are saved to the correct directory
+* Callback is only called once when building a geohash
 
 ## [2.0.0-alpha] - 2015-10-13
 ### Added

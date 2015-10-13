@@ -8,6 +8,7 @@ var koop = require('koop')(config)
 var Cache = require('./lib/cache.js')
 var pgCache = require('koop-pgcache')
 var stringify = require('json-stringify-safe')
+var _ = require('lodash')
 koop.registerCache(pgCache)
 
 // set global number of sockets if in the config
@@ -55,20 +56,27 @@ multiWorker.on('cleaning_worker', function (workerId, worker, pid) {
   koop.log.debug('cleaning old worker ' + worker)
 })
 multiWorker.on('job', function (workerId, queue, job) {
-  koop.log.info('worker[' + workerId + '] working job ' + queue + ' ' + stringify(job))
+  koop.log.info('worker[' + workerId + '] working job ' + queue + ' ' + logJob(job))
 })
 multiWorker.on('reEnqueue', function (workerId, queue, job, plugin) {
-  koop.log.info('worker[' + workerId + '] reEnqueue job (' + plugin + ') ' + queue + ' ' + stringify(job))
+  koop.log.info('worker[' + workerId + '] reEnqueue job (' + plugin + ') ' + queue + ' ' + logJob(job))
 })
 multiWorker.on('success', function (workerId, queue, job, result) {
-  koop.log.info('worker[' + workerId + '] job success ' + queue + ' ' + stringify(job) + ' >> ' + result)
+  koop.log.info('worker[' + workerId + '] job success ' + queue + ' ' + logJob(job) + ' >> ' + result)
 })
 multiWorker.on('failure', function (workerId, queue, job, failure) {
-  koop.log.error('worker[' + workerId + '] job failure ' + queue + ' ' + stringify(job) + ' >> ' + failure)
+  koop.log.error('worker[' + workerId + '] job failure ' + queue + ' ' + logJob(job) + ' >> ' + failure)
 })
 multiWorker.on('error', function (workerId, queue, job, error) {
-  koop.log.error('worker[' + workerId + '] error ' + queue + ' ' + stringify(job) + ' >> ' + error)
+  koop.log.error('worker[' + workerId + '] error ' + queue + ' ' + logJob(job) + ' >> ' + error)
 })
+
+function logJob (job) {
+  var logStatement = _.cloneDeep(job)
+  var toOmit = ['log', 'pages', 'cache']
+  logStatement.args = _.omit(logStatement.args[0], toOmit)
+  return stringify(logStatement)
+}
 
 process.on('SIGINT', function () {
   multiWorker.stop(function () {
