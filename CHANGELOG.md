@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.1-alpha-1]
 ### Added
 * Debug logging for all controller routes
 
@@ -476,6 +476,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+
+[2.0.1-alpha-1]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha..v2.0.1-alpha-1
 [2.0.1-alpha]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha..v2.0.1-alpha
 [2.0.0-alpha]: https://github.com/koopjs/koop-agol/compare/v1.4.5..v2.0.0-alpha
 [1.4.5]: https://github.com/koopjs/koop-agol/compare/v1.4.4..v1.4.5
