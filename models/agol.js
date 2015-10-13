@@ -11,6 +11,11 @@ var AGOL = function (koop) {
    */
   var agol = new koop.BaseModel(koop)
   var config = koop.config
+  // set field indexing off by default
+  var indexFields
+  config.agol
+  if (config.agol && config.agol.indexFields) indexFields = true
+  else indexFields = false
   config.agol = config.agol || {}
   agol.log = koop.log
 
@@ -77,8 +82,7 @@ var AGOL = function (koop) {
   agol.csvQueue = new CSVQueue({
     cache: koop.Cache,
     log: koop.log,
-    files: agol.files,
-    indexFields: config.agol.indexFields || false
+    files: agol.files
   })
 
   agol.cache = new Cache({
@@ -88,7 +92,7 @@ var AGOL = function (koop) {
     log: koop.log,
     featureQueue: agol.featureQueue,
     csvQueue: agol.csvQueue,
-    indexFields: config.agol.indexFields || false
+    indexFields: indexFields
   })
 
   agol.portal = new Portal({log: koop.log})

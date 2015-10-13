@@ -62,7 +62,6 @@ describe('AGOL Model', function () {
       })
 
       agol.getInfo({key: 'test'}, function (err, info) {
-        console.log(err, info)
         should.not.exist(err)
         info.status.should.equal('Cached')
         agol.cache.getInfo.restore()

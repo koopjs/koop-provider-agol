@@ -5,8 +5,11 @@ var FeatureRequest = require('../lib/feature-request.js')
 var featureRequest = new FeatureRequest('http://www.foo.com', {
   log: {
     debug: function () {}
-  }
+  },
+  service: 'http://maps.cera.govt.nz/arcgis/rest/services/Charlotte/CharlotteComplete/MapServer',
+  layer: 40
 })
+
 describe('when when trying to build a page job', function () {
   before(function (done) {
     sinon.stub(featureRequest.featureService, 'pages', function (callback) {
@@ -25,6 +28,11 @@ describe('when when trying to build a page job', function () {
 
   after(function (done) {
     featureRequest.featureService.pages.restore()
+    done()
+  })
+
+  it('should initiate a FeatureService instance with the correct layer', function (done) {
+    featureRequest.featureService.layer.should.equal(40)
     done()
   })
 

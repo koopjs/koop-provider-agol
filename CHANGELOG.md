@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* Debug logging for all controller routes
+
+### Changed
+* Processing time is rounded to a precision of 2
+
+### Fixed
+* Page jobs are built using the correct layer
+* Feature service query params are passed to cache on `get`
+* Data is passed to `baseController.processFeatureServer` in the correct way
+* Server no longer crashes on no-data response from Portal
+
 ## [2.0.1-alpha]
 ### Changed
 * Reduce verbosity of worker logging

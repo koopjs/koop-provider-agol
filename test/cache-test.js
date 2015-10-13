@@ -31,7 +31,8 @@ var cache = new Cache({
   featureQueue: null,
   csvQueue: csvQueue,
   files: {},
-  exporter: {}
+  exporter: {},
+  indexFields: false
 })
 
 describe('caching feature services', function () {
@@ -84,6 +85,7 @@ describe('caching feature services', function () {
       info.type.should.equal('Feature Service')
       info.status.should.equal('Cached')
       info.version.should.equal('2.0')
+      info._indexFields.should.equal(false)
       info.url.should.equal('http://www.featureservice.com/FeatureServer/0')
       done()
     })
@@ -124,8 +126,9 @@ describe('caching csvs', function () {
   it('should have set info in the cache', function (done) {
     cache.getInfo('agol:itemCSV:0', function (err, info) {
       should.not.exist(err)
-      info.name.should.equal('csv item')
       info.type.should.equal('CSV')
+      info._indexFields.should.equal(false)
+      info.version.should.equal('2.0')
       done()
     })
   })

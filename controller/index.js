@@ -3,6 +3,7 @@ var Sm = require('sphericalmercator')
 var merc = new Sm({size: 256})
 var fs = require('fs')
 var Utils = require('../lib/utils.js')
+var _ = require('lodash')
 
 var Controller = function (agol, BaseController) {
   /**
@@ -43,6 +44,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.register = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'register', params: req.params, query: req.query}))
     if (!req.body.host) return res.status(400).send('Must provide a host to register')
 
     agol.register(req.body.id, req.body.host, function (err, id) {
@@ -58,6 +60,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.del = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'del', params: req.params, query: req.query}))
     if (!req.params.id) return res.status(400).send('Must specify a service id')
 
     agol.remove(req.params.id, function (err, data) {
@@ -73,6 +76,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.list = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'list', params: req.params, query: req.query}))
     agol.find(null, function (err, data) {
       if (err) return res.status(500).send(err)
       res.json(data)
@@ -86,6 +90,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.find = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'find', params: req.params, query: req.query}))
     res.status(200).json(req.portal)
   }
 
@@ -96,6 +101,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.getInfo = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'getInfo', params: req.params, query: req.query}))
     var table = Utils.createTableKey(req.params)
     agol.cache.getInfo(table, function (err, info) {
       if (err) return res.status(500).json({error: err.message})
@@ -110,6 +116,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.dropResource = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'dropResource', params: req.params, query: req.query}))
     agol.dropResource(req.params.item, req.params.layer || 0, req.query, function (error, itemJson) {
       if (error) return res.status(error.code || 400).send(error)
       res.status(200).json(itemJson)
@@ -124,6 +131,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.deleteItemData = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'deleteItemData', params: req.params, query: req.query}))
     req.query.forceDelete = true
     controller.dropResource(req, res)
   }
@@ -200,6 +208,7 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._returnStatus = function (req, res, info, error) {
+    agol.log.debug(JSON.stringify({route: '_returnStatus', params: req.params, query: req.query}))
     if (req.params.silent) return
     var table = Utils.createTableKey(req.params)
     agol.cache.getCount(table, {}, function (err, count) {
@@ -233,6 +242,7 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._handleExpired = function (req, res, info) {
+    agol.log.debug(JSON.stringify({route: '_handleExpired', params: req.params, query: req.query}))
     agol.dropResource(req.params.item, req.params.layer, {layer: req.params.layer}, function (err) {
       if (err) agol.log.error('Unable to drop expired resource: ' + req.params.item + '_' + req.params.layer)
       agol.log.info('Successfully dropped expired resource: ' + req.params.item + '_' + req.params.layer)
@@ -249,6 +259,7 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._handleFailed = function (req, res, info) {
+    agol.log.debug(JSON.stringify({route: '_handleFailed', params: req.params, query: req.query}))
     if (Date.now() - info.retrieved_at > (30 * 60 * 1000)) {
       agol.dropResource(req.params.item, req.params.layer, null, function (err) {
         if (err) agol.log.error('Unable to drop failed resource: ' + req.params.item + '_' + req.params.layer)
@@ -269,6 +280,7 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._handleUnavailable = function (req, res, info) {
+    agol.log.debug(JSON.stringify({route: '_handleUnavailable', params: req.params, query: req.query}))
     var options = Utils.createCacheOptions(req)
     agol.cacheResource(options, function (err, status) {
       controller._returnStatus(req, res, status, err)
@@ -282,6 +294,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response
    */
   controller.getExpiration = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'getExpiration', params: req.params, query: req.query}))
     var table = Utils.createTableKey(req.params)
     agol.getExpiration(table, function (err, expiration) {
       if (err) return res.status(404).json({error: err.message})
@@ -296,6 +309,7 @@ var Controller = function (agol, BaseController) {
    * @params {object} res - the outgoing response
    */
   controller.setExpiration = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'setExpiration', params: req.params, query: req.query}))
     var table = Utils.createTableKey(req.params)
     agol.setExpiration(table, req.body.expires_at, function (err, timestamp) {
       if (!err) return res.status(200).json({expires_at: new Date(timestamp).toISOString()})
@@ -377,6 +391,7 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._expireServiceData = function (req, res) {
+    agol.log.debug(JSON.stringify({route: '_expireServiceData', params: req.params, query: req.query}))
     agol.drop(req.params.item, req.params.layer, function (err) {
       if (err) agol.log(err)
       controller._fetchServiceData(req, res)
@@ -391,13 +406,17 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._fetchServiceData = function (req, res) {
-    var options = {item: req.params.item, layer: req.params.layer || 0, host: req.portal}
+    agol.log.debug(JSON.stringify({route: '_fetchServiceData', params: req.params, query: req.query}))
+    var query = Utils.setServiceDefaults(req.params, req.query)
+    var options = {item: req.params.item, layer: req.params.layer || 0, host: req.portal, query: query}
     agol.cacheResource(options, function (error, info, data) {
       if (error) return res.status(error.code || 500).send(error.error || error)
       delete req.query.geometry
       delete req.query.where
-      req.query = Utils.setServiceDefaults(req.query, req.params)
-      controller.processFeatureServer(req, res, null, data, req.query.callback)
+      req.query = _.omit(query, ['geometry', 'where'])
+      // the data must be passed in to controller.processFeatureServer as the first element in an array
+      // this should be removed in koop 3.0
+      controller.processFeatureServer(req, res, null, [data], req.query.callback)
     })
   }
 
@@ -455,6 +474,7 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._returnGeohash = function (req, res, path, info) {
+    agol.log.debug(JSON.stringify({route: '_returnGeohash', params: req.params, query: req.query}))
     res.contentType('application/json')
     if (info.expired || info.status === 'Expired') {
       res.set('X-Expired', info.retrieved_at)
@@ -479,11 +499,73 @@ var Controller = function (agol, BaseController) {
    * @private
    */
   controller._createGeohash = function (req, res, options, info) {
+    agol.log.debug(JSON.stringify({route: '_createGeohash', params: req.params, query: req.query}))
     agol.buildGeohash(info, options, function (err, agg) {
       if (req.params.silent) return
       if (err) return res.status(500).send(err)
       if (!agg) return res.status(202).json({status: 'Generating Geohash'})
       res.status(200).json(agg)
+    })
+  }
+
+  /**
+   * Gets the total number of jobs on the queue
+   *
+   * @param {object} req - the incoming request object
+   * @param {object} res - the outgoing response object
+   */
+  controller.getQueueLength = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'getGeohash', params: req.params, query: req.query}))
+    if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
+    agol.featureQueue.length('agol', function (err, length) {
+      if (err) return res.status(500).send(err)
+      var response = {length: length}
+      res.status(200).json(response)
+    })
+  }
+
+  /**
+   * Get all the jobs that are currently on the queue
+   *
+   * @param {object} req - the incoming request object
+   * @param {object} res - the outgoing response object
+   */
+  controller.getQueueJobs = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'getQueueJobs', params: req.params, query: req.query}))
+    if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
+    agol.featureQueue.queued('agol', 0, 999999, function (err, queued) {
+      if (err) return res.status(500).send(err)
+      res.status(200).json(queued)
+    })
+  }
+
+  /**
+   * Gets the status of the workers and running jobs
+   *
+   * @param {object} req - the incoming request object
+   * @param {object} res - the outgoing response object
+   */
+  controller.getQueueWorkers = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'getQueueWorkers', params: req.params, query: req.query}))
+    if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
+    agol.featureQueue.allWorkingOn(function (err, working) {
+      if (err) return res.status(500).send(err)
+      res.status(200).json(working)
+    })
+  }
+
+  /**
+   * Drops and failed jobs from the cache and queue
+   *
+   * @param {object} req - the incoming request object
+   * @param {object} res - the outgoing response object
+   */
+  controller.clearFailedJobs = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'clearFailedJobs', params: req.params, query: req.query}))
+    if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
+    agol.dropAndRemoveFailed(function (err, report) {
+      if (err) return res.status(500).json({error: err.message})
+      res.status(200).json(report)
     })
   }
 
@@ -494,6 +576,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.preview = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'preview', params: req.params, query: req.query}))
     agol.log.info('Render preview ' + JSON.stringify(req.params))
     res.render(__dirname + '/../views/demo', { locals: { host: req.params.id, item: req.params.item } })
   }
@@ -505,6 +588,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.tiles = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'tiles', params: req.params, query: req.query}))
     var callback = req.query.callback
     var key
     var layer = req.params.layer || 0
@@ -610,63 +694,6 @@ var Controller = function (agol, BaseController) {
     } else {
       _sendImmediate(file)
     }
-  }
-
-  /**
-   * Gets the total number of jobs on the queue
-   *
-   * @param {object} req - the incoming request object
-   * @param {object} res - the outgoing response object
-   */
-  controller.getQueueLength = function (req, res) {
-    if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
-    agol.featureQueue.length('agol', function (err, length) {
-      if (err) return res.status(500).send(err)
-      var response = {length: length}
-      res.status(200).json(response)
-    })
-  }
-
-  /**
-   * Get all the jobs that are currently on the queue
-   *
-   * @param {object} req - the incoming request object
-   * @param {object} res - the outgoing response object
-   */
-  controller.getQueueJobs = function (req, res) {
-    if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
-    agol.featureQueue.queued('agol', 0, 999999, function (err, queued) {
-      if (err) return res.status(500).send(err)
-      res.status(200).json(queued)
-    })
-  }
-
-  /**
-   * Gets the status of the workers and running jobs
-   *
-   * @param {object} req - the incoming request object
-   * @param {object} res - the outgoing response object
-   */
-  controller.getQueueWorkers = function (req, res) {
-    if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
-    agol.featureQueue.allWorkingOn(function (err, working) {
-      if (err) return res.status(500).send(err)
-      res.status(200).json(working)
-    })
-  }
-
-  /**
-   * Drops and failed jobs from the cache and queue
-   *
-   * @param {object} req - the incoming request object
-   * @param {object} res - the outgoing response object
-   */
-  controller.clearFailedJobs = function (req, res) {
-    if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
-    agol.dropAndRemoveFailed(function (err, report) {
-      if (err) return res.status(500).json({error: err.message})
-      res.status(200).json(report)
-    })
   }
 
   return controller
