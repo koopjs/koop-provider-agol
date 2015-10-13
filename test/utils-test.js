@@ -1,8 +1,9 @@
 /* global it, describe */
 var Utils = require('../lib/utils.js')
+var should = require('should') // eslint-disable-line
 
 describe('Utils', function () {
-  describe('when creating a cache key', function () {
+  describe('creating a cache key', function () {
     var params = {
       item: 'item',
       layer: 0
@@ -82,6 +83,109 @@ describe('Utils', function () {
       delete test_query.url_only
       delete test_query.callback
       delete test_query.format
+      done()
+    })
+  })
+
+  describe('creating a name for a resource', function () {
+    it('should use the item title when the service has only one layer', function (done) {
+      var item = {
+        title: 'Item_title',
+        url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/FeatureServer'
+      }
+      var service = {
+        layers: [{
+          id: 0,
+          name: 'Layer_title'
+        }],
+        tables: []
+      }
+      var layerId = 0
+
+      Utils.createName(item, service, layerId).should.equal('Item_title')
+      done()
+    })
+
+    it('should use the layer name when a service has many layers', function (done) {
+      var item = {
+        title: 'Item_title',
+        url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/FeatureServer'
+      }
+      var service = {
+        layers: [
+          {
+            id: 0,
+            name: 'Layer_title0'
+          },
+          {
+            id: 1,
+            name: 'Layer_title1'
+          }
+        ],
+        tables: []
+      }
+      var layerId = 1
+
+      Utils.createName(item, service, layerId).should.equal('Layer_title1')
+      done()
+    })
+
+    it('should use the item title when only a single layer is registered', function (done) {
+      var item = {
+        title: 'Item_title',
+        url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/FeatureServer/1'
+      }
+      var service = {
+        layers: [
+          {
+            id: 0,
+            name: 'Layer_title0'
+          },
+          {
+            id: 1,
+            name: 'Layer_title1'
+          }
+        ],
+        tables: []
+      }
+      var layerId = 1
+
+      Utils.createName(item, service, layerId).should.equal('Item_title')
+      done()
+    })
+
+    it('should remove characters that will trip up the filesystem', function (done) {
+      var item = {
+        title: 'Item title/,&|()',
+        url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/FeatureServer'
+      }
+      var service = {
+        layers: [{
+          id: 0,
+          name: 'Layer_title'
+        }],
+        tables: []
+      }
+      var layerId = 0
+
+      Utils.createName(item, service, layerId).should.equal('Item_title')
+      done()
+    })
+
+    it('should not remove foreign characters', function (done) {
+      var item = {
+        title: '汉语漢語日本語עבריםñéèę',
+        url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/FeatureServer'
+      }
+      var service = {
+        layers: [{
+          id: 0,
+          name: 'Layer_title'
+        }],
+        tables: []
+      }
+      var layerId = 0
+      Utils.createName(item, service, layerId).should.equal('汉语漢語日本語עבריםñéèę')
       done()
     })
   })

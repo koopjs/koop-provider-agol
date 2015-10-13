@@ -1,9 +1,7 @@
 node_modules
 coverage
+log
+test/config/*
 *.log
-*.kml
-*.csv
-*.zip
-*.geojson
 ..*
 test.log.*

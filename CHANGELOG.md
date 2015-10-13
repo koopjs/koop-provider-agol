@@ -2,6 +2,35 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## Unreleased
+### Added
+* New status of `Cached` when something is in the db
+* New class `Cache` handles all interaction with the koop cache
+* New class `Work` handles dispatch of all jobs
+* New class `CSVQueue` handles logic for putting csv requests on to the queue
+* New class `CSVRequest` handles getting and storing a csv
+* New class `FeatureRequest` handles putting a job on the queue or requesting features locally
+* New class `Portal` handles all communication with an instance of Portal
+* New class `ImportService` handles the actual job of importing a service
+* Queue Lock plugin adapted from Node-Resque's standard to prevent duplicate jobs from getting on the queue
+* New queue management routes `get agol/queue/length`, `get agol/queue/workers`, `get agol/queue/jobs`, `get /agol/queue/clearFailed`
+
+### Changed
+* Workers now use node-resque multiworker
+* Workers now started by running `node worker.js` from the project root
+* All exports go through workers if they are enabled
+* Export file name is saved to the info doc at insert time
+* Internal queues for preventing duplicate csv and feature request jobs replaced with `QueueLock` and writing lock files to "disk"
+
+### Fixed
+* Logic is now consistent for creating export file names
+
+### Removed
+* `getThumbnail` no longer supported
+* `getQueueCounts` no longer supported
+
+
 ## [1.4.5] - 2015-09-24
 ### Changed
 * Now sending 500 if geohash on AWS is empty
@@ -421,6 +450,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[1.4.5]: https://github.com/koopjs/koop-agol/compare/v1.4.4..v1.4.5
 [1.4.4]: https://github.com/koopjs/koop-agol/compare/v1.4.3..v1.4.4
 [1.4.3]: https://github.com/koopjs/koop-agol/compare/v1.4.2..v1.4.3
 [1.4.2]: https://github.com/koopjs/koop-agol/compare/v1.4.1..v1.4.2

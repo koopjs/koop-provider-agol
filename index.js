@@ -8,7 +8,8 @@ var provider = {
   model: require('./models/agol.js'),
   status: {
     version: pkg.version
-  }
+  },
+  type: 'provider'
 }
 
 module.exports = provider
