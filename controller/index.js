@@ -407,15 +407,16 @@ var Controller = function (agol, BaseController) {
    */
   controller._fetchServiceData = function (req, res) {
     agol.log.debug(JSON.stringify({route: '_fetchServiceData', params: req.params, query: req.query}))
-    var query = Utils.setServiceDefaults(req.params, req.query)
-    var options = {item: req.params.item, layer: req.params.layer || 0, host: req.portal, query: query}
+    // until koop-pgcache supports JSONB we need to fetch all the features from the cache in order to
+    // give accurate responses
+    req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
+    var options = {item: req.params.item, layer: req.params.layer || 0, host: req.portal, query: req.query}
     agol.cacheResource(options, function (error, info, data) {
       if (error) return res.status(error.code || 500).send(error.error || error)
-      delete req.query.geometry
-      delete req.query.where
-      req.query = _.omit(query, ['geometry', 'where'])
+      var fsQuery = Utils.setServiceDefaults(req.params, req.query)
+      req.query = _.omit(fsQuery, ['geometry', 'where'])
       // the data must be passed in to controller.processFeatureServer as the first element in an array
-      // this should be removed in koop 3.0
+      // that should be removed in koop 3.0
       controller.processFeatureServer(req, res, null, [data], req.query.callback)
     })
   }

@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Queue locks expire after 60 seconds - helps prevent deadlocks
+
+### Fixed
+* Feature services sort correctly
+* Feature services return correct statistics
+
 ## [2.0.1-alpha-2] - 2015-10-14
 ### Fixed
 * Get correct layer name when service layers do not start at 0 and/or remain sequential
