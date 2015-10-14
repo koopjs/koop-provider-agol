@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.1-beta] - 2015-10-14
 ### Changed
 * Queue locks expire after 60 seconds - helps prevent deadlocks
 
@@ -10,7 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Feature services sort correctly
 * Feature services return correct statistics
 
-## [2.0.1-alpha-2] - 2015-10-14
+## [2.0.1-alpha-2] - 2015-10-13
 ### Fixed
 * Get correct layer name when service layers do not start at 0 and/or remain sequential
 * Metadata is passed to export jobs
@@ -489,7 +489,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
-
+[2.0.1-beta]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha-2..v2.0.1-beta
 [2.0.1-alpha-2]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha-1..v2.0.1-alpha-2
 [2.0.1-alpha-1]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha..v2.0.1-alpha-1
 [2.0.1-alpha]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha..v2.0.1-alpha
