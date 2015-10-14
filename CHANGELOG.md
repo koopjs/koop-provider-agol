@@ -2,12 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.1-alpha-2] - 2015-10-14
 ### Fixed
 * Get correct layer name when service layers do not start at 0 and/or remain sequential
 * Metadata is passed to export jobs
 
-## [2.0.1-alpha-1]
+## [2.0.1-alpha-1] - 2015-10-13
 ### Added
 * Debug logging for all controller routes
 
@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Data is passed to `baseController.processFeatureServer` in the correct way
 * Server no longer crashes on no-data response from Portal
 
-## [2.0.1-alpha]
+## [2.0.1-alpha] - 2015-10-13
 ### Changed
 * Reduce verbosity of worker logging
 * Field indexing defaults to false
@@ -482,6 +482,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   * working on tests
 
 
+[2.0.1-alpha-2]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha-1..v2.0.1-alpha-2
 [2.0.1-alpha-1]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha..v2.0.1-alpha-1
 [2.0.1-alpha]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha..v2.0.1-alpha
 [2.0.0-alpha]: https://github.com/koopjs/koop-agol/compare/v1.4.5..v2.0.0-alpha
