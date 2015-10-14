@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleasd
+## [2.0.1-beta-1] - 2015-10-14
 ### Fixed
 * Get correct layer name with service layers start with 0 and remain sequential
 * Get correct name if the resource is a table in a map service
@@ -494,9 +494,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
-[2.0.1-beta]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha-2..v2.0.1-beta
-[2.0.1-alpha-2]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha-1..v2.0.1-alpha-2
-[2.0.1-alpha-1]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha..v2.0.1-alpha-1
+[2.0.1-beta-1]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta..v2.0.1-beta-1
+[2.0.1-beta]: https://github.com/koopjs/koop-agol/compare/v2.0.1-alpha-2..v2.0.1-beta
+[2.0.1-alpha-2]: https://github.com/koopjs/koop-agol/compare/v2.0.1-alpha-1..v2.0.1-alpha-2
+[2.0.1-alpha-1]: https://github.com/koopjs/koop-agol/compare/v2.0.1-alpha..v2.0.1-alpha-1
 [2.0.1-alpha]: https://github.com/koopjs/koop-agol/compare/v2.0.0-alpha..v2.0.1-alpha
 [2.0.0-alpha]: https://github.com/koopjs/koop-agol/compare/v1.4.5..v2.0.0-alpha
 [1.4.5]: https://github.com/koopjs/koop-agol/compare/v1.4.4..v1.4.5
