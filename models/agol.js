@@ -167,8 +167,8 @@ var AGOL = function (koop) {
         if (itemInfo.type !== 'CSV' && itemInfo.type !== 'Feature Collection') {
           var service = Utils.initFeatureService(itemInfo.url, {layer: options.layer})
           service.info(function (err, serviceInfo) {
+            if (err || !serviceInfo) return callback(err || new Error('Service info was blank'))
             if (serviceInfo.editingInfo && serviceInfo.editingInfo.lastEditDate) info.lastEditDate = info.retrieved_at
-            if (err) return callback(err)
             info.name = Utils.createName(itemInfo, serviceInfo, options.layer)
             agol.cache.updateInfo(options.key, info, function (err) {
               if (err) return callback(err)
@@ -265,7 +265,8 @@ var AGOL = function (koop) {
       layer: options.layer,
       name: options.name,
       outSr: options.outSr,
-      filtered: options.filtered
+      filtered: options.filtered,
+      metadata: options.metadata
     }
 
     agol.exportFile(fileOpts, dataOpts, function (err, status, jobCreated) {

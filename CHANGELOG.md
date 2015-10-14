@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Get correct layer name when service layers do not start at 0 and/or remain sequential
+* Metadata is passed to export jobs
+
 ## [2.0.1-alpha-1]
 ### Added
 * Debug logging for all controller routes

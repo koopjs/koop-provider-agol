@@ -111,15 +111,16 @@ describe('Utils', function () {
         title: 'Item_title',
         url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/FeatureServer'
       }
+      // note don't start this test at layer 0 it was tweaked from that because of a bug
       var service = {
         layers: [
           {
-            id: 0,
-            name: 'Layer_title0'
-          },
-          {
             id: 1,
             name: 'Layer_title1'
+          },
+          {
+            id: 2,
+            name: 'Layer_title2'
           }
         ],
         tables: []
