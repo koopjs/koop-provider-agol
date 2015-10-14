@@ -106,12 +106,11 @@ describe('Utils', function () {
       done()
     })
 
-    it('should use the layer name when a service has many layers', function (done) {
+    it('should use the layer name when a service has many layers and has no zero index', function (done) {
       var item = {
         title: 'Item_title',
         url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/FeatureServer'
       }
-      // note don't start this test at layer 0 it was tweaked from that because of a bug
       var service = {
         layers: [
           {
@@ -128,6 +127,63 @@ describe('Utils', function () {
       var layerId = 1
 
       Utils.createName(item, service, layerId).should.equal('Layer_title1')
+      done()
+    })
+
+    it('should use the layer name when the item has many layers', function (done) {
+      var item = {
+        title: 'Basic Emergency Services',
+        url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/MapServer'
+      }
+      var service = {
+        layers: [
+          {
+            id: 0,
+            name: 'Assisted Living Facilities'
+          },
+          {
+            id: 1,
+            name: 'Basic Care Facilities'
+          },
+          {
+            id: 2,
+            name: 'Hospitals'
+          }
+        ],
+        tables: []
+      }
+      Utils.createName(item, service, 0).should.equal('Assisted_Living_Facilities')
+      done()
+    })
+
+    it('should use the table name for a table when the item has many layers', function (done) {
+      var item = {
+        title: 'Basic Emergency Services',
+        url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/MapServer'
+      }
+      var service = {
+        layers: [
+          {
+            id: 0,
+            name: 'Assisted Living Facilities'
+          },
+          {
+            id: 1,
+            name: 'Basic Care Facilities'
+          },
+          {
+            id: 2,
+            name: 'Hospitals'
+          }
+        ],
+        tables: [
+          {
+            id: 6,
+            name: 'Table'
+          }
+        ]
+      }
+      Utils.createName(item, service, 6).should.equal('Table')
       done()
     })
 

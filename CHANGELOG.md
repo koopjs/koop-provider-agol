@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleasd
+### Fixed
+* Get correct layer name with service layers start with 0 and remain sequential
+* Get correct name if the resource is a table in a map service
+
 ## [2.0.1-beta] - 2015-10-14
 ### Changed
 * Queue locks expire after 60 seconds - helps prevent deadlocks
@@ -12,7 +17,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.0.1-alpha-2] - 2015-10-13
 ### Fixed
-* Get correct layer name when service layers do not start at 0 and/or remain sequential
+* Get correct layer name when service layers do not start at 0 and/or do not remain sequential
 * Metadata is passed to export jobs
 
 ## [2.0.1-alpha-1] - 2015-10-13
