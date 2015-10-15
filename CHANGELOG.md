@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.1-beta-2] - 2015-10-15
 ### Fixed
 * No longer modifying job so node-resque doesn't try to stringify a circular structure
 
@@ -498,6 +498,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[2.0.1-beta-2]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-1..v2.0.1-beta-2
 [2.0.1-beta-1]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta..v2.0.1-beta-1
 [2.0.1-beta]: https://github.com/koopjs/koop-agol/compare/v2.0.1-alpha-2..v2.0.1-beta
 [2.0.1-alpha-2]: https://github.com/koopjs/koop-agol/compare/v2.0.1-alpha-1..v2.0.1-alpha-2
