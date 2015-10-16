@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Return instead of continuing after emitting errors in `ImportService`
+* Dont throw exceptions when trying to clear failed jobs
+
 ## [2.0.1-beta-2] - 2015-10-15
 ### Fixed
 * No longer modifying job so node-resque doesn't try to stringify a circular structure

@@ -73,6 +73,8 @@ multiWorker.on('error', function (workerId, queue, job, error) {
 
 function logJob (job) {
   var logStatement = _.cloneDeep(job)
+  // if the job is in a really bad state, it may have no args
+  logStatement.args = logStatement.args || [{}]
   var toOmit = ['log', 'pages', 'cache']
   logStatement.args = _.omit(logStatement.args[0], toOmit)
   return stringify(logStatement)
