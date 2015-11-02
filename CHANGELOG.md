@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.1-beta-4] - 2015-11-2
 ### Fixed
 * Get the correct layer name when the layerId is passed in as a string
 
