@@ -152,7 +152,7 @@ describe('Utils', function () {
         ],
         tables: []
       }
-      Utils.createName(item, service, 0).should.equal('Assisted_Living_Facilities')
+      Utils.createName(item, service, '0').should.equal('Assisted_Living_Facilities')
       done()
     })
 

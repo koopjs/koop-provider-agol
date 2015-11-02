@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Get the correct layer name when the layerId is passed in as a string
+
 ## [2.0.1-beta-3] - 2015-10-15
 ### Fixed
 * Return instead of continuing after emitting errors in `ImportService`
