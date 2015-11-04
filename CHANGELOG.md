@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Changed
+* Removed superflouous log statements
+
 ### Fixed
 * Remove additional characters that cause file system errors
 * Returning an error when portal is down vs an uncaught exception

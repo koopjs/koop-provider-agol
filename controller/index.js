@@ -156,7 +156,6 @@ var Controller = function (agol, BaseController) {
     }
     agol.getInfo(infoOpts, function (err, info) {
       if (err) return controller._returnStatus(req, res, info, err)
-      agol.log.debug(info)
       switch (info.status) {
         case 'Cached':
           return controller._handleCached(req, res, info)
