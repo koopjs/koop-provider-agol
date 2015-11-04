@@ -213,7 +213,7 @@ describe('Utils', function () {
 
     it('should remove characters that will trip up the filesystem', function (done) {
       var item = {
-        title: 'Item title/,&|()',
+        title: 'Item title/,&|()<>',
         url: 'https://services1.arcgis.com/foo/ArcGIS/rest/services/bar/FeatureServer'
       }
       var service = {
