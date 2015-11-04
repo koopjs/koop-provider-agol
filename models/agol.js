@@ -162,9 +162,9 @@ var AGOL = function (koop) {
       if (!info.status) info.status = 'Cached'
       info.version = '2.0'
       agol.portal.getItem(options.host, options.item, function (err, itemInfo) {
+        if (err || !itemInfo) return callback(err || new Error('Item info was blank'))
         info.type = itemInfo.type
         info.url = itemInfo.url
-        if (err) return callback(err)
         if (itemInfo.type !== 'CSV' && itemInfo.type !== 'Feature Collection') {
           var service = Utils.initFeatureService(itemInfo.url, {layer: options.layer})
           service.info(function (err, serviceInfo) {
