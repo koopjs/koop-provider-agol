@@ -10,6 +10,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Remove additional characters that cause file system errors
 * Returning an error when portal is down vs an uncaught exception
 * Removed two uncaught exceptions when jobs are in a bad state
+* LastEditDate is properly saved to info doc when inserting a hosted feature service
+* Expiration check works properly for hosted feature services
 
 ## [2.0.1-beta-4] - 2015-11-2
 ### Fixed

@@ -216,7 +216,7 @@ describe('checking expiration', function () {
   it('should call back with not expired when a hosted feature service is not expired', function (done) {
     var info = {
       url: 'http://expired.com/FeatureServer/0',
-      last_edit_date: new Date('2015').getTime()
+      lastEditDate: new Date('2015').getTime()
     }
 
     var fixture = nock('http://expired.com')
