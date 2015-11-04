@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.1-beta.5] - 2015-11-04
 ### Changed
 * Removed superflouous log statements
 
@@ -14,7 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Expiration check works properly for hosted feature services
 * Update the name of csv resources correctly
 
-## [2.0.1-beta-4] - 2015-11-2
+## [2.0.1-beta-4] - 2015-11-02
 ### Fixed
 * Get the correct layer name when the layerId is passed in as a string
 
@@ -519,6 +519,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[2.0.1-beta.5]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-4..v2.0.1-beta.5
 [2.0.1-beta-4]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-3..v2.0.1-beta-4
 [2.0.1-beta-3]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-2..v2.0.1-beta-3
 [2.0.1-beta-2]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-1..v2.0.1-beta-2
