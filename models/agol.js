@@ -177,7 +177,7 @@ var AGOL = function (koop) {
             })
           })
         } else {
-          info.name = itemInfo.title
+          info.name = Utils.cleanseName(itemInfo.title)
           agol.cache.updateInfo(options.key, info, function (err) {
             if (err) return callback(err)
             agol.getInfo(options, callback)
