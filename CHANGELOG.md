@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * Remove additional characters that cause file system errors
 * Returning an error when portal is down vs an uncaught exception
+* Removed two uncaught exceptions when jobs are in a bad state
 
 ## [2.0.1-beta-4] - 2015-11-2
 ### Fixed
