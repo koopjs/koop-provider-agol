@@ -224,7 +224,6 @@ var Controller = function (agol, BaseController) {
         response.error = info.error
       } else if (response.generating.error) {
         response.error = response.generating.error
-        delete response.generating.error
       }
 
       var code = 202
@@ -232,6 +231,7 @@ var Controller = function (agol, BaseController) {
         code = 502
       } else if (response.generating.error) {
         code = 500
+        delete response.generating.error
       }
 
       response.status = response.error ? 'Failed' : 'Processing'
