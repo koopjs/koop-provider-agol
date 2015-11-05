@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Errors on 5xx responses are no longer nested in `generating` object
+
+### Fixed
+* Responding 500 instead of 202 when export fails while generating
+
 ## [2.0.1-beta.5] - 2015-11-04
 ### Changed
 * Removed superflouous log statements

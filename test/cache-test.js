@@ -263,12 +263,12 @@ describe('when setting a dataset as failed', function () {
 
     cache.setFail(key, error, function (info) {
       info.status.should.equal('Failed')
-      info.generating.error.should.exist
-      info.generating.error.timestamp.should.equal('time')
-      info.generating.error.code.should.equal(999)
-      info.generating.error.request.should.equal('http://www.error.com')
-      info.generating.error.response.should.equal('Failed to perform query operation')
-      info.generating.error.message.should.equal('Failed while paging data')
+      info.error.should.exist
+      info.error.timestamp.should.equal('time')
+      info.error.code.should.equal(999)
+      info.error.request.should.equal('http://www.error.com')
+      info.error.response.should.equal('Failed to perform query operation')
+      info.error.message.should.equal('Failed while paging data')
       done()
     })
   })

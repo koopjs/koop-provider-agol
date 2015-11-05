@@ -212,22 +212,28 @@ var Controller = function (agol, BaseController) {
     var table = Utils.createTableKey(req.params)
     agol.cache.getCount(table, {}, function (err, count) {
       if (err) agol.log.error('Failed to get count of rows in the DB' + ' ' + err)
-
       info = info || {}
-      // if we have a passed in error or the info doc says error
-      // then this request is errored and we should send a 502 with status failed
-      var errored = (error && error.message) || (info.generating && info.generating.error)
-      var code = errored ? 502 : 202
-      var status = errored ? 'Failed' : (info.status || 'Processing')
-
       var processingTime = Utils.processingTime(info, req.optionKey)
-
-      // set up a shell of the response
-      var response = {status: status, processing_time: processingTime, count: count}
-
-      // tack on information from a passed in error if it's available
       info.generating = info.generating || {}
-      response.generating = (error && error.message) ? Utils.failureMsg(error) : info.generating[req.optionKey]
+      var generating = info.generating[req.optionKey] || {}
+      var response = {processing_time: processingTime, count: count}
+
+      if (error && error.message) {
+        response.error = Utils.failureMsg(error)
+      } else if (info.error) {
+        response.error = info.error
+      } else if (generating.error) {
+        response.error = generating.error
+      }
+
+      var code = 202
+      if (error || info.error) {
+        code = 502
+      } else if (generating.error) {
+        code = 500
+      }
+
+      response.status = response.error ? 'Failed' : 'Processing'
       res.status(code).json(response)
     })
   }

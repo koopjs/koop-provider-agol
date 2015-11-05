@@ -602,13 +602,11 @@ describe('AGOL Controller', function () {
         var info = {
           status: 'Failed',
           retrieved_at: Date.now(),
-          generating: {
-            error: {
-              code: 400,
-              response: 'Failed to perform query operation',
-              url: 'http://www.failure.com',
-              message: 'Failed while paging'
-            }
+          error: {
+            code: 400,
+            response: 'Failed to perform query operation',
+            url: 'http://www.failure.com',
+            message: 'Failed while paging'
           }
         }
         controller._returnStatus(req, res, info)
@@ -645,10 +643,10 @@ describe('AGOL Controller', function () {
         .expect(502)
         .end(function (err, res) {
           res.body.status.should.equal('Failed')
-          should.exist(res.body.generating)
-          res.body.generating.error.code.should.equal(500)
-          res.body.generating.error.response.should.equal('Failed to perform query')
-          res.body.generating.error.request.should.equal('http://www.failure.com')
+          should.exist(res.body.error)
+          res.body.error.code.should.equal(500)
+          res.body.error.response.should.equal('Failed to perform query')
+          res.body.error.request.should.equal('http://www.failure.com')
           controller.testMethod.restore()
           should.not.exist(err)
           done()
