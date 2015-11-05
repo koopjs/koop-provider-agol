@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.1-beta.6] - 2015-11-05
 ### Changed
 * Errors on 5xx responses are no longer nested in `generating` object
 
@@ -11,7 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.0.1-beta.5] - 2015-11-04
 ### Changed
-* Removed superflouous log statements
+* Removed superfluous log statements
 
 ### Fixed
 * Remove additional characters that cause file system errors
@@ -117,7 +117,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Logger is passed to featureservice
 * On error inserting after a drop call, failure status is not set in db
 
-## [1.4.3] - 2015-09-16 
+## [1.4.3] - 2015-09-16
 ### Fixed
 * No longer continuing execution after handling a failed resource
 * Cache keys are the same when formats are passed in
@@ -161,7 +161,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * Feature server without a layer responds correctly
 
-## [1.3.1] - 2015-08-21 
+## [1.3.1] - 2015-08-21
 ### Changed
 * Errors on trying to fetch items pass through `_returnStatus`
 * Socket connections to portals are kept alive
@@ -526,6 +526,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[2.0.1-beta.6]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-5..v2.0.1-beta.6
 [2.0.1-beta.5]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-4..v2.0.1-beta.5
 [2.0.1-beta-4]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-3..v2.0.1-beta-4
 [2.0.1-beta-3]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-2..v2.0.1-beta-3
