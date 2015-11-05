@@ -215,7 +215,7 @@ var Controller = function (agol, BaseController) {
       info = info || {}
       var processingTime = Utils.processingTime(info, req.optionKey)
       info.generating = info.generating || {}
-     var response = {processing_time: processingTime, count: count}
+      var response = {processing_time: processingTime, count: count}
       response.generating = info.generating[req.optionKey] || {}
 
       if (error && error.message) {
