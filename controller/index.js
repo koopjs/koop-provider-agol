@@ -215,21 +215,22 @@ var Controller = function (agol, BaseController) {
       info = info || {}
       var processingTime = Utils.processingTime(info, req.optionKey)
       info.generating = info.generating || {}
-      var generating = info.generating[req.optionKey] || {}
-      var response = {processing_time: processingTime, count: count}
+     var response = {processing_time: processingTime, count: count}
+      response.generating = info.generating[req.optionKey] || {}
 
       if (error && error.message) {
         response.error = Utils.failureMsg(error)
       } else if (info.error) {
         response.error = info.error
-      } else if (generating.error) {
-        response.error = generating.error
+      } else if (response.generating.error) {
+        response.error = response.generating.error
+        delete response.generating.error
       }
 
       var code = 202
       if (error || info.error) {
         code = 502
-      } else if (generating.error) {
+      } else if (response.generating.error) {
         code = 500
       }
 

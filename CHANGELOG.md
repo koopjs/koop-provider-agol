@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Generating object is back on the status response
+* Error status is saved to the DB when trying to initiate a page request
+
 ## [2.0.1-beta.6] - 2015-11-05
 ### Changed
 * Errors on 5xx responses are no longer nested in `generating` object
