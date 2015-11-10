@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.1] - 2015-11-10
 ### Added
 * `get agol/queue/working` returns count of currently processing jobs
 
@@ -535,7 +535,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
-[2.0.1-beta-7]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-6..v2.0.1-beta.7
+[2.0.1]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta.7..v2.0.1
+[2.0.1-beta.7]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-6..v2.0.1-beta.7
 [2.0.1-beta.6]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-5..v2.0.1-beta.6
 [2.0.1-beta.5]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-4..v2.0.1-beta.5
 [2.0.1-beta-4]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-3..v2.0.1-beta-4
