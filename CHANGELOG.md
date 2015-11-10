@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Handle case where data is expired before geohash is requested
+* Geohash response headers are set correctly
+
 ## [2.0.1] - 2015-11-10
 ### Added
 * `get agol/queue/working` returns count of currently processing jobs

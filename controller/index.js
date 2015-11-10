@@ -442,15 +442,19 @@ var Controller = function (agol, BaseController) {
       agol.getInfo(options, function (err, info) {
         if (err) return res.status(500).send(err)
         if (exists) {
+          // this is logic for the expiration of the geohash itself
+          info.expired = new Date(info.retrieved_at) > new Date(fileInfo.LastModified)
           // always return a geohash to the client if it exists
           controller._returnGeohash(req, res, path, info)
-          // this is logic for the expiration status of the geohash itself
-          info.expired = new Date(info.retrieved_at) > new Date(fileInfo.LastModified)
           // we set silent here so that we can take advantage of the controller functions
           // that handle creating geohashes and caching resources without trying to send the response twice
           req.params.silent = true
-          if (info.expired) return controller._createGeohash(req, res, hashOpts, info)
-          // TODO how to handle if the underlying resource is expired without deleting the geohash
+          if (info.expired) controller._createGeohash(req, res, hashOpts, info)
+          if (info.status.expired) {
+            agol.dropResource(req.params.item, req.params.layer, {}, function (err) {
+              if (err) agol.log.error('Error dropping resource', err)
+            })
+          }
         } else {
           if (info.geohashStatus === 'Processing') return res.status(202).json({status: 'Processing'})
           switch (info.status) {
@@ -458,6 +462,8 @@ var Controller = function (agol, BaseController) {
               return controller._createGeohash(req, res, hashOpts, info)
             case 'Processing':
               return controller._returnStatus(req, res, info)
+            case 'Expired':
+              return controller._createGeohash(req, res, hashOpts, info)
             case 'Unavailable':
               return controller._handleUnavailable(req, res, info)
             case 'Failed':
