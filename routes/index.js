@@ -3,7 +3,7 @@ module.exports = {
   'get /agol': 'list',
   'get /agol/queue/length': 'getQueueLength',
   'get /agol/queue/workers': 'getQueueWorkers',
-  'get /agol/queue/jobs': 'getQueueJobs',
+  'get /agol/queue/working': 'getQueueWorkingCount',
   'get /agol/queue/clearFailed': 'clearFailedJobs',
   'get /agol/:id': 'find',
   'get /agol/:id/:item/*': 'setHostKey',

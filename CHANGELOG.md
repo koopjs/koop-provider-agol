@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* `get agol/queue/working` returns count of currently processing jobs
+
 ## [2.0.1-beta.7] - 2015-11-06
 ### Fixed
 * Generating object is back on the status response

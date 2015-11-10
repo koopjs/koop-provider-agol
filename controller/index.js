@@ -537,12 +537,15 @@ var Controller = function (agol, BaseController) {
    * @param {object} req - the incoming request object
    * @param {object} res - the outgoing response object
    */
-  controller.getQueueJobs = function (req, res) {
-    agol.log.debug(JSON.stringify({route: 'getQueueJobs', params: req.params, query: req.query}))
+  controller.getQueueWorkingCount = function (req, res) {
+    agol.log.debug(JSON.stringify({route: 'getQueueWorking', params: req.params, query: req.query}))
     if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
-    agol.featureQueue.queued('agol', 0, 999999, function (err, queued) {
+    agol.featureQueue.allWorkingOn(function (err, workers) {
       if (err) return res.status(500).send(err)
-      res.status(200).json(queued)
+      var working = _.filter(workers, function (w) {
+        return typeof w === 'object'
+      })
+      res.status(200).json(working.length)
     })
   }
 
