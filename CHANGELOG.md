@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Fix unhandled exception occurring when failed jobs are cleared
+
 ## [2.0.2] - 2015-11-10
 ### Fixed
 * Handle case where data is expired before geohash is requested

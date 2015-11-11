@@ -40,7 +40,7 @@ var AGOL = function (koop) {
     agol.dropAndRemoveFailed = function (callback) {
       agol.log.info('Dropping resources and removing jobs from failures')
       var report = {
-        sucessful: [],
+        successful: [],
         failed: []
       }
       agol.featureQueue.failed(0, 9999999, function (err, failed) {
@@ -63,7 +63,7 @@ var AGOL = function (koop) {
                 report.failed.push(job)
                 return callback()
               }
-              report.success.push(job)
+              report.successful.push(job)
               callback()
             })
           })
