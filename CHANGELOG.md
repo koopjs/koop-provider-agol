@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+##   [2.0.4] - 2015-11-11
 ### Changed
 * Use safer mechanism for preventing jobs from being cleared multiple times
 
@@ -548,6 +548,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[2.0.4]: https://github.com/koopjs/koop-agol/compare/v2.0.3..v2.0.4
+[2.0.3]: https://github.com/koopjs/koop-agol/compare/v2.0.2..v2.0.3
 [2.0.2]: https://github.com/koopjs/koop-agol/compare/v2.0.1..v2.0.2
 [2.0.1]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta.7..v2.0.1
 [2.0.1-beta.7]: https://github.com/koopjs/koop-agol/compare/v2.0.1-beta-6..v2.0.1-beta.7
