@@ -528,7 +528,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.getQueueLength = function (req, res) {
-    agol.log.debug(JSON.stringify({route: 'getGeohash', params: req.params, query: req.query}))
+    agol.log.debug(JSON.stringify({route: 'getQueueLength', params: req.params, query: req.query}))
     if (!agol.featureQueue) return res.status(400).json({error: 'Feature queue is not enabled'})
     agol.featureQueue.length('agol', function (err, length) {
       if (err) return res.status(500).send(err)
