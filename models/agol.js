@@ -50,13 +50,13 @@ var AGOL = function (koop) {
         }
         async.each(failed, function (job, callback) {
           agol.featureQueue.removeFailed(job, function (err) {
+            if (!job.payload || !job.payload.args) return callback()
+            var params = job.payload.args[0]
             if (err) {
               agol.log.error('Error while trying to remove failed job', params.item, params.layer, err)
               report.failed.push(job)
               return callback()
             }
-            if (!job.payload || !job.payload.args) return callback()
-            var params = job.payload.args[0]
             agol.cache.drop(params.item, params.layer, {}, function (err) {
               if (err) {
                 agol.log.error('Error while trying to drop failed resource', params.item, params.layer, err)
