@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [2.0.6] - 2016-01-04
 ### Changed
 * Update request to work with node > 0.12.7
 
@@ -556,6 +556,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[2.0.6]: https://github.com/koopjs/koop-agol/compare/v2.0.5..v2.0.6
 [2.0.5]: https://github.com/koopjs/koop-agol/compare/v2.0.4..v2.0.5
 [2.0.4]: https://github.com/koopjs/koop-agol/compare/v2.0.3..v2.0.4
 [2.0.3]: https://github.com/koopjs/koop-agol/compare/v2.0.2..v2.0.3
