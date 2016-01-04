@@ -23,7 +23,7 @@
     "kue": "~0.9.4",
     "lodash": "~2.4.1",
     "node-resque": "^1.0.1",
-    "request": "~2.48.0",
+    "request": "^2.67.0",
     "sphericalmercator": "~1.0.2"
   },
   "devDependencies": {
