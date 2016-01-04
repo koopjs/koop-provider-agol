@@ -185,7 +185,7 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_handleCached', params: req.params, query: req.query}))
     var options = Utils.createExportOptions(req, info)
 
-    agol.files.exists(options.path, options.fileName, function (exists, path) {
+    agol.files.exists(options.filePath, options.fileName, function (exists, path) {
       if (path) return controller._returnFile(req, res, path, info.name + '.' + req.params.format)
 
       var isGenerating = Utils.isGenerating(info, req.optionsKey, req.params.format)

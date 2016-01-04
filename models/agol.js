@@ -1,9 +1,13 @@
+/* @flow */
+'use strict'
 var Cache = require('../lib/cache')
 var FeatureQueue = require('../lib/feature-queue')
 var CSVQueue = require('../lib/csv-queue')
 var Portal = require('../lib/portal')
 var Utils = require('../lib/utils')
 var async = require('async')
+var SpatialReference = require('spatialreference')
+var formatSpatialRef = require('format-spatial-ref')
 
 var AGOL = function (koop) {
   /**
@@ -27,7 +31,7 @@ var AGOL = function (koop) {
         prefix: config.agol.request_workers.redis.prefix
       },
       log: agol.log,
-      cache: new Cache({cache: koop.Cache, log: koop.log}),
+      cache: new Cache({cache: koop.cache, log: koop.log}),
       agol_path: Utils.agol_path
     }
     agol.featureQueue = FeatureQueue.create(qOpts)
@@ -81,13 +85,13 @@ var AGOL = function (koop) {
   }
 
   agol.csvQueue = new CSVQueue({
-    cache: koop.Cache,
+    cache: koop.cache,
     log: koop.log,
     files: agol.files
   })
 
   agol.cache = new Cache({
-    cache: koop.Cache,
+    cache: koop.cache,
     files: agol.files,
     exporter: koop.Exporter,
     log: koop.log,
@@ -95,6 +99,8 @@ var AGOL = function (koop) {
     csvQueue: agol.csvQueue,
     indexFields: indexFields
   })
+
+  agol.spatialReference = new SpatialReference({db: agol.cache, logger: agol.log})
 
   agol.portal = new Portal({log: koop.log})
 
@@ -110,7 +116,7 @@ var AGOL = function (koop) {
    */
   agol.register = function (id, host, callback) {
     var type = 'agol:services'
-    koop.Cache.serviceRegister(type, {'id': id, 'host': host}, callback)
+    koop.cache.serviceRegister(type, {'id': id, 'host': host}, callback)
   }
 
   /**
@@ -121,7 +127,7 @@ var AGOL = function (koop) {
    * @param {function} callback - The callback.
    */
   agol.find = function (id, callback) {
-    koop.Cache.db.serviceGet('agol:services', parseInt(id, 0) || id, function (err, res) {
+    koop.cache.db.serviceGet('agol:services', parseInt(id, 0) || id, function (err, res) {
       if (err) return callback('No service table found for that id. Try POSTing {"id":"arcgis", "host":"http://www.arcgis.com"} to /agol', null)
       callback(null, res)
     })
@@ -134,7 +140,7 @@ var AGOL = function (koop) {
    * @param {function} callback - The callback.
    */
   agol.remove = function (id, callback) {
-    koop.Cache.db.serviceRemove('agol:services', parseInt(id, 0) || id, callback)
+    koop.cache.db.serviceRemove('agol:services', parseInt(id, 0) || id, callback)
   }
 
   /**
@@ -249,30 +255,29 @@ var AGOL = function (koop) {
    * @param {function} callback - calls back with an error or status and whether a new job was created
    */
   agol.generateExport = function (options, callback) {
-    // these pertain to where/how the file should be written
-    var fileOpts = {
-      type: 'agol',
-      format: options.format,
-      id: options.item,
-      key: options.key
-    }
-
-    // these are used to select the right data from the DB
-    var dataOpts = {
-      large: true,
-      where: options.where,
-      geometry: options.geometry,
-      fields: options.fields,
-      layer: options.layer,
-      name: options.name,
-      outSr: options.outSr,
-      filtered: options.filtered,
-      metadata: options.metadata
-    }
-
-    agol.exportFile(fileOpts, dataOpts, function (err, status, jobCreated) {
-      callback(err, status, jobCreated)
+    getWkt(options.outSr, function (err, wkt) {
+      if (err) return callback(err)
+      options.srs = wkt
+      agol.exporter.createJob(options)
+      .on('start')
+      .on('progress')
+      .on('finish')
+      .on('fail')
     })
+  }
+
+    /**
+   * Gets projection information for a shapefile exprot
+   * @param {object} options - contains info on spatial reference, wkid and wkt
+   * @param {function} callback - calls back with an error or wkt
+   * @private
+   */
+  function getWkt (outSr, callback) {
+    // if there is a passed in WKT just use that
+    if (!outSr) return callback()
+    if (outSr.wkt) return callback(null, outSr.wkt)
+    var spatialRef = formatSpatialRef(outSr)
+    agol.spatialReference.wkidToWkt(spatialRef.wkid, callback)
   }
 
   /**
