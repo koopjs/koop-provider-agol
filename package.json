@@ -19,6 +19,7 @@
     "format-spatial-ref": "^1.0.0",
     "js-yaml": "^3.4.2",
     "json-stringify-safe": "^5.0.1",
+    "koop-logger": "^1.0.1",
     "koop-pgcache": "^1.5.0",
     "kue": "~0.9.4",
     "lodash": "~2.4.1",

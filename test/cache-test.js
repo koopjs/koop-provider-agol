@@ -17,7 +17,8 @@ var koopFiles = new koopLib.Files({
 })
 koopCache.db = koopLib.LocalDB
 koopCache.db = koopLib.LocalDB
-var log = new koopLib.Logger({})
+var Logger = require('koop-logger')
+var log = new Logger({})
 
 var csvQueue = new CSVQueue({
   cache: koopCache,
