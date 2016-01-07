@@ -2,7 +2,7 @@
 var fs = require('fs')
 var nock = require('nock')
 var Portal = require('../lib/portal.js')
-var Logger = require('koop/lib').Logger
+var Logger = require('koop-logger')
 var log = new Logger({})
 var should = require('should')
 

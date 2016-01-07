@@ -5,8 +5,8 @@ var sinon = require('sinon')
 var should = require('should')  // eslint-disable-line
 var path = require('path')
 var ImportService = require('../lib/import-service.js')
-var koopLib = require('koop/lib')
-var log = new koopLib.Logger({})
+var Logger = require('koop-logger')
+var log = new Logger({})
 
 var importService
 var fakeCache = {

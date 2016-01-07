@@ -190,7 +190,6 @@ var Controller = function (agol, BaseController) {
     if (isGenerating) return controller._returnStatus(req, res, info)
 
     agol.files.exists(options.filePath, options.fileName, function (exists, path) {
-      console.log(exists, path)
       if (path) return controller._returnFile(req, res, path, info.name + '.' + req.params.format)
 
       agol.generateExport(options, function (err, status, created) {
@@ -492,10 +491,8 @@ var Controller = function (agol, BaseController) {
       res.set('Access-Control-Allow-Headers', 'X-Expired')
       res.set('Access-Control-Expose-Headers', 'X-Expired')
     }
-    console.log(path.substr(0, 4))
     if (path.substr(0, 4) !== 'http') return res.sendFile(path)
     // Proxy to s3 urls allows us to not show the URL
-    console.log(path)
     https.get(path, function (proxyRes) {
       if (proxyRes.headers['content-length'] === 0) return res.status(500).json({error: 'Empty geohash'})
       proxyRes.pipe(res)

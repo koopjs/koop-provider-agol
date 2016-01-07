@@ -9,7 +9,8 @@ var config = {}
 // setup koop
 config.data_dir = __dirname + '/output/'
 koop.config = config
-koop.log = new koop.Logger({logfile: './test.log'})
+var Logger = require('koop-logger')
+koop.log = new Logger({logfile: './test.log'})
 
 koop.cache = new koop.DataCache(koop)
 koop.cache.db = koop.LocalDB

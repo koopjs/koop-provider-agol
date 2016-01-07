@@ -3,7 +3,8 @@ var sinon = require('sinon')
 var CSVQueue = require('../lib/csv-queue')
 var koopLib = require('koop/lib')
 var should = require('should')
-var log = new koopLib.Logger({})
+var Logger = require('koop-logger')
+var log = new Logger({})
 var files = koopLib.Files({
   config: {
     data_dir: './test/lock'

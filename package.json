@@ -15,7 +15,7 @@
     "config": "~0.4.35",
     "csv": "~0.4.0",
     "ejs": "~1.0.0",
-    "featureservice": "^1.2.2",
+    "featureservice": "^1.4.4",
     "format-spatial-ref": "^1.0.0",
     "js-yaml": "^3.4.2",
     "json-stringify-safe": "^5.0.1",
@@ -31,7 +31,7 @@
   "devDependencies": {
     "documentation": "^2.0.1",
     "istanbul": "^0.3.17",
-    "koop": "^2.11.0",
+    "koop": "^3.0.0-alpha",
     "lodash": "^2.4.2",
     "mocha": "~2.2.5",
     "nock": "^2.13.0",
