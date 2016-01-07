@@ -8,6 +8,7 @@ var Utils = require('../lib/utils')
 var async = require('async')
 var SpatialReference = require('spatialreference')
 var formatSpatialRef = require('format-spatial-ref')
+var path = require('path')
 
 var AGOL = function (koop) {
   /**
@@ -23,13 +24,10 @@ var AGOL = function (koop) {
   config.agol = config.agol || {}
   agol.log = koop.log
 
-  if (config.agol.request_workers) {
+  if (config.agol.request_workers && config.queue) {
+    var connection = config.queue.connection
     var qOpts = {
-      redis: {
-        host: config.agol.request_workers.redis.host,
-        port: config.agol.request_workers.redis.port,
-        prefix: config.agol.request_workers.redis.prefix
-      },
+      connection: connection,
       log: agol.log,
       cache: new Cache({cache: koop.cache, log: koop.log}),
       agol_path: Utils.agol_path
@@ -128,8 +126,6 @@ var AGOL = function (koop) {
    * @param {function} callback - The callback.
    */
   agol.find = function (id, callback) {
-    console.log(koop.cache)
-    console.log(koop.Cache)
     koop.cache.db.serviceGet('agol:services', parseInt(id, 0) || id, function (err, res) {
       if (err) return callback('No service table found for that id. Try POSTing {"id":"arcgis", "host":"http://www.arcgis.com"} to /agol', null)
       callback(null, res)
@@ -261,22 +257,35 @@ var AGOL = function (koop) {
     getWkt(options.outSr, function (err, wkt) {
       if (err) return callback(err)
       options.srs = wkt
-      koop.exporter.createJob(options)
+      koop.queue.enqueue('xport', options)
       .on('start', function (info) { updateJob('start', options) })
       .on('progress', function (info) { updateJob('progess', options) })
-      .on('finish', function (info) { updateJob('finish', options) })
+      .on('finish', function (info) {
+        updateJob('finish', options)
+        if (options.where || options.geometry) copyLatest(options)
+      })
       .on('fail', function (info) { updateJob('fail', options) })
 
       updateJob('queued', options, callback)
     })
   }
 
+  function copyLatest (options) {
+    var copyOpts = {
+      from: options.filePath,
+      to: path.join('latest', options.filePath),
+      fileName: options.name + '.' + options.format
+    }
+    koop.queue.enqueue('copy', copyOpts)
+    .on('finish', function () { agol.log.info('Successful copy', copyOpts) })
+    .on('fail', function () { agol.log.error('Failed copy', copyOpts) })
+  }
+
   function updateJob (status, options, callback) {
     agol.cache.getInfo(options.table, function (err, info) {
       if (err) {
-        agol.log.error(err)
         if (callback) callback(err, info)
-        return
+        return agol.log.error(err)
       }
       info.generating = info.generating || {}
       var generating = info.generating[options.key] = info.generating[options.key] || {}

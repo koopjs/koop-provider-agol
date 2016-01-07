@@ -190,6 +190,7 @@ var Controller = function (agol, BaseController) {
     if (isGenerating) return controller._returnStatus(req, res, info)
 
     agol.files.exists(options.filePath, options.fileName, function (exists, path) {
+      console.log(exists, path)
       if (path) return controller._returnFile(req, res, path, info.name + '.' + req.params.format)
 
       agol.generateExport(options, function (err, status, created) {

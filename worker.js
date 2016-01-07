@@ -23,11 +23,7 @@ var cacheOpts = {
 var cache = new Cache(cacheOpts)
 
 var workOpts = {
-  redis: {
-    host: config.redis.host,
-    port: config.redis.port,
-    prefix: config.redis.prefix
-  },
+  connection: config.queue.connection,
   cache: cache,
   log: koop.log
 }
