@@ -18,7 +18,7 @@ https.globalAgent.maxSockets = Infinity
 
 var cacheOpts = {
   log: koop.log,
-  cache: koop.Cache
+  cache: koop.cache
 }
 var cache = new Cache(cacheOpts)
 

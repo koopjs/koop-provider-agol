@@ -11,9 +11,9 @@ config.data_dir = __dirname + '/output/'
 koop.config = config
 koop.log = new koop.Logger({logfile: './test.log'})
 
-koop.Cache = new koop.DataCache(koop)
-koop.Cache.db = koop.LocalDB
-koop.Cache.db.log = koop.log
+koop.cache = new koop.DataCache(koop)
+koop.cache.db = koop.LocalDB
+koop.cache.db.log = koop.log
 
 koop.files = new koop.Files(koop)
 
@@ -104,7 +104,7 @@ describe('AGOL Model', function () {
 
   describe('remove items', function () {
     before(function (done) {
-      sinon.stub(koop.Cache, 'remove', function (host, itemid, opts, callback) {
+      sinon.stub(koop.cache, 'remove', function (host, itemid, opts, callback) {
         callback()
       })
 
@@ -112,7 +112,7 @@ describe('AGOL Model', function () {
     })
 
     after(function (done) {
-      koop.Cache.remove.restore()
+      koop.cache.remove.restore()
       done()
     })
 
@@ -122,7 +122,7 @@ describe('AGOL Model', function () {
 
     it('should call cache db remove on dropItem', function (done) {
       agol.dropResource('item', 'layer', {}, function () {
-        koop.Cache.remove.called.should.equal(true)
+        koop.cache.remove.called.should.equal(true)
         done()
       })
     })
@@ -225,26 +225,27 @@ describe('AGOL Model', function () {
 
   describe('when building a geohash', function () {
     before(function (done) {
-      sinon.stub(agol, 'getGeoHash', function (key, options, callback) {
+      koop.cache.db.geoHashAgg = function () {}
+      sinon.stub(koop.cache.db, 'geoHashAgg', function (key, limit, precision, options, callback) {
         callback(null, {geohash: 100})
       })
-      sinon.stub(agol, 'saveFile', function (path, name, agg, callback) {
+      sinon.stub(agol.files, 'write', function (path, name, agg, callback) {
         callback(null, agg)
       })
       sinon.stub(agol.cache, 'getInfo', function (key, callback) {
         callback(null, {geohashStatus: 'Processing'})
       })
-      sinon.stub(koop.Cache, 'updateInfo', function (key, info, callback) {
+      sinon.stub(koop.cache, 'updateInfo', function (key, info, callback) {
         callback(null, true)
       })
       done()
     })
 
     after(function (done) {
-      koop.Cache.updateInfo.restore()
+      koop.cache.updateInfo.restore()
       agol.cache.getInfo.restore()
-      agol.saveFile.restore()
-      agol.getGeoHash.restore()
+      agol.files.write.restore()
+      delete koop.cache.db.geoHashAgg
       done()
     })
 
@@ -263,9 +264,8 @@ describe('AGOL Model', function () {
       agol.buildGeohash(info, hashOpts, function (err, geohash) {
         should.not.exist(err)
         agol.cache.getInfo.called.should.equal(false)
-        agol.getGeoHash.called.should.equal(false)
-        agol.saveFile.called.should.equal(false)
-        koop.Cache.updateInfo.called.should.equal(true)
+        agol.files.write.called.should.equal(false)
+        koop.cache.updateInfo.called.should.equal(true)
         done()
       })
     })
@@ -276,9 +276,9 @@ describe('AGOL Model', function () {
         should.not.exist(err)
         geohash.geohash.should.equal(100)
         agol.cache.getInfo.called.should.equal(true)
-        agol.getGeoHash.called.should.equal(true)
-        agol.saveFile.called.should.equal(true)
-        koop.Cache.updateInfo.called.should.equal(true)
+        koop.cache.db.geoHashAgg.called.should.equal(true)
+        agol.files.write.called.should.equal(true)
+        koop.cache.updateInfo.called.should.equal(true)
         done()
       })
     })

@@ -1,7 +1,7 @@
 var pkg = require('./package.json')
 
 var provider = {
-  name: 'agol',
+  plugin_name: 'agol',
   hosts: true,
   controller: require('./controller'),
   routes: require('./routes'),

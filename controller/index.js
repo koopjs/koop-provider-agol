@@ -1,3 +1,4 @@
+/* @ flow */
 var https = require('https')
 var Sm = require('sphericalmercator')
 var merc = new Sm({size: 256})
@@ -185,11 +186,11 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_handleCached', params: req.params, query: req.query}))
     var options = Utils.createExportOptions(req, info)
 
+    var isGenerating = info.generating && info.generating[req.optionKey] && info.generating[req.optionKey][req.params.format]
+    if (isGenerating) return controller._returnStatus(req, res, info)
+
     agol.files.exists(options.filePath, options.fileName, function (exists, path) {
       if (path) return controller._returnFile(req, res, path, info.name + '.' + req.params.format)
-
-      var isGenerating = Utils.isGenerating(info, req.optionsKey, req.params.format)
-      if (isGenerating) return controller._returnStatus(req, res, info)
 
       agol.generateExport(options, function (err, status, created) {
         controller._returnStatus(req, res, status, err)
@@ -202,7 +203,7 @@ var Controller = function (agol, BaseController) {
    *
    * @param {object} req - the incoming request
    * @param {object} res - the outgoing response
-   * @params {object} info - item's info doc
+   * @param {object} info - item's info doc
    * @param {object} error - an error from trying to fetch data
    * @private
    */
@@ -211,31 +212,26 @@ var Controller = function (agol, BaseController) {
     if (req.params.silent) return
     var table = Utils.createTableKey(req.params)
     agol.cache.getCount(table, {}, function (err, count) {
+      var code
       if (err) agol.log.error('Failed to get count of rows in the DB' + ' ' + err)
       info = info || {}
       var processingTime = Utils.processingTime(info, req.optionKey)
       info.generating = info.generating || {}
       var response = {processing_time: processingTime, count: count}
       response.generating = info.generating[req.optionKey] || {}
-
       if (error && error.message) {
         response.error = Utils.failureMsg(error)
       } else if (info.error) {
         response.error = info.error
-      } else if (response.generating.error) {
-        response.error = response.generating.error
-      }
-
-      var code = 202
-      if (error || info.error) {
-        code = 502
-      } else if (response.generating.error) {
+      } else if (response.generating[req.params.format] === 'fail') {
+        response.error = 'Export job failed'
         code = 500
-        delete response.generating.error
       }
 
+      if (error || info.error) code = 502
       response.status = response.error ? 'Failed' : 'Processing'
-      res.status(code).json(response)
+
+      res.status(code || 202).json(response)
     })
   }
 
@@ -443,6 +439,7 @@ var Controller = function (agol, BaseController) {
         if (err) return res.status(500).send(err)
         if (exists) {
           // this is logic for the expiration of the geohash itself
+          fileInfo = fileInfo || {}
           info.expired = new Date(info.retrieved_at) > new Date(fileInfo.LastModified)
           // always return a geohash to the client if it exists
           controller._returnGeohash(req, res, path, info)
@@ -494,8 +491,10 @@ var Controller = function (agol, BaseController) {
       res.set('Access-Control-Allow-Headers', 'X-Expired')
       res.set('Access-Control-Expose-Headers', 'X-Expired')
     }
-    if (!path.substr(0, 4) === 'http') return res.sendFile(path)
+    console.log(path.substr(0, 4))
+    if (path.substr(0, 4) !== 'http') return res.sendFile(path)
     // Proxy to s3 urls allows us to not show the URL
+    console.log(path)
     https.get(path, function (proxyRes) {
       if (proxyRes.headers['content-length'] === 0) return res.status(500).json({error: 'Empty geohash'})
       proxyRes.pipe(res)

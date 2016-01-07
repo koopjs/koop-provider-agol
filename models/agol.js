@@ -13,7 +13,7 @@ var AGOL = function (koop) {
   /**
    * inherits from the base model
    */
-  var agol = new koop.BaseModel(koop)
+  var agol = {}
   var config = koop.config
   // set field indexing off by default
   var indexFields
@@ -92,15 +92,16 @@ var AGOL = function (koop) {
 
   agol.cache = new Cache({
     cache: koop.cache,
-    files: agol.files,
-    exporter: koop.Exporter,
+    files: koop.files,
     log: koop.log,
     featureQueue: agol.featureQueue,
     csvQueue: agol.csvQueue,
     indexFields: indexFields
   })
 
-  agol.spatialReference = new SpatialReference({db: agol.cache, logger: agol.log})
+  agol.files = koop.files
+
+  agol.spatialReference = new SpatialReference({db: agol.cache.db, logger: agol.log})
 
   agol.portal = new Portal({log: koop.log})
 
@@ -127,6 +128,8 @@ var AGOL = function (koop) {
    * @param {function} callback - The callback.
    */
   agol.find = function (id, callback) {
+    console.log(koop.cache)
+    console.log(koop.Cache)
     koop.cache.db.serviceGet('agol:services', parseInt(id, 0) || id, function (err, res) {
       if (err) return callback('No service table found for that id. Try POSTing {"id":"arcgis", "host":"http://www.arcgis.com"} to /agol', null)
       callback(null, res)
@@ -258,11 +261,32 @@ var AGOL = function (koop) {
     getWkt(options.outSr, function (err, wkt) {
       if (err) return callback(err)
       options.srs = wkt
-      agol.exporter.createJob(options)
-      .on('start')
-      .on('progress')
-      .on('finish')
-      .on('fail')
+      koop.exporter.createJob(options)
+      .on('start', function (info) { updateJob('start', options) })
+      .on('progress', function (info) { updateJob('progess', options) })
+      .on('finish', function (info) { updateJob('finish', options) })
+      .on('fail', function (info) { updateJob('fail', options) })
+
+      updateJob('queued', options, callback)
+    })
+  }
+
+  function updateJob (status, options, callback) {
+    agol.cache.getInfo(options.table, function (err, info) {
+      if (err) {
+        agol.log.error(err)
+        if (callback) callback(err, info)
+        return
+      }
+      info.generating = info.generating || {}
+      var generating = info.generating[options.key] = info.generating[options.key] || {}
+      generating[options.format] = status
+      agol.log.info('Export Job', status, options)
+      if (status === 'finish') generating[options.format] = false
+      agol.cache.updateInfo(options.table, info, function (err) {
+        if (err) agol.log.error(err)
+        if (callback) callback(err, info)
+      })
     })
   }
 
@@ -312,9 +336,12 @@ var AGOL = function (koop) {
     })
 
     function getAndSaveGeohash (callback) {
-      agol.getGeoHash(options.key, options.query, function (err, agg) {
+      const limit = options.limit || 100000
+      const precision = options.precision || 8
+
+      koop.cache.db.geoHashAgg(options.key, limit, precision, options, function (err, agg) {
         if (err) return callback(err)
-        agol.saveFile(options.filePath, options.fileName, JSON.stringify(agg), function (err) {
+        koop.files.write(options.filePath, options.fileName, JSON.stringify(agg), function (err) {
           callback(err, agg)
         })
       })

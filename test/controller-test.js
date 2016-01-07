@@ -518,6 +518,8 @@ describe('AGOL Controller', function () {
 
   describe('getting a png tile should return 404 for test', function () {
     before(function (done) {
+      agol.tileGet = function () {}
+
       sinon.stub(agol.cache, 'get', function (item, layer, options, callback) {
         callback(null, {
           name: '',
@@ -545,10 +547,10 @@ describe('AGOL Controller', function () {
     })
 
     after(function (done) {
+      delete agol.tileGet
       agol.cache.get.restore()
       agol.getInfo.restore()
       agol.find.restore()
-      agol.tileGet.restore()
       done()
     })
 
@@ -567,14 +569,14 @@ describe('AGOL Controller', function () {
 
   describe('when returning status to the client', function () {
     before(function (done) {
-      sinon.stub(agol, 'getCount', function (key, options, callback) {
+      sinon.stub(agol.cache, 'getCount', function (key, options, callback) {
         callback(null, 100)
       })
       done()
     })
 
     after(function (done) {
-      agol.getCount.restore()
+      agol.cache.getCount.restore()
       done()
     })
 

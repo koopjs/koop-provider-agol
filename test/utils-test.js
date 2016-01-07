@@ -1,4 +1,5 @@
 /* global it, describe */
+/* @ flow */
 var Utils = require('../lib/utils.js')
 var should = require('should') // eslint-disable-line
 
