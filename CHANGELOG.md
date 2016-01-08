@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.0.0-alpha.2] - 2016-01-08
 ### Fixed
 * Remove use of `const`
 
@@ -568,6 +568,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.0.0-alpha.2]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.1..v3.0.0-alpha.2
 [3.0.0-alpha.1]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha..v3.0.0-alpha.1
 [3.0.0-alpha]: https://github.com/koopjs/koop-agol/compare/v2.0.6..v3.0.0-alpha
 [2.0.6]: https://github.com/koopjs/koop-agol/compare/v2.0.5..v2.0.6
