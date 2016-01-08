@@ -345,8 +345,8 @@ var AGOL = function (koop) {
     })
 
     function getAndSaveGeohash (callback) {
-      const limit = options.limit || 100000
-      const precision = options.precision || 8
+      var limit = options.limit || 100000
+      var precision = options.precision || 8
 
       koop.cache.db.geoHashAgg(options.key, limit, precision, options, function (err, agg) {
         if (err) return callback(err)

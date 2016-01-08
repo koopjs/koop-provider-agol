@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Remove use of `const`
+
 ## [3.0.0-alpha.1] - 2016-01-08
 ### Fixed
 * Gunzip files from S3 before piping to output
