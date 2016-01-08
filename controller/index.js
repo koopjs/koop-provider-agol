@@ -5,6 +5,7 @@ var merc = new Sm({size: 256})
 var fs = require('fs')
 var Utils = require('../lib/utils.js')
 var _ = require('lodash')
+var Path = require('path')
 
 var Controller = function (agol, BaseController) {
   /**
@@ -190,7 +191,7 @@ var Controller = function (agol, BaseController) {
     if (isGenerating) return controller._returnStatus(req, res, info)
 
     agol.files.exists(options.filePath, options.fileName, function (exists, path) {
-      if (path) return controller._returnFile(req, res, path, info.name + '.' + req.params.format)
+      if (path) return controller._returnFile(req, res, Path.join(options.filePath, options.fileName))
 
       agol.generateExport(options, function (err, status, created) {
         controller._returnStatus(req, res, status, err)
@@ -351,22 +352,15 @@ var Controller = function (agol, BaseController) {
    * @params {string} name - the name of the file
    * @private
    */
-  controller._returnFile = function (req, res, path, name) {
-    agol.log.debug(JSON.stringify({route: '_returnFile', params: req.params, query: req.query, path: path, name: name}))
+  controller._returnFile = function (req, res, filePath) {
+    agol.log.debug(JSON.stringify({route: '_returnFile', params: req.params, query: req.query, filePath: filePath}))
 
     if (req.query.url_only) return res.json({url: Utils.replaceUrl(req)})
 
     // forces browsers to download
-    res = Utils.setHeaders(res, name, req.params.format)
+    res = Utils.setHeaders(res, Path.basename(filePath), req.params.format)
 
-    // Proxy to s3 urls allows us to not show the URL
-    if (path.substr(0, 4) === 'http') {
-      return https.get(path, function (proxyRes) {
-        proxyRes.pipe(res)
-      })
-    }
-
-    return res.sendFile(path)
+    agol.files.createReadStream(filePath).pipe(res)
   }
 
   /**

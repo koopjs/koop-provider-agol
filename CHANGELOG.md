@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unrleased
+### Fixed
+* Gunzip files from S3 before piping to output
+
 ## [3.0.0-alpha] - 2016-01-07
 ### Changed
 * Works with Koop@3.0.0-alpha
