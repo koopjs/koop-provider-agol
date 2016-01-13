@@ -435,6 +435,7 @@ var Controller = function (agol, BaseController) {
           // this is logic for the expiration of the geohash itself
           fileInfo = fileInfo || {}
           info.expired = new Date(info.retrieved_at) > new Date(fileInfo.LastModified)
+          info.geohash_written = fileInfo.LastModified
           // always return a geohash to the client if it exists
           controller._returnGeohash(req, res, path, info)
           // we set silent here so that we can take advantage of the controller functions
@@ -481,7 +482,7 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_returnGeohash', params: req.params, query: req.query}))
     res.contentType('application/json')
     if (info.expired || info.status === 'Expired') {
-      res.set('X-Expired', info.retrieved_at)
+      res.set('X-Expired', info.geohash_written)
       res.set('Access-Control-Allow-Headers', 'X-Expired')
       res.set('Access-Control-Expose-Headers', 'X-Expired')
     }

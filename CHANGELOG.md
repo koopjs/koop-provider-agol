@@ -3,8 +3,10 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Fixed
 * WKT is fetched based on latest WKT
 * Fields are always passed to `esriToGeoJson`
+* Geohash expiration header reference correct timestamp
 
 ## [3.0.0-alpha.2] - 2016-01-08
 ### Fixed
