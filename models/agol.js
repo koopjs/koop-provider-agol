@@ -300,7 +300,7 @@ var AGOL = function (koop) {
   }
 
     /**
-   * Gets projection information for a shapefile exprot
+   * Gets projection information for a shapefile export
    * @param {object} options - contains info on spatial reference, wkid and wkt
    * @param {function} callback - calls back with an error or wkt
    * @private
@@ -310,7 +310,9 @@ var AGOL = function (koop) {
     if (!outSr) return callback()
     if (outSr.wkt) return callback(null, outSr.wkt)
     var spatialRef = formatSpatialRef(outSr)
-    agol.spatialReference.wkidToWkt(spatialRef.wkid, callback)
+    // latest WKID is the more modern value
+    var wkid = spatialRef.latestWkid || spatialRef.wkid
+    agol.spatialReference.wkidToWkt(wkid, callback)
   }
 
   /**

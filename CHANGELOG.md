@@ -2,9 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unrleased
+## Unreleased
 ### Fixed
 * Gunzip files from S3 before piping to output
+* WKT is fetched based on latest WKT
+* Fields are always passed to `esriToGeoJson`
 
 ## [3.0.0-alpha] - 2016-01-07
 ### Changed
