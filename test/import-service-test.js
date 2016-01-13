@@ -21,7 +21,7 @@ describe('importing a feature service into the cache', function () {
     importService = new ImportService({
       item: 'item',
       layer: 0,
-      service: 'http://featureserver.com/layer/FeatureServer',
+      server: 'http://featureserver.com/layer/FeatureServer',
       pages: [{req: 'http://featureserver.com/layer/FeatureServer/0/query?where=1=1'}],
       key: 'agol:item:0',
       log: log,
