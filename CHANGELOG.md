@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.0.0-alpha.4] - 2016-1-19
 ### Fixed
 * Guard against exception when layerInfo has no fields
 * Csv-queue has access to koop.files
@@ -583,6 +583,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.0.0-alpha.4]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.3..v3.0.0-alpha.4
 [3.0.0-alpha.3]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.2..v3.0.0-alpha.3
 [3.0.0-alpha.2]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.1..v3.0.0-alpha.2
 [3.0.0-alpha.1]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha..v3.0.0-alpha.1
