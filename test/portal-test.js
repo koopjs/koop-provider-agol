@@ -25,3 +25,18 @@ describe('when getting an item with metadata', function () {
     })
   })
 })
+
+describe('when getting an item with no url', function () {
+  var itemInfo = fs.readFileSync(__dirname + '/fixtures/itemNoUrl.json')
+
+  var fixture = nock('http://www.arcgis.com/')
+  fixture.get('/sharing/rest/content/items/97743c604c1d43d088043e25683aca5c?f=json')
+    .reply(200, itemInfo)
+
+  it('should call back with an error', function (done) {
+    portal.getItem('http://www.arcgis.com', '97743c604c1d43d088043e25683aca5c', function (err, json) {
+      should.exist(err)
+      done()
+    })
+  })
+})
