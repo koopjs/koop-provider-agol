@@ -21,7 +21,6 @@
     "json-stringify-safe": "^5.0.1",
     "koop-logger": "^1.0.1",
     "koop-pgcache": "^1.5.0",
-    "kue": "~0.9.4",
     "lodash": "~2.4.1",
     "node-resque": "^1.0.1",
     "request": "^2.67.0",
