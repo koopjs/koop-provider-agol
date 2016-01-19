@@ -222,14 +222,16 @@ var Controller = function (agol, BaseController) {
       response.generating = info.generating[req.optionKey] || {}
       if (error && error.message) {
         response.error = Utils.failureMsg(error)
-      } else if (info.error) {
+        code = 502
+      } else if (info.error && info.error.message) {
         response.error = info.error
+        error = true
+        code = 502
       } else if (response.generating[req.params.format] === 'fail') {
         response.error = 'Export job failed'
         code = 500
       }
 
-      if (error || info.error) code = 502
       response.status = response.error ? 'Failed' : 'Processing'
 
       res.status(code || 202).json(response)
