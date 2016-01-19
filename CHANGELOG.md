@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.0.0-alpha.6] - 2016-01-19
 ### Changed
 * Clean up logic around returning status
 
@@ -599,6 +599,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.0.0-alpha.6]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.5..v3.0.0-alpha.6
+[3.0.0-alpha.5]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.4..v3.0.0-alpha.5
 [3.0.0-alpha.4]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.3..v3.0.0-alpha.4
 [3.0.0-alpha.3]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.2..v3.0.0-alpha.3
 [3.0.0-alpha.2]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.1..v3.0.0-alpha.2
