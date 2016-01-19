@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Guard against exception when layerInfo has no fields
+
 ## [3.0.0-alpha.3] - 2016-01-13
 ### Changed
 * Leveraging `FeatureService.js` intelligent concurrency
