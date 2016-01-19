@@ -2,14 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.0.0-alpha.5] - 2016-01-19
 ### Changed
 * Remove console.log in feature-queue
+* Remove unused dep
 
 ### Fixed
 * Defend against cases where item has no url
 
-## [3.0.0-alpha.4] - 2016-1-19
+## [3.0.0-alpha.4] - 2016-01-19
 ### Fixed
 * Guard against exception when layerInfo has no fields
 * Csv-queue has access to koop.files
@@ -19,6 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0-alpha.3] - 2016-01-13
 ### Changed
 * Leveraging `FeatureService.js` intelligent concurrency
+
 ### Fixed
 * WKT is fetched based on latest WKT
 * Fields are always passed to `esriToGeoJson`
