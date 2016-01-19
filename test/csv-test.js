@@ -12,14 +12,14 @@ var koop = {
   }
 }
 
-var csvRequest = new CSVRequest(cache, {
-  store: true,
-  url: 'http://www.arcgis.com/csv',
-  itemInfo: JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json'))
-})
-
 describe('when calling getCSV', function () {
+  var csvRequest
   before(function (done) {
+    csvRequest = new CSVRequest(cache, {
+      store: true,
+      url: 'http://www.arcgis.com/csv',
+      itemInfo: JSON.parse(fs.readFileSync(__dirname + '/fixtures/itemInfo.json'))
+    })
     sinon.stub(cache, 'get', function (type, id, options, callback) {
       callback('Error', null)
     })
@@ -30,7 +30,10 @@ describe('when calling getCSV', function () {
       callback(null, true)
     })
     sinon.stub(koop.GeoJSON, 'fromCSV', function (data, callback) {
-      callback(null, {})
+      callback(null, {
+        type: 'FeatureCollection',
+        features: []
+      })
     })
     done()
   })
@@ -50,6 +53,19 @@ describe('when calling getCSV', function () {
     csvRequest.submit(function (err, status, data) {
       should.not.exist(err)
       data.features.length.should.equal(1)
+      cache.get.called.should.equal(false)
+      cache.insert.called.should.equal(true)
+      cache.insertPartial.called.should.equal(false)
+      done()
+    })
+  })
+
+  it('should gracefully handle an empty csv', function (done) {
+    var fixture = nock('http://www.arcgis.com')
+    fixture.get('/csv')
+      .reply(200, '"id","lat","lon"\n')
+    csvRequest.submit(function (err, status, data) {
+      should.not.exist(err)
       cache.get.called.should.equal(false)
       cache.insert.called.should.equal(true)
       cache.insertPartial.called.should.equal(false)
