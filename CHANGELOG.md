@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Clean up logic around returning status
+
+### Fixed
+* More defensive against Portal replies
+
 ## [3.0.0-alpha.5] - 2016-01-19
 ### Changed
 * Remove console.log in feature-queue
