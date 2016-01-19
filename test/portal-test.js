@@ -40,3 +40,17 @@ describe('when getting an item with no url', function () {
     })
   })
 })
+
+describe('when getting null replies from Portal', function () {
+  var fixture = nock('http://www.arcgis.com/')
+  fixture.get('/sharing/rest/content/items/97743c604c1d43d088043e25683aca5c?f=json')
+    .reply(200, '"foo"')
+
+  it('should call back with an error', function (done) {
+    portal.getItem('http://www.arcgis.com', '97743c604c1d43d088043e25683aca5c', function (err, json) {
+      should.exist(err)
+      err.message.should.equal('Item reply was not an object')
+      done()
+    })
+  })
+})

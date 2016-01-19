@@ -188,6 +188,13 @@ var AGOL = function (koop) {
     agol.log.debug(options)
     agol.portal.getItem(options.host, options.item, function (err, item) {
       if (err) return callback(err)
+      if (typeof item !== 'object') {
+        var error = new Error('Item reply was empty')
+        error.code = 500
+        error.timestamp = new Date()
+        agol.log.error('Item reply was empty', options)
+        return callback(error)
+      }
       options.itemInfo = item
       // all the null parameters below are for options
       switch (item.type) {
