@@ -85,7 +85,7 @@ var AGOL = function (koop) {
   agol.csvQueue = new CSVQueue({
     cache: koop.cache,
     log: koop.log,
-    files: agol.files
+    files: koop.files
   })
 
   agol.cache = new Cache({

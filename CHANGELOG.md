@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Fixed
 * Guard against exception when layerInfo has no fields
+* Csv-queue has access to koop.files
 
 ## [3.0.0-alpha.3] - 2016-01-13
 ### Changed
