@@ -187,8 +187,7 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_handleCached', params: req.params, query: req.query}))
     var options = Utils.createExportOptions(req, info)
 
-    var isGenerating = info.generating && info.generating[req.optionKey] && info.generating[req.optionKey][req.params.format]
-    if (isGenerating) return controller._returnStatus(req, res, info)
+    if (Utils.isGenerating(req, info)) return controller._returnStatus(req, res, info)
 
     agol.files.exists(options.filePath, options.fileName, function (exists, path) {
       if (path) return controller._returnFile(req, res, Path.join(options.filePath, options.fileName))
@@ -211,6 +210,9 @@ var Controller = function (agol, BaseController) {
   controller._returnStatus = function (req, res, info, error) {
     agol.log.debug(JSON.stringify({route: '_returnStatus', params: req.params, query: req.query}))
     if (req.params.silent) return
+    info = info || {}
+    // we shouldnt try to get count from the database if the table doesn't exist yet
+    if ((!info.status || info.status === 'Unavailable') && !error) return res.status(202).json({processing_time: 0})
     var table = Utils.createTableKey(req.params)
     agol.cache.getCount(table, {}, function (err, count) {
       var code
