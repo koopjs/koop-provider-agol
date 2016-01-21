@@ -247,4 +247,101 @@ describe('Utils', function () {
       done()
     })
   })
+
+  describe('determining if a file is generating', function () {
+    it('should return false if the status is generated', function (done) {
+      var req = {
+        params: {
+          format: 'zip'
+        },
+        optionKey: 'foo'
+      }
+      var info = {
+        generating: {
+          foo: {
+            zip: 'generated'
+          }
+        }
+      }
+      var bool = Utils.isGenerating(req, info)
+      bool.should.equal(false)
+      done()
+    })
+
+    it('should return true if the status is start', function (done) {
+      var req = {
+        params: {
+          format: 'zip'
+        },
+        optionKey: 'foo'
+      }
+      var info = {
+        generating: {
+          foo: {
+            zip: 'start'
+          }
+        }
+      }
+      var bool = Utils.isGenerating(req, info)
+      bool.should.equal(true)
+      done()
+    })
+
+    it('should return true if the status is queued', function (done) {
+      var req = {
+        params: {
+          format: 'zip'
+        },
+        optionKey: 'foo'
+      }
+      var info = {
+        generating: {
+          foo: {
+            zip: 'queued'
+          }
+        }
+      }
+      var bool = Utils.isGenerating(req, info)
+      bool.should.equal(true)
+      done()
+    })
+
+    it('should return true if the status is progress', function (done) {
+      var req = {
+        params: {
+          format: 'zip'
+        },
+        optionKey: 'foo'
+      }
+      var info = {
+        generating: {
+          foo: {
+            zip: 'progress'
+          }
+        }
+      }
+      var bool = Utils.isGenerating(req, info)
+      bool.should.equal(true)
+      done()
+    })
+
+    it('should return false if the status is false', function (done) {
+      var req = {
+        params: {
+          format: 'zip'
+        },
+        optionKey: 'foo'
+      }
+      var info = {
+        generating: {
+          foo: {
+            zip: false
+          }
+        }
+      }
+      var bool = Utils.isGenerating(req, info)
+      bool.should.equal(false)
+      done()
+    })
+  })
 })
