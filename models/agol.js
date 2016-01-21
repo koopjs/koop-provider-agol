@@ -79,7 +79,8 @@ var AGOL = function (koop) {
     // every 30 minutes clear out resources where the job failed
     // currently we don't fail any jobs on purpose so this *should* only happen
     // if the process crashes
-    setInterval(agol.dropAndRemoveFailed, 30 * 60 * 1000)
+    var day = 24 * 60 * 60 * 1000
+    setInterval(agol.dropAndRemoveFailed, day)
   }
 
   agol.csvQueue = new CSVQueue({
@@ -188,13 +189,6 @@ var AGOL = function (koop) {
     agol.log.debug(options)
     agol.portal.getItem(options.host, options.item, function (err, item) {
       if (err) return callback(err)
-      if (typeof item !== 'object') {
-        var error = new Error('Item reply was empty')
-        error.code = 500
-        error.timestamp = new Date()
-        agol.log.error('Item reply was empty', options)
-        return callback(error)
-      }
       options.itemInfo = item
       // all the null parameters below are for options
       switch (item.type) {
@@ -284,9 +278,13 @@ var AGOL = function (koop) {
    * @private
    */
   function getWkt (outSr, callback) {
+    var wkt
     // if there is a passed in WKT just use that
     if (!outSr) return callback()
-    if (outSr.wkt) return callback(null, outSr.wkt)
+    if (outSr.wkt) {
+      wkt = outSr.wkt.replace(/lambert_conformal_conic(?!_)/i, 'Lambert_Conformal_Conic_2SP')
+      return callback(null, wkt)
+    }
     var spatialRef = formatSpatialRef(outSr)
     // latest WKID is the more modern value
     var wkid = spatialRef.latestWkid || spatialRef.wkid
