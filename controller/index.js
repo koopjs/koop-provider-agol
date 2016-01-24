@@ -211,21 +211,22 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_returnStatus', params: req.params, query: req.query}))
     if (req.params.silent) return
     info = info || {}
+    var processingTime = Utils.processingTime(info, req.optionKey)
+    var response = {processingTime: processingTime}
     // we shouldnt try to get count from the database if the table doesn't exist yet
-    if ((!info.status || info.status === 'Unavailable') && !error) return res.status(202).json({processing_time: 0})
+    if ((!info.status || info.status === 'Unavailable') && !error) return res.status(202).json({processingTime: processingTime})
+    if (error) {
+      response.error = Utils.failureMsg(error)
+      return res.status(502).send(response)
+    }
     var table = Utils.createTableKey(req.params)
     agol.cache.getCount(table, {}, function (err, count) {
       var code
       if (err) agol.log.error('Failed to get count of rows in the DB' + ' ' + err)
-      info = info || {}
-      var processingTime = Utils.processingTime(info, req.optionKey)
+      response.count = count
       info.generating = info.generating || {}
-      var response = {processing_time: processingTime, count: count}
       response.generating = info.generating[req.optionKey] || {}
-      if (error && error.message) {
-        response.error = Utils.failureMsg(error)
-        code = 502
-      } else if (info.error && info.error.message) {
+      if (info.error && info.error.message) {
         response.error = info.error
         error = true
         code = 502
