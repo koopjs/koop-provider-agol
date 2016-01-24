@@ -84,10 +84,9 @@ describe('importing a feature service into the cache', function () {
       .reply(500, {error: {}})
 
     importService.on('error', function (error) {
-      importService._fail(error, function () {
-        importService.cache.setFail.called.should.equal(true)
-        done()
-      })
+      importService._fail(error)
+      importService.cache.setFail.called.should.equal(true)
+      done()
     })
 
     importService.run()
@@ -103,11 +102,10 @@ describe('importing a feature service into the cache', function () {
     })
 
     importService.on('error', function (error) {
-      importService._fail(error, function () {
-        importService.cache.setFail.called.should.equal(false)
-        importService.cache.insertPartial.restore()
-        done()
-      })
+      importService._fail(error)
+      importService.cache.setFail.called.should.equal(false)
+      importService.cache.insertPartial.restore()
+      done()
     })
 
     importService.run()

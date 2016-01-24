@@ -217,7 +217,8 @@ var Controller = function (agol, BaseController) {
     if ((!info.status || info.status === 'Unavailable') && !error) return res.status(202).json({processingTime: processingTime})
     if (error) {
       response.error = Utils.failureMsg(error)
-      return res.status(502).send(response)
+      response.status = 'Failed'
+      return res.status(502).json(response)
     }
     var table = Utils.createTableKey(req.params)
     agol.cache.getCount(table, {}, function (err, count) {
@@ -325,11 +326,11 @@ var Controller = function (agol, BaseController) {
         var options = Utils.createCacheOptions(req)
         options.expiration = timestamp
         agol.cacheResource(options, function (err, json) {
-          if (err) return res.status(500).send(err)
+          if (err) return res.status(500).json(err)
           res.status(201).json({status: 'Processing', expires_at: new Date(timestamp).toISOString()})
         })
       } else {
-        res.status(400).send({error: err.message})
+        res.status(400).json({error: err.message})
       }
     })
   }
@@ -413,7 +414,7 @@ var Controller = function (agol, BaseController) {
     req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
     var options = {item: req.params.item, layer: req.params.layer || 0, host: req.portal, query: req.query}
     agol.cacheResource(options, function (error, info, data) {
-      if (error) return res.status(error.code || 500).send(error.error || error)
+      if (error) return res.status(error.code || 500).json(error.error || error)
       var fsQuery = Utils.setServiceDefaults(req.params, req.query)
       req.query = _.omit(fsQuery, ['geometry', 'where'])
       // the data must be passed in to controller.processFeatureServer as the first element in an array
@@ -435,7 +436,7 @@ var Controller = function (agol, BaseController) {
     agol.files.exists(hashOpts.filePath, hashOpts.fileName, function (exists, path, fileInfo) {
       var options = {key: hashOpts.key, host: req.portal, item: req.params.item, layer: req.params.layer || 0}
       agol.getInfo(options, function (err, info) {
-        if (err) return res.status(500).send(err)
+        if (err) return res.status(500).json(err)
         if (exists) {
           // this is logic for the expiration of the geohash itself
           fileInfo = fileInfo || {}
@@ -512,7 +513,7 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_createGeohash', params: req.params, query: req.query}))
     agol.buildGeohash(info, options, function (err, agg) {
       if (req.params.silent) return
-      if (err) return res.status(500).send(err)
+      if (err) return res.status(500).json(err)
       if (!agg) return res.status(202).json({status: 'Generating Geohash'})
       res.status(200).json(agg)
     })
