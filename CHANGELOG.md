@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Fix typo preventing csv harvesting
+* Backwards compatibility with previously generated files
+* Stop trying to get count when table does not exist
+* Stop swallowing failed jobs
+
 ## [3.0.0-alpha.6] - 2016-01-19
 ### Changed
 * Clean up logic around returning status
