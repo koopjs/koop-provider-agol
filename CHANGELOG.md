@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.0.0-beta.2] - 2016-01-25
 ### Changed
 * Add fields parameter to import-service job
 * Only update DB once on job status changes
@@ -615,6 +615,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.0.0-beta.2]: https://github.com/koopjs/koop-agol/compare/v3.0.0-beta.1..v3.0.0-beta.2
 [3.0.0-beta.1]: https://github.com/koopjs/koop-agol/compare/v3.0.0-beta..v3.0.0-beta.1
 [3.0.0-beta]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.6..v3.0.0-beta
 [3.0.0-alpha.6]: https://github.com/koopjs/koop-agol/compare/v3.0.0-alpha.5..v3.0.0-alpha.6
