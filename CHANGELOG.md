@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Changed
 * Add fields parameter to import-service job
+* Only update DB once on job status changes
 
 ## [3.0.0-beta.1] - 2016-01-24
 ### Fixed

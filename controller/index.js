@@ -212,9 +212,9 @@ var Controller = function (agol, BaseController) {
     if (req.params.silent) return
     info = info || {}
     var processingTime = Utils.processingTime(info, req.optionKey)
-    var response = {processingTime: processingTime}
+    var response = {processingTime: processingTime, status: 'Processing'}
     // we shouldnt try to get count from the database if the table doesn't exist yet
-    if ((!info.status || info.status === 'Unavailable') && !error) return res.status(202).json({processingTime: processingTime})
+    if ((!info.status || info.status === 'Unavailable') && !error) return res.status(202).json(response)
     if (error) {
       response.error = Utils.failureMsg(error)
       response.status = 'Failed'
@@ -229,14 +229,13 @@ var Controller = function (agol, BaseController) {
       response.generating = info.generating[req.optionKey] || {}
       if (info.error && info.error.message) {
         response.error = info.error
-        error = true
         code = 502
       } else if (response.generating[req.params.format] === 'fail') {
         response.error = 'Export job failed'
         code = 500
       }
 
-      response.status = response.error ? 'Failed' : 'Processing'
+      if (response.error) response.status = 'Failed'
 
       res.status(code || 202).json(response)
     })

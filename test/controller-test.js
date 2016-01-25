@@ -469,50 +469,105 @@ describe('AGOL Controller', function () {
     })
   })
 
-  describe('getting item feature data w/a format', function () {
-    before(function (done) {
-      sinon.stub(agol, 'find', function (id, callback) {
-        callback(null, { id: 'test', host: 'http://dummy.host.com' })
-      })
-
-      sinon.stub(agol, 'getInfo', function (key, callback) {
-        callback(null, {
-          status: 'Cached',
-          name: 'Export',
-          info: {
-            fields: []
-          }
+  describe('getting item feature data w/ a format', function () {
+    describe('when the format is not generating', function () {
+      before(function (done) {
+        sinon.stub(agol, 'find', function (id, callback) {
+          callback(null, { id: 'test', host: 'http://dummy.host.com' })
         })
+
+        sinon.stub(agol, 'getInfo', function (key, callback) {
+          callback(null, {
+            status: 'Cached',
+            name: 'Export',
+            info: {
+              fields: []
+            }
+          })
+        })
+
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(false, null)
+        })
+
+        sinon.stub(agol, 'generateExport', function (options, callback) {
+          callback(null, {status: 'Cached', generating: {}})
+        })
+        done()
       })
 
-      sinon.stub(agol.files, 'exists', function (path, name, callback) {
-        callback(false, null)
+      after(function (done) {
+        agol.files.exists.restore()
+        agol.getInfo.restore()
+        agol.find.restore()
+        agol.generateExport.restore()
+        done()
       })
 
-      sinon.stub(agol, 'generateExport', function (options, callback) {
-        callback(null, {status: 'Cached', generating: {}})
+      it('should call agol.exportFile and return 202', function (done) {
+        request(koop)
+          .get('/agol/test/itemid/0.csv')
+          .expect(202)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(true)
+            done()
+          })
       })
-      done()
     })
 
-    after(function (done) {
-      agol.files.exists.restore()
-      agol.getInfo.restore()
-      agol.find.restore()
-      agol.generateExport.restore()
-      done()
-    })
-
-    it('should call agol.exportFile and return 202', function (done) {
-      request(koop)
-        .get('/agol/test/itemid/0.csv')
-        .expect(202)
-        .end(function (err, res) {
-          should.not.exist(err)
-          agol.getInfo.called.should.equal(true)
-          agol.generateExport.called.should.equal(true)
-          done()
+    describe('when generating is in progress', function () {
+      before(function (done) {
+        sinon.stub(agol, 'find', function (id, callback) {
+          callback(null, { id: 'test', host: 'http://dummy.host.com' })
         })
+
+        sinon.stub(agol, 'getInfo', function (key, callback) {
+          callback(null, {
+            status: 'Cached',
+            name: 'Export',
+            info: {
+              fields: []
+            },
+            generating: {
+              '6f089b6667f442a7d118721b18088df7': {
+                csv: 'progress'
+              }
+            }
+          })
+        })
+
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(false, null)
+        })
+
+        sinon.stub(agol, 'generateExport', function (options, callback) {
+          callback(null, {status: 'Cached', generating: {}})
+        })
+        done()
+      })
+
+      after(function (done) {
+        agol.files.exists.restore()
+        agol.getInfo.restore()
+        agol.find.restore()
+        agol.generateExport.restore()
+        done()
+      })
+
+      it('should call agol.exportFile and return 202', function (done) {
+        request(koop)
+          .get('/agol/test/itemid/0.csv')
+          .expect(202)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(false)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(false)
+            done()
+          })
+      })
     })
   })
 

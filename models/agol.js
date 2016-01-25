@@ -230,13 +230,13 @@ var AGOL = function (koop) {
       if (err) return callback(err)
       options.srs = wkt
       koop.queue.enqueue('xport', options)
-      .on('start', function (info) { updateJob('start', options) })
-      .on('progress', function (info) { updateJob('progess', options) })
-      .on('finish', function (info) {
+      .once('start', function (info) { updateJob('start', options) })
+      .once('progress', function (info) { updateJob('progess', options) })
+      .once('finish', function (info) {
         updateJob('finish', options)
         if (options.where || options.geometry) copyLatest(options)
       })
-      .on('fail', function (info) { updateJob('fail', options) })
+      .once('fail', function (info) { updateJob('fail', options) })
 
       updateJob('queued', options, callback)
     })
@@ -249,8 +249,8 @@ var AGOL = function (koop) {
       fileName: options.name + '.' + options.format
     }
     koop.queue.enqueue('copy', copyOpts)
-    .on('finish', function () { agol.log.info('Successful copy', copyOpts) })
-    .on('fail', function () { agol.log.error('Failed copy', copyOpts) })
+    .once('finish', function () { agol.log.info('Successful copy', copyOpts) })
+    .once('fail', function () { agol.log.error('Failed copy', copyOpts) })
   }
 
   function updateJob (status, options, callback) {
