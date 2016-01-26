@@ -229,7 +229,7 @@ var AGOL = function (koop) {
     getWkt(options.outSr, function (err, wkt) {
       if (err) return callback(err)
       options.srs = wkt
-      koop.queue.enqueue('xport', options)
+      koop.queue.enqueue('exportFile', options)
       .once('start', function (info) { updateJob('start', options) })
       .once('progress', function (info) { updateJob('progess', options) })
       .once('finish', function (info) {
@@ -248,7 +248,7 @@ var AGOL = function (koop) {
       to: path.join('latest', options.filePath),
       fileName: options.name + '.' + options.format
     }
-    koop.queue.enqueue('copy', copyOpts)
+    koop.queue.enqueue('copyFile', copyOpts)
     .once('finish', function () { agol.log.info('Successful copy', copyOpts) })
     .once('fail', function () { agol.log.error('Failed copy', copyOpts) })
   }
