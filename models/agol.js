@@ -231,7 +231,7 @@ var AGOL = function (koop) {
       options.srs = wkt
       koop.queue.enqueue('exportFile', options)
       .once('start', function (info) { updateJob('start', options) })
-      .once('progress', function (info) { updateJob('progess', options) })
+      .once('progress', function (info) { updateJob('progress', options) })
       .once('finish', function (info) {
         updateJob('finish', options)
         if (options.where || options.geometry) copyLatest(options)
