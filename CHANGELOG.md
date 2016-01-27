@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Always check if file exists
+
 ## [3.0.0-beta.3] - 2016-01-26
 ### Changed
 * Use new job names

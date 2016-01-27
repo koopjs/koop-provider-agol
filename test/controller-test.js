@@ -562,7 +562,7 @@ describe('AGOL Controller', function () {
           .expect(202)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.files.exists.called.should.equal(false)
+            agol.files.exists.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
             done()

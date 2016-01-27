@@ -344,4 +344,22 @@ describe('Utils', function () {
       done()
     })
   })
+
+  describe('generating a failure message', function () {
+    it('should generate a message with no error body passed in', function (done) {
+      var error = new Error()
+      should.exist(Utils.failureMsg(error))
+      done()
+    })
+
+    it('should generate a message with nothing passed in', function (done) {
+      should.exist(Utils.failureMsg())
+      done()
+    })
+
+    it('should generate a message with nothing passed in', function (done) {
+      should.exist(Utils.failureMsg({}))
+      done()
+    })
+  })
 })
