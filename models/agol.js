@@ -220,6 +220,26 @@ var AGOL = function (koop) {
   }
 
   /**
+   * Wraps export enqueing
+   *
+   * @param {object} options - directions for what to export
+   * @return {object} new export job
+   */
+  agol.enqueueExport = function (options) {
+    return koop.queue.enqueue('exportFile', options)
+  }
+
+  /**
+   * Wraps copy enqueing
+   *
+   * @param {object} options - directions for what to export
+   * @return {object} new export job
+   */
+  agol.enqueueCopy = function (options) {
+    return koop.queue.enqueue('exportFile', options)
+  }
+
+  /**
    * Exports a dataset to a file
    *
    * @param {object} options - file export parameters
@@ -229,16 +249,15 @@ var AGOL = function (koop) {
     getWkt(options.outSr, function (err, wkt) {
       if (err) return callback(err)
       options.srs = wkt
-      koop.queue.enqueue('exportFile', options)
-      .once('start', function (info) { updateJob('start', options) })
-      .once('progress', function (info) { updateJob('progress', options) })
+      agol.enqueueExport(options)
+      .once('start', function (info) { agol.updateJob('start', options) })
+      .once('progress', function (info) { agol.updateJob('progress', options) })
       .once('finish', function (info) {
-        updateJob('finish', options)
-        if (options.where || options.geometry) copyLatest(options)
+        agol.updateJob('finish', options)
+        if (!options.where && !options.geometry) copyLatest(options)
       })
-      .once('fail', function (info) { updateJob('fail', options) })
-
-      updateJob('queued', options, callback)
+      .once('fail', function (info) { agol.updateJob('fail', options) })
+      agol.updateJob('queued', options, callback)
     })
   }
 
@@ -248,12 +267,12 @@ var AGOL = function (koop) {
       to: path.join('latest', options.filePath),
       fileName: options.name + '.' + options.format
     }
-    koop.queue.enqueue('copyFile', copyOpts)
+    agol.enqueueCopy(copyOpts)
     .once('finish', function () { agol.log.info('Successful copy', copyOpts) })
     .once('fail', function () { agol.log.error('Failed copy', copyOpts) })
   }
 
-  function updateJob (status, options, callback) {
+  agol.updateJob = function (status, options, callback) {
     agol.cache.getInfo(options.table, function (err, info) {
       if (err) {
         if (callback) callback(err, info)

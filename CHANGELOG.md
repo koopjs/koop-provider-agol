@@ -4,7 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 ### Fixed
-* Fix logic for how to respond when a file export has failed
+* Logic for how to respond when a file export has failed
+* Logic for when to enqueue a copy job
 
 ## [3.0.0] - 2016-01-27
 ### Fixed

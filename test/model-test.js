@@ -1,8 +1,9 @@
-/* global before, after, it, describe */
+/* global before, after, beforeEach, afterEach, it, describe */
 
 var should = require('should')
 var sinon = require('sinon')
-// var fs = require('fs')
+var EventEmitter = require('events').EventEmitter
+var util = require('util')
 var koop = require('koop/lib')
 
 var config = {}
@@ -280,6 +281,50 @@ describe('AGOL Model', function () {
         koop.cache.db.geoHashAgg.called.should.equal(true)
         agol.files.write.called.should.equal(true)
         koop.cache.updateInfo.called.should.equal(true)
+        done()
+      })
+    })
+  })
+
+  describe('Generating exports', function () {
+    function FakeJob () {}
+    util.inherits(FakeJob, EventEmitter)
+
+    beforeEach(function (done) {
+      var fakeJob = new FakeJob()
+      sinon.stub(agol, 'enqueueExport', function (options) {
+        return fakeJob
+      })
+
+      sinon.stub(agol, 'enqueueCopy', function (options) {
+        return fakeJob
+      })
+
+      sinon.stub(agol, 'updateJob', function (a, b, callback) {
+        fakeJob.emit('finish')
+        if (callback) callback(null)
+      })
+
+      done()
+    })
+
+    afterEach(function (done) {
+      agol.enqueueExport.restore()
+      agol.enqueueCopy.restore()
+      agol.updateJob.restore()
+      done()
+    })
+
+    it('Should create a copyLatest job on finish when there are no query paramters', function (done) {
+      agol.generateExport({filePath: 'foo'}, function () {
+        agol.enqueueCopy.called.should.equal(true)
+        done()
+      })
+    })
+
+    it('Should create a copyLatest job on finish when there are no query paramters', function (done) {
+      agol.generateExport({filePath: 'foo', where: 'foo'}, function () {
+        agol.enqueueCopy.called.should.equal(false)
         done()
       })
     })
