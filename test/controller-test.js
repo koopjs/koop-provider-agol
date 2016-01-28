@@ -569,6 +569,59 @@ describe('AGOL Controller', function () {
           })
       })
     })
+
+    describe('when generation has failed', function () {
+      before(function (done) {
+        sinon.stub(agol, 'find', function (id, callback) {
+          callback(null, { id: 'test', host: 'http://dummy.host.com' })
+        })
+
+        sinon.stub(agol, 'getInfo', function (key, callback) {
+          callback(null, {
+            status: 'Cached',
+            name: 'Export',
+            info: {
+              fields: []
+            },
+            generating: {
+              '6f089b6667f442a7d118721b18088df7': {
+                csv: 'fail'
+              }
+            }
+          })
+        })
+
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(false, null)
+        })
+
+        sinon.stub(agol, 'generateExport', function (options, callback) {
+          callback(null, {status: 'Cached', generating: {}})
+        })
+        done()
+      })
+
+      after(function (done) {
+        agol.files.exists.restore()
+        agol.getInfo.restore()
+        agol.find.restore()
+        agol.generateExport.restore()
+        done()
+      })
+
+      it('should not try to enqueue a new job and should respond with a 500', function (done) {
+        request(koop)
+          .get('/agol/test/itemid/0.csv')
+          .expect(500)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(true)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(false)
+            done()
+          })
+      })
+    })
   })
 
   describe('getting a png tile should return 404 for test', function () {

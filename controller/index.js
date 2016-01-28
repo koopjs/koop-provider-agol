@@ -189,7 +189,11 @@ var Controller = function (agol, BaseController) {
 
     agol.files.exists(options.filePath, options.fileName, function (exists, path) {
       if (path) return controller._returnFile(req, res, Path.join(options.filePath, options.fileName))
-      if (Utils.isGenerating(req, info)) return controller._returnStatus(req, res, info)
+      var exportStatus = Utils.determineStatus(req, info)
+      var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
+      if (error) error.code = 500
+      if (['queued', 'start', 'progress', 'fail'].indexOf(exportStatus) > -1) return controller._returnStatus(req, res, info, error)
+      // only enqueue a job if it's not already queued or running
       agol.generateExport(options, function (err, status, created) {
         controller._returnStatus(req, res, status, err)
       })
@@ -216,7 +220,7 @@ var Controller = function (agol, BaseController) {
     if (error) {
       response.error = Utils.failureMsg(error)
       response.status = 'Failed'
-      return res.status(502).json(response)
+      return res.status(error.code || 502).json(response)
     }
     var table = Utils.createTableKey(req.params)
     agol.cache.getCount(table, {}, function (err, count) {

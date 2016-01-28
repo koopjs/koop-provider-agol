@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Fix logic for how to respond when a file export has failed
+
 ## [3.0.0] - 2016-01-27
 ### Fixed
 * Remove typo in progress reporting
