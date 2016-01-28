@@ -236,7 +236,7 @@ var AGOL = function (koop) {
    * @return {object} new export job
    */
   agol.enqueueCopy = function (options) {
-    return koop.queue.enqueue('exportFile', options)
+    return koop.queue.enqueue('copyFile', options)
   }
 
   /**

@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.2] - 2016-01-28
+### Fixed
+* Enqueue correct job type for copy
+
 ## [3.0.1] - 2016-01-28
 ### Fixed
 * Logic for how to respond when a file export has failed
@@ -632,6 +636,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.0.2]: https://github.com/koopjs/koop-agol/compare/v3.0.1..v3.0.2
 [3.0.1]: https://github.com/koopjs/koop-agol/compare/v3.0.0..v3.0.1
 [3.0.0]: https://github.com/koopjs/koop-agol/compare/v3.0.0-beta.4..v3.0.0
 [3.0.0-beta.4]: https://github.com/koopjs/koop-agol/compare/v3.0.0-beta.3..v3.0.0-beta.4
