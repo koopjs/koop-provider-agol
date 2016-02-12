@@ -25,7 +25,8 @@ var cache = new Cache(cacheOpts)
 var workOpts = {
   connection: config.queue.connection,
   cache: cache,
-  log: koop.log
+  log: koop.log,
+  files: koop.files
 }
 
 var work = new Work(workOpts)

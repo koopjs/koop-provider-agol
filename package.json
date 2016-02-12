@@ -17,6 +17,7 @@
     "ejs": "~1.0.0",
     "featureservice": "^1.4.4",
     "format-spatial-ref": "^1.0.0",
+    "highland": "^2.6.0",
     "js-yaml": "^3.4.2",
     "json-stringify-safe": "^5.0.1",
     "koop-logger": "^1.0.1",
