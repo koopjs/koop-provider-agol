@@ -395,7 +395,7 @@ var Controller = function (agol, BaseController) {
    */
   controller._expireServiceData = function (req, res) {
     agol.log.debug(JSON.stringify({route: '_expireServiceData', params: req.params, query: req.query}))
-    agol.drop(req.params.item, req.params.layer, function (err) {
+    agol.cache.drop(req.params.item, req.params.layer, function (err) {
       if (err) agol.log(err)
       controller._fetchServiceData(req, res)
     })

@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Expired csv feature services refresh properly
+
 ## [3.0.2] - 2016-01-28
 ### Fixed
 * Enqueue correct job type for copy
