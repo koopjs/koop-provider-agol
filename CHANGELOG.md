@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Ensure csv task hash is the same for items with the same id
+* Dont add duplicate data on csv feature services when running one process
+
 ## [3.0.3] - 2016-02-22
 ### Fixed
 * Expired csv feature services refresh properly
