@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.0.4] - 2016-02-22
 ### Fixed
 * Ensure csv task hash is the same for items with the same id
 * Dont add duplicate data on csv feature services when running one process
@@ -645,6 +645,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.0.4]: https://github.com/koopjs/koop-agol/compare/v3.0.3..v3.0.4
+[3.0.3]: https://github.com/koopjs/koop-agol/compare/v3.0.2..v3.0.3
 [3.0.2]: https://github.com/koopjs/koop-agol/compare/v3.0.1..v3.0.2
 [3.0.1]: https://github.com/koopjs/koop-agol/compare/v3.0.0..v3.0.1
 [3.0.0]: https://github.com/koopjs/koop-agol/compare/v3.0.0-beta.4..v3.0.0
