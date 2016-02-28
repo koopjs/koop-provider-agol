@@ -3,6 +3,8 @@
 var should = require('should')
 var Cache = require('../lib/cache.js')
 var CSVQueue = require('../lib/csv-queue')
+var FeatureQueue = require('../lib/feature-queue')
+var Utils = require('../lib/utils')
 var sinon = require('sinon')
 var nock = require('nock')
 var fs = require('fs')
@@ -26,12 +28,22 @@ var csvQueue = new CSVQueue({
   files: koopFiles
 })
 
+var qOpts = {
+  connection: null,
+  log: log,
+  cache: new Cache({cache: koopCache, log: log}),
+  agol_path: Utils.agol_path,
+  files: koopFiles
+}
+
+var featureQueue = FeatureQueue.create(qOpts)
+
 var cache = new Cache({
   cache: koopCache,
   log: log,
-  featureQueue: null,
+  featureQueue: featureQueue,
   csvQueue: csvQueue,
-  files: {},
+  files: koopFiles,
   exporter: {},
   indexFields: false
 })
@@ -55,9 +67,8 @@ describe('caching feature services', function () {
   fixture.get('/FeatureServer?f=json')
     .reply(200, serviceFixture)
   fixture.get('/FeatureServer/0?f=json')
-    .times(2)
     .reply(200, layerFixture)
-  fixture.get('/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&resultOffset=0&resultRecordCount=1000&geometry=&returnGeometry=true&geometryPrecision=')
+  fixture.get('/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
     .reply(200, pageFixture)
   fixture.get('/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
     .reply(200, countFixture)

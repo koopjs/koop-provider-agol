@@ -197,7 +197,6 @@ var AGOL = function (koop) {
         case 'Feature Collection':
           return agol.cache.featureCollection(options, callback)
         case 'Feature Service':
-          console.log(options)
           return agol.cache.insertFeatureService(options, callback)
         case 'Map Service':
           return agol.cache.insertFeatureService(options, callback)

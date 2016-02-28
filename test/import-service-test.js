@@ -32,7 +32,10 @@ describe('importing a feature service into the cache', function () {
     importService.featureService.options.backoff = 1
 
     sinon.stub(importService.cache, 'getInfo', function (key, callback) {
-      callback(null, {})
+      callback(null, {
+        item_title: 'foobar',
+        url: 'http://featureservice.com/layer/FeatureServer/0'
+      })
     })
 
     sinon.stub(importService.cache, 'updateInfo', function (key, info, callback) {
@@ -56,8 +59,17 @@ describe('importing a feature service into the cache', function () {
 
   it('should update the info doc with status: Cached when the job is complete', function (done) {
     var fixture = nock('http://featureserver.com')
-    fixture.get('/layer/FeatureServer/0/query?where=1=1')
+    fixture.get('/layer/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
       .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/smallPage.json'))))
+
+    fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
+      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/featureCount.json'))))
+
+    fixture.get('/layer/FeatureServer/0?f=json')
+      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/layerInfo.json'))))
+
+    fixture.get('/layer/FeatureServer?f=json')
+      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/serviceInfo.json'))))
 
     sinon.stub(importService.cache, 'insertPartial', function (item, layer, geojson, callback) {
       callback(null)
@@ -79,6 +91,12 @@ describe('importing a feature service into the cache', function () {
 
   it('should call setFail when the job fails while getting features', function (done) {
     var fixture = nock('http://featureserver.com')
+    fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
+      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/featureCount.json'))))
+
+    fixture.get('/layer/FeatureServer/0?f=json')
+      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/layerInfo.json'))))
+
     fixture.get('/layer/FeatureServer/0/query?where=1=1')
       .times(4)
       .reply(500, {error: {}})
@@ -94,7 +112,13 @@ describe('importing a feature service into the cache', function () {
 
   it('should not call setFail when the job fails during a db insert', function (done) {
     var fixture = nock('http://featureserver.com')
-    fixture.get('/layer/FeatureServer/0/query?where=1=1')
+    fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
+      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/featureCount.json'))))
+
+    fixture.get('/layer/FeatureServer/0?f=json')
+      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/layerInfo.json'))))
+
+    fixture.get('/layer/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
       .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/smallPage.json'))))
 
     sinon.stub(importService.cache, 'insertPartial', function (item, layer, geojson, callback) {
