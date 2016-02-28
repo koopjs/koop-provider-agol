@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* GeoJSON is written to S3 during import process
+
+### Changed
+* Removed Feature-Request abstraction
+* Pages and fields are looked up by the worker
+* File keys are predictable when there are no query options
+
 ## [3.0.4] - 2016-02-22
 ### Fixed
 * Ensure csv task hash is the same for items with the same id

@@ -531,7 +531,7 @@ describe('AGOL Controller', function () {
               fields: []
             },
             generating: {
-              '6f089b6667f442a7d118721b18088df7': {
+              'full_0': {
                 csv: 'progress'
               }
             }
@@ -584,7 +584,7 @@ describe('AGOL Controller', function () {
               fields: []
             },
             generating: {
-              '6f089b6667f442a7d118721b18088df7': {
+              'full_0': {
                 csv: 'fail'
               }
             }
