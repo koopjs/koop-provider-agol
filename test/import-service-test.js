@@ -25,7 +25,16 @@ describe('importing a feature service into the cache', function () {
       pages: [{req: 'http://featureserver.com/layer/FeatureServer/0/query?where=1=1'}],
       key: 'agol:item:0',
       log: log,
-      cache: fakeCache
+      cache: fakeCache,
+      itemTitle: 'foobar',
+      files: {
+        createWriteStream: function () {
+          return {
+            write: function () {},
+            end: function () {}
+          }
+        }
+      }
     })
 
     // speed up the backoff so the test runs faster and does not time out
@@ -33,7 +42,7 @@ describe('importing a feature service into the cache', function () {
 
     sinon.stub(importService.cache, 'getInfo', function (key, callback) {
       callback(null, {
-        item_title: 'foobar',
+        itemTitle: 'foobar',
         url: 'http://featureservice.com/layer/FeatureServer/0'
       })
     })
@@ -112,6 +121,10 @@ describe('importing a feature service into the cache', function () {
 
   it('should not call setFail when the job fails during a db insert', function (done) {
     var fixture = nock('http://featureserver.com')
+
+    fixture.get('/layer/FeatureServer?f=json')
+      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/serviceInfo.json'))))
+
     fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
       .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/featureCount.json'))))
 
