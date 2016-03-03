@@ -160,6 +160,7 @@ var Controller = function (agol, BaseController) {
       if (err) return controller._returnStatus(req, res, info, err)
       switch (info.status) {
         case 'Cached':
+          if (req.params.overwrite) return controller._handleUnavailable(req, res, info)
           return controller._handleCached(req, res, info)
         case 'Processing':
           return controller._returnStatus(req, res, info)
