@@ -160,7 +160,7 @@ var Controller = function (agol, BaseController) {
       if (err) return controller._returnStatus(req, res, info, err)
       switch (info.status) {
         case 'Cached':
-          if (req.params.overwrite) return controller._handleUnavailable(req, res, info)
+          if (req.query.overwrite === 'true') return controller._handleUnavailable(req, res, info)
           return controller._handleCached(req, res, info)
         case 'Processing':
           return controller._returnStatus(req, res, info)
@@ -249,7 +249,7 @@ var Controller = function (agol, BaseController) {
    *
    * @param {object} req - the incoming request
    * @param {object} res - the outgoing response
-   * @params {object} info - item's info doc
+   * @param {object} info - item's info doc
    * @private
    */
   controller._handleExpired = function (req, res, info) {
@@ -266,7 +266,7 @@ var Controller = function (agol, BaseController) {
    *
    * @param {object} req - the incoming request
    * @param {object} res - the outgoing response
-   * @params {object} info - item's info doc
+   * @param {object} info - item's info doc
    * @private
    */
   controller._handleFailed = function (req, res, info) {
@@ -287,7 +287,7 @@ var Controller = function (agol, BaseController) {
    *
    * @param {object} req - the incoming request
    * @param {object} res - the outgoing response
-   * @params {object} info - item's info doc
+   * @param {object} info - item's info doc
    * @private
    */
   controller._handleUnavailable = function (req, res, info) {
@@ -316,8 +316,8 @@ var Controller = function (agol, BaseController) {
   /**
    * Set the expiration date for a resource
    *
-   * @params {object} req - the incoming request
-   * @params {object} res - the outgoing response
+   * @param {object} req - the incoming request
+   * @param {object} res - the outgoing response
    */
   controller.setExpiration = function (req, res) {
     agol.log.debug(JSON.stringify({route: 'setExpiration', params: req.params, query: req.query}))
@@ -354,10 +354,10 @@ var Controller = function (agol, BaseController) {
   /**
    * Returns a file as either a URL or an actual file download
    *
-   * @params {object} request object
-   * @params {object} response object
-   * @params {string} path - the path the file
-   * @params {string} name - the name of the file
+   * @param {object} request object
+   * @param {object} response object
+   * @param {string} path - the path the file
+   * @param {string} name - the name of the file
    * @private
    */
   controller._returnFile = function (req, res, filePath) {
