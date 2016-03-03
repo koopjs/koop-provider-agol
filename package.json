@@ -15,7 +15,7 @@
     "config": "~0.4.35",
     "csv": "~0.4.0",
     "ejs": "~1.0.0",
-    "featureservice": "^1.5.0",
+    "featureservice": "^1.5.1",
     "format-spatial-ref": "^1.0.0",
     "highland": "^2.6.0",
     "js-yaml": "^3.4.2",
