@@ -9,6 +9,9 @@ module.exports = {
   'get /agol/:id/:item/*': 'setHostKey',
   'put /agol/:id/:item/*': 'setHostKey',
   'post /agol/:id/:item/*': 'setHostKey',
+  'post /agol/:id/bulk': 'setHostKey',
+  'post /agol/:id/bulk/import': 'bulkImport',
+  'post /agol/:id/bulk/export': 'bulkExport',
   'get /agol/:id/:item': 'getInfo',
   // this method needs to come before layer/format
   'get /agol/:id/:item/FeatureServer': 'featureserver',

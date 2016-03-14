@@ -25,9 +25,6 @@ var Controller = function (agol, BaseController) {
   controller.setHostKey = function (req, res, next) {
     agol.log.debug(JSON.stringify({route: 'setHostKey', params: req.params, query: req.query}))
 
-    // support POST requests; map body vals to the query
-    // (then all same as GET)
-    for (var k in req.body) if (req.body[k]) req.query[k] = req.body[k]
     req.params.silent = false
     if (!req.params.id) return next()
     req.optionKey = Utils.createCacheKey(req.params, req.query)
@@ -338,6 +335,58 @@ var Controller = function (agol, BaseController) {
   }
 
   /**
+   * Enqueue a set of jobs for importing
+   *
+   * @param {object} req - the incoming request
+   * @param {object} res - the outgoing response
+   */
+  controller.bulkExport = function (req, res) {
+    var jobs = req.body
+    if (!jobs || !jobs.length) {
+      return res.status(400).json({
+        error: 'Invalid input',
+        hint: 'Jobs array was either missing or empty'
+      })
+    }
+    if (typeof jobs !== 'object') {
+      return res.status(500).json({
+        error: 'Invalid input',
+        hint: 'Ensure input was a valid json array, and that you have set content-type to application/json'
+      })
+    }
+    agol.bulkExport(req, jobs, function (err, status) {
+      if (err) res.status(500).send({ error: err.message })
+      else res.status(200).json(status)
+    })
+  }
+
+  /**
+   * Enqueue a set of jobs for exporting
+   *
+   * @param {object} req - the incoming request
+   * @param {object} res - the outgoing response
+   */
+  controller.bulkImport = function (req, res) {
+    var jobs = req.body
+    if (!jobs || !jobs.length) {
+      return res.status(400).json({
+        error: 'Invalid input',
+        hint: 'Jobs array was either missing or empty'
+      })
+    }
+    if (typeof jobs !== 'object') {
+      return res.status(500).json({
+        error: 'Invalid input',
+        hint: 'Ensure your input was a valid json array, and that you have set content-type to application/json'
+      })
+    }
+    agol.bulkImport(req, jobs, function (err, status) {
+      if (err) res.status(500).send({ error: err.message })
+      else res.status(200).json(status)
+    })
+  }
+
+  /**
    * Stub a route redirect to make testing private functions easier
    */
   controller.testRoute = function (req, res) {
@@ -378,6 +427,9 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.featureserver = function (req, res) {
+    // support POST requests; map body vals to the query
+    // (then all same as GET)
+    for (var k in req.body) if (req.body[k]) req.query[k] = req.body[k]
     agol.log.debug(JSON.stringify({route: 'featureserver', params: req.params, query: req.query}))
     var table = Utils.createTableKey(req.params)
     agol.getInfo({key: table, item: req.params.item, host: req.portal}, function (err, info) {

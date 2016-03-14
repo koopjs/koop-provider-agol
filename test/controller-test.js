@@ -763,4 +763,131 @@ describe('AGOL Controller', function () {
         })
     })
   })
+
+  describe('When enqueing jobs in bulk', function () {
+    var cacheError
+    var infoError
+    var jobs = [
+      {
+        id: 'foo',
+        layer: 3,
+        formats: ['kml', 'csv', 'zip']
+      },
+      {
+        id: 'bar',
+        layer: 4,
+        formats: ['kml', 'csv', 'zip']
+      }
+    ]
+
+    beforeEach(function (done) {
+      sinon.stub(agol, 'find', function (id, callback) {
+        callback(null, { id: 'test', host: 'http://dummy.host.com' })
+      })
+
+      sinon.stub(agol, 'cacheResource', function (options, callback) {
+        callback(cacheError)
+      })
+
+      sinon.stub(agol.cache, 'getInfo', function (id, callback) {
+        callback(infoError, { name: 'Test_Download', metadata: 'foobar' })
+      })
+
+      sinon.stub(agol, 'generateExport', function (options, callback) {
+        callback(null)
+      })
+
+      done()
+    })
+
+    afterEach(function (done) {
+      agol.find.restore()
+      agol.cacheResource.restore()
+      agol.cache.getInfo.restore()
+      agol.generateExport.restore()
+      done()
+    })
+
+    it('should return the correct count of successfully enqueued import jobs', function (done) {
+      cacheError = null
+
+      request(koop)
+        .post('/agol/arcgis/bulk/import')
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(jobs))
+        .expect(200)
+        .end(function (err, res) {
+          should.not.exist(err)
+          var resp = res.body
+          resp.meta.total.should.equal(jobs.length)
+          resp.meta.succeeded.should.equal(jobs.length)
+          resp.meta.failed.should.equal(0)
+          should.exist(resp.failed)
+          resp.failed.length.should.equal(0)
+          done()
+        })
+    })
+
+    it('should return the correct count of failed import job enqueues', function (done) {
+      cacheError = new Error('Item disabled')
+      cacheError.url = 'http://foo.com'
+      cacheError.response = 'Item disabled'
+
+      request(koop)
+        .post('/agol/arcgis/bulk/import')
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(jobs))
+        .expect(200)
+        .end(function (err, res) {
+          should.not.exist(err)
+          var resp = res.body
+          resp.meta.total.should.equal(jobs.length)
+          resp.meta.succeeded.should.equal(0)
+          resp.meta.failed.should.equal(jobs.length)
+          should.exist(resp.failed)
+          resp.failed.length.should.equal(2)
+          done()
+        })
+    })
+
+    it('should return the correct count of successfully enqueued export jobs', function (done) {
+      infoError = null
+
+      request(koop)
+        .post('/agol/arcgis/bulk/export')
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(jobs))
+        .expect(200)
+        .end(function (err, res) {
+          should.not.exist(err)
+          var resp = res.body
+          resp.meta.total.should.equal(jobs.length)
+          resp.meta.succeeded.should.equal(jobs.length)
+          resp.meta.failed.should.equal(0)
+          should.exist(resp.failed)
+          resp.failed.length.should.equal(0)
+          done()
+        })
+    })
+
+    it('should return the correct count of failed export job enqueues', function (done) {
+      infoError = new Error('Item not found')
+
+      request(koop)
+        .post('/agol/arcgis/bulk/export')
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(jobs))
+        .expect(200)
+        .end(function (err, res) {
+          should.not.exist(err)
+          var resp = res.body
+          resp.meta.total.should.equal(jobs.length)
+          resp.meta.succeeded.should.equal(0)
+          resp.meta.failed.should.equal(jobs.length)
+          should.exist(resp.failed)
+          resp.failed.length.should.equal(2)
+          done()
+        })
+    })
+  })
 })

@@ -454,6 +454,85 @@ var AGOL = function (koop) {
     })
   }
 
+  /**
+   * Enqueues a set of import jobs
+   * @param {object} req - the incoming request object
+   * @param {array} jobs - the set of jobs to enqueue
+   * @param {function} callback - calls back with information about the enqueued jobs
+   */
+  agol.bulkImport = function (req, jobs, callback) {
+    var errors = []
+    async.each(jobs, cache, function () {
+      finishBulk(jobs, errors, callback)
+    })
+
+    function cache (job, next) {
+      var options = Utils.createCacheOptions(req, job)
+      agol.cacheResource(options, function (err) {
+        if (err) {
+          errors.push(formatJobError(job, err))
+        }
+      })
+      next()
+    }
+  }
+
+  /**
+   * Enqueues a set of export jobs
+   * @param {object} req - the incoming request object
+   * @param {array} jobs - the set of jobs to enqueue
+   * @param {function} callback - calls back with information about the enqueued jobs
+   */
+  agol.bulkExport = function (req, jobs, callback) {
+    var errors = []
+    async.each(jobs, xport, function () {
+      finishBulk(jobs, errors, callback)
+    })
+
+    function xport (job, next) {
+      agol.cache.getInfo('agol' + ':' + job.item + ':' + job.layer, function (err, info) {
+        if (err) {
+          errors.push(formatJobError(job, err))
+          return next()
+        }
+        async.each(job.formats, function (format, done) {
+          req.optionKey = Utils.createCacheKey(job, {
+            where: job.where,
+            outSR: job.outSr,
+            geometry: job.geometry
+          })
+          var options = Utils.createExportOptions(req, info, job, format)
+          agol.generateExport(options, function (err) {
+            if (err) errors.push(formatJobError(job, err))
+            done()
+          })
+        }, function () { next() })
+      })
+    }
+  }
+
+  function formatJobError (job, error) {
+    return {
+      item: job.item,
+      layer: job.layer,
+      message: error.message,
+      url: error.url,
+      response: error.body
+    }
+  }
+
+  function finishBulk (jobs, errors, callback) {
+    var response = {
+      meta: {
+        total: jobs.length,
+        succeeded: jobs.length - errors.length,
+        failed: errors.length
+      },
+      failed: errors
+    }
+    callback(null, response)
+  }
+
   return agol
 }
 
