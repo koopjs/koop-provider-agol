@@ -462,7 +462,7 @@ var AGOL = function (koop) {
    */
   agol.bulkImport = function (req, jobs, callback) {
     var errors = []
-    async.each(jobs, cache, function () {
+    async.eachLimit(jobs, 10, cache, function () {
       finishBulk(jobs, errors, callback)
     })
 
