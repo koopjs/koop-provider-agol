@@ -77,13 +77,10 @@ function logJob (job) {
   return stringify(logStatement)
 }
 
-process.on('SIGINT', function () {
-  multiWorker.stop(function () {
-    process.exit()
-  })
-})
-
 process.on('SIGTERM', function () {
+  multiWorker.workers.forEach(function (worker) {
+    worker.end()
+  })
   multiWorker.stop(function () {
     process.exit()
   })

@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Can enqueue jobs in bulk via `koop/agol/:host/bulk/import` and `koop/agol/:host/bulk/export`
 * Import jobs can enqueue export jobs when they complete
 * A sha is computed for each dataset when it is imported
+* SIGTERM will cause all jobs to immediately fail and process to exit
 
 ### Changed
 * Removed Feature-Request abstraction
