@@ -21,8 +21,8 @@ describe('importing a feature service into the cache', function () {
     importService = new ImportService({
       item: 'item',
       layer: 0,
-      server: 'http://featureserver.com/layer/FeatureServer',
-      pages: [{req: 'http://featureserver.com/layer/FeatureServer/0/query?where=1=1'}],
+      server: 'https://services3.arcgis.com/layer/FeatureServer',
+      pages: [{req: 'https://services3.arcgis.com/layer/FeatureServer/0/query?where=1=1'}],
       key: 'agol:item:0',
       log: log,
       cache: fakeCache,
@@ -31,7 +31,9 @@ describe('importing a feature service into the cache', function () {
         createWriteStream: function () {
           return {
             write: function () {},
-            end: function () {}
+            end: function () {},
+            on: function () {},
+            abort: function () {}
           }
         }
       }
@@ -43,7 +45,7 @@ describe('importing a feature service into the cache', function () {
     sinon.stub(importService.cache, 'getInfo', function (key, callback) {
       callback(null, {
         itemTitle: 'foobar',
-        url: 'http://featureservice.com/layer/FeatureServer/0'
+        url: 'https://services3.arcgis.com/layer/FeatureServer/0'
       })
     })
 
@@ -67,7 +69,7 @@ describe('importing a feature service into the cache', function () {
   })
 
   it('should update the info doc with status: Cached when the job is complete', function (done) {
-    var fixture = nock('http://featureserver.com')
+    var fixture = nock('https://services3.arcgis.com')
     fixture.get('/layer/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
       .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/smallPage.json'))))
 
@@ -84,13 +86,15 @@ describe('importing a feature service into the cache', function () {
       callback(null)
     })
 
-    importService.on('done', function () {
+    importService.on('done', function (updated) {
       importService.cache.insertPartial.called.should.equal(true)
       importService.cache.setFail.called.should.equal(false)
       importService.cache.getInfo.called.should.equal(true)
       importService.cache.updateInfo.called.should.equal(true)
       importService.cache.updateInfo.calledWith(importService.key)
       updatedInfo.status.should.equal('Cached')
+      updatedInfo.sha.should.equal('866678f7827b9a7f202b6eb828ef29a86d526a1b0bb8d0250824c2dca407503c')
+      updated.should.equal(true)
       importService.cache.insertPartial.restore()
       done()
     })
@@ -99,7 +103,7 @@ describe('importing a feature service into the cache', function () {
   })
 
   it('should call setFail when the job fails while getting features', function (done) {
-    var fixture = nock('http://featureserver.com')
+    var fixture = nock('https://services3.arcgis.com')
     fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
       .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/featureCount.json'))))
 
@@ -120,7 +124,7 @@ describe('importing a feature service into the cache', function () {
   })
 
   it('should not call setFail when the job fails during a db insert', function (done) {
-    var fixture = nock('http://featureserver.com')
+    var fixture = nock('https://services3.arcgis.com')
 
     fixture.get('/layer/FeatureServer?f=json')
       .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/serviceInfo.json'))))

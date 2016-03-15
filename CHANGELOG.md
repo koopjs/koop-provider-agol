@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Added
 * GeoJSON is written to S3 during import process
+* Can enqueue jobs in bulk via `koop/agol/:host/bulk/import` and `koop/agol/:host/bulk/export`
+* Import jobs can enqueue export jobs when they complete
+* A sha is computed for each dataset when it is imported
 
 ### Changed
 * Removed Feature-Request abstraction

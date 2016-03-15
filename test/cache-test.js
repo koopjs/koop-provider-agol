@@ -56,14 +56,14 @@ describe('caching feature services', function () {
   var options = {
     itemInfo: {
       title: 'Title',
-      url: 'http://www.featureservice.com/FeatureServer/0'
+      url: 'https://services3.arcgis.com/FeatureServer/0'
     },
     item: 'item',
     layer: 0,
     expiration: new Date('2015')
   }
 
-  var fixture = nock('http://www.featureservice.com')
+  var fixture = nock('https://services3.arcgis.com')
   fixture.get('/FeatureServer?f=json')
     .reply(200, serviceFixture)
   fixture.get('/FeatureServer/0?f=json')
@@ -98,7 +98,7 @@ describe('caching feature services', function () {
       info.status.should.equal('Cached')
       info.version.should.equal('2.0')
       info._indexFields.should.equal(false)
-      info.url.should.equal('http://www.featureservice.com/FeatureServer/0')
+      info.url.should.equal('https://services3.arcgis.com/FeatureServer/0')
       done()
     })
   })
