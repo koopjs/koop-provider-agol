@@ -469,11 +469,9 @@ var AGOL = function (koop) {
     function cache (job, next) {
       var options = Utils.createCacheOptions(req, job)
       agol.cacheResource(options, function (err) {
-        if (err) {
-          errors.push(formatJobError(job, err))
-        }
+        if (err) errors.push(formatJobError(job, err))
+        next()
       })
-      next()
     }
   }
 
