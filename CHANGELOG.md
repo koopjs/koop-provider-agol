@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.1.1] - 2016-03-17
+### Fixed
+* 3.1.0 release was already taken?
 
 ## [3.1.0] - [YANKED]
 ### Added
