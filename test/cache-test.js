@@ -73,6 +73,10 @@ describe('caching feature services', function () {
   fixture.get('/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
     .reply(200, countFixture)
 
+  nock('http://koop.dev')
+  .post('/agol/test/bulk/export')
+  .reply(200)
+
   before(function (done) {
     cache.insertFeatureService(options, function (err, info) {
       should.not.exist(err)
