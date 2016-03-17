@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.1.0] - 2016-03-17
 ### Added
 * GeoJSON is written to S3 during import process
 * Can enqueue jobs in bulk via `koop/agol/:host/bulk/import` and `koop/agol/:host/bulk/export`
@@ -658,6 +658,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.1.0]: https://github.com/koopjs/koop-agol/compare/v3.0.4..v3.1.0
 [3.0.4]: https://github.com/koopjs/koop-agol/compare/v3.0.3..v3.0.4
 [3.0.3]: https://github.com/koopjs/koop-agol/compare/v3.0.2..v3.0.3
 [3.0.2]: https://github.com/koopjs/koop-agol/compare/v3.0.1..v3.0.2
