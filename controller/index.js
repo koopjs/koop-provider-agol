@@ -473,7 +473,7 @@ var Controller = function (agol, BaseController) {
       req.query = _.omit(fsQuery, ['geometry', 'where'])
       // the data must be passed in to controller.processFeatureServer as the first element in an array
       // that should be removed in koop 3.0
-      controller.processFeatureServer(req, res, null, [data], req.query.callback)
+      controller.processFeatureServer(req, res, data)
     })
   }
 

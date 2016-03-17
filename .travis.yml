@@ -5,5 +5,7 @@ sudo: false # Enable docker-based containers
 cache:
   directories: # Cache dependencies
     - node_modules
+env:
+  NODE_ENV:test
 script:
   - npm test
