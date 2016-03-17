@@ -6,6 +6,6 @@ cache:
   directories: # Cache dependencies
     - node_modules
 env:
-  NODE_ENV:test
+  -NODE_ENV=test
 script:
   - npm test
