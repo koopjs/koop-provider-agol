@@ -316,13 +316,6 @@ describe('AGOL Model', function () {
     })
 
     it('Should create a copyLatest job on finish when there are no query paramters', function (done) {
-      agol.generateExport({filePath: 'foo'}, function () {
-        agol.enqueueCopy.called.should.equal(true)
-        done()
-      })
-    })
-
-    it('Should create a copyLatest job on finish when there are no query paramters', function (done) {
       agol.generateExport({filePath: 'foo', where: 'foo'}, function () {
         agol.enqueueCopy.called.should.equal(false)
         done()

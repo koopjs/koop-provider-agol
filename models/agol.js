@@ -8,7 +8,6 @@ var Utils = require('../lib/utils')
 var async = require('async')
 var SpatialReference = require('spatialreference')
 var formatSpatialRef = require('format-spatial-ref')
-var path = require('path')
 
 var AGOL = function (koop) {
   /**
@@ -300,24 +299,10 @@ var AGOL = function (koop) {
       agol.enqueueExport(options)
       .once('start', function (info) { agol.updateJob('start', options) })
       .once('progress', function (info) { agol.updateJob('progress', options) })
-      .once('finish', function (info) {
-        agol.updateJob('finish', options)
-        if (!options.where && !options.geometry) copyLatest(options)
-      })
+      .once('finish', function (info) { agol.updateJob('finish', options) })
       .once('fail', function (info) { agol.updateJob('fail', options) })
       agol.updateJob('queued', options, callback)
     })
-  }
-
-  function copyLatest (options) {
-    var copyOpts = {
-      from: options.filePath,
-      to: path.join('latest', options.filePath),
-      fileName: options.name + '.' + options.format
-    }
-    agol.enqueueCopy(copyOpts)
-    .once('finish', function () { agol.log.info('Successful copy', copyOpts) })
-    .once('fail', function () { agol.log.error('Failed copy', copyOpts) })
   }
 
   agol.updateJob = function (status, options, callback) {

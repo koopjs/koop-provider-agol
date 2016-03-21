@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Always serve a file if it is available, even if the data has expired
 * Downloads are served with `Last-Modified` header
 
+### Changed
+* Copy jobs are no longer enqueued automatically
+
 ### Fixed
 * Make sure metadata in downloads is up to date
 
