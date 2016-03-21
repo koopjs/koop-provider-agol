@@ -95,7 +95,7 @@ describe('importing a feature service into the cache', function () {
       importService.cache.updateInfo.called.should.equal(true)
       importService.cache.updateInfo.calledWith(importService.key)
       updatedInfo.status.should.equal('Cached')
-      updatedInfo.sha.should.equal('c538d5eeb6f8365e6300e3d42700253a3fe9d9bd')
+      updatedInfo.sha1.should.equal('c538d5eeb6f8365e6300e3d42700253a3fe9d9bd')
       updated.should.equal(true)
       importService.cache.insertPartial.restore()
       done()

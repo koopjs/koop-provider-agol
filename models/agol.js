@@ -208,6 +208,23 @@ var AGOL = function (koop) {
   }
 
   /**
+  * Updates a resource that has already been cached
+  *
+  * @param {object} options - options describing the resource to be cached
+  * @param {function} callback - the callback for when all is gone
+  */
+  agol.updateResource = function (info, options, callback) {
+    agol.log.debug(options)
+    // this will only work if data is not being stored on S3 and not the database
+    // if we try to update data that is already there we will get dupes
+    if (!config.db.store && info.type === 'Feature Service') return agol.cache.updateFeatureService(options, callback)
+    agol.dropResource(info.item, info.layer, null, function (err) {
+      if (err) return callback(err)
+      agol.cacheResource(options, callback)
+    })
+  }
+
+  /**
    * Wraps dropping from the cache
    *
    * @param {string} item - the item to drop
@@ -493,7 +510,8 @@ var AGOL = function (koop) {
           errors.push(formatJobError(job, err))
           return next()
         }
-        async.each(job.formats, function (format, done) {
+        var formats = job.formats || ['kml', 'csv', 'zip']
+        async.each(formats, function (format, done) {
           req.optionKey = Utils.createCacheKey(job, {
             where: job.where,
             outSR: job.outSr,

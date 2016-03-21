@@ -157,7 +157,6 @@ var Controller = function (agol, BaseController) {
       if (err) return controller._returnStatus(req, res, info, err)
       switch (info.status) {
         case 'Cached':
-          if (req.query.overwrite === 'true') return controller._handleUnavailable(req, res, info)
           return controller._handleCached(req, res, info)
         case 'Processing':
           return controller._returnStatus(req, res, info)
@@ -184,7 +183,6 @@ var Controller = function (agol, BaseController) {
   controller._handleCached = function (req, res, info) {
     agol.log.debug(JSON.stringify({route: '_handleCached', params: req.params, query: req.query}))
     var options = Utils.createExportOptions(req, info)
-
     agol.files.exists(options.filePath, options.fileName, function (exists, path) {
       if (path) return controller._returnFile(req, res, Path.join(options.filePath, options.fileName))
       var exportStatus = Utils.determineStatus(req, info)
@@ -251,10 +249,12 @@ var Controller = function (agol, BaseController) {
    */
   controller._handleExpired = function (req, res, info) {
     agol.log.debug(JSON.stringify({route: '_handleExpired', params: req.params, query: req.query}))
-    agol.dropResource(req.params.item, req.params.layer, {layer: req.params.layer}, function (err) {
-      if (err) agol.log.error('Unable to drop expired resource: ' + req.params.item + '_' + req.params.layer)
-      agol.log.info('Successfully dropped expired resource: ' + req.params.item + '_' + req.params.layer)
-      controller.getResource(req, res)
+    controller._handleCached(req, res, info)
+    var options = Utils.createCacheOptions(req)
+    options.overwrite = true
+    agol.updateResource(info, options, function (err, status) {
+      if (err) agol.log.error(err)
+      else agol.log.debug(status)
     })
   }
 
@@ -293,6 +293,26 @@ var Controller = function (agol, BaseController) {
     agol.cacheResource(options, function (err, status) {
       controller._returnStatus(req, res, status, err)
     })
+  }
+
+  /**
+   * Returns a file as either a URL or an actual file download
+   *
+   * @param {object} request object
+   * @param {object} response object
+   * @param {string} path - the path the file
+   * @param {string} name - the name of the file
+   * @private
+   */
+  controller._returnFile = function (req, res, filePath) {
+    agol.log.debug(JSON.stringify({route: '_returnFile', params: req.params, query: req.query, filePath: filePath}))
+
+    if (req.query.url_only) return res.json({url: Utils.replaceUrl(req)})
+
+    // forces browsers to download
+    res = Utils.setHeaders(res, Path.basename(filePath), req.params.format)
+
+    agol.files.createReadStream(filePath).pipe(res)
   }
 
   /**
@@ -398,26 +418,6 @@ var Controller = function (agol, BaseController) {
    */
   controller.testMethod = function (req, res) {
     res.status(418).send('Nothing to see here.')
-  }
-
-  /**
-   * Returns a file as either a URL or an actual file download
-   *
-   * @param {object} request object
-   * @param {object} response object
-   * @param {string} path - the path the file
-   * @param {string} name - the name of the file
-   * @private
-   */
-  controller._returnFile = function (req, res, filePath) {
-    agol.log.debug(JSON.stringify({route: '_returnFile', params: req.params, query: req.query, filePath: filePath}))
-
-    if (req.query.url_only) return res.json({url: Utils.replaceUrl(req)})
-
-    // forces browsers to download
-    res = Utils.setHeaders(res, Path.basename(filePath), req.params.format)
-
-    agol.files.createReadStream(filePath).pipe(res)
   }
 
   /**

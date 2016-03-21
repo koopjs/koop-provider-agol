@@ -4,6 +4,7 @@ var sinon = require('sinon')
 var request = require('supertest')
 var koop = require('koop')({logfile: './test.log'})
 var _ = require('lodash')
+var fs = require('fs')
 
 var Provider = require('../index.js')
 var agol = Provider.model(koop)
@@ -270,7 +271,7 @@ describe('AGOL Controller', function () {
     })
   })
 
-  describe('getting item feature data in a processing state', function () {
+  describe('Requesting a download when the resource is processing', function () {
     before(function (done) {
       sinon.stub(agol, 'find', function (id, callback) {
         callback(null, {id: 'test', host: 'http://dummy.host.com'})
@@ -469,7 +470,7 @@ describe('AGOL Controller', function () {
     })
   })
 
-  describe('getting item feature data w/ a format', function () {
+  describe('Requesting a download', function () {
     describe('when the format is not generating', function () {
       before(function (done) {
         sinon.stub(agol, 'find', function (id, callback) {
@@ -618,6 +619,134 @@ describe('AGOL Controller', function () {
             agol.files.exists.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
+            done()
+          })
+      })
+    })
+
+    describe('when the resource has expired', function () {
+      beforeEach(function (done) {
+        sinon.stub(agol, 'find', function (id, callback) {
+          callback(null, { id: 'test', host: 'http://dummy.host.com' })
+        })
+
+        sinon.stub(agol, 'getInfo', function (key, callback) {
+          callback(null, {
+            status: 'Expired',
+            name: 'Export',
+            info: {
+              fields: []
+            },
+            generating: {
+              'full_0': {
+                csv: false,
+                kml: 'fail',
+                zip: 'progress'
+              }
+            }
+          })
+        })
+
+        sinon.stub(agol, 'generateExport', function (options, callback) {
+          callback(null, {status: 'Cached', generating: {}})
+        })
+
+        sinon.stub(agol, 'updateResource', function (info, options, callback) {
+          callback(null)
+        })
+
+        sinon.stub(agol.files, 'createReadStream', function (path) {
+          return fs.createReadStream('./test/fixtures/csvData.csv')
+        })
+
+        done()
+      })
+
+      afterEach(function (done) {
+        agol.find.restore()
+        agol.getInfo.restore()
+        agol.generateExport.restore()
+        agol.updateResource.restore()
+        agol.files.createReadStream.restore()
+        done()
+      })
+
+      it('should call updateResource and return a file if it exists', function (done) {
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(null, './files/foo.csv')
+        })
+
+        request(koop)
+          .get('/agol/test/itemid/0.csv')
+          .expect(200)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(true)
+            agol.updateResource.called.should.equal(true)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(false)
+            agol.files.createReadStream.called.should.equal(true)
+            agol.files.exists.restore()
+            done()
+          })
+      })
+
+      it('should call updateResource and try to generate a file if it does not exist', function (done) {
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(false)
+        })
+
+        request(koop)
+          .get('/agol/test/itemid/0.csv')
+          .expect(202)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(true)
+            agol.updateResource.called.should.equal(true)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(true)
+            agol.files.createReadStream.called.should.equal(false)
+            agol.files.exists.restore()
+            done()
+          })
+      })
+
+      it('should call updateResource and return a 500 if that particular download has failed', function (done) {
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(false)
+        })
+
+        request(koop)
+          .get('/agol/test/itemid/0.kml')
+          .expect(500)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(true)
+            agol.updateResource.called.should.equal(true)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(false)
+            agol.files.createReadStream.called.should.equal(false)
+            agol.files.exists.restore()
+            done()
+          })
+      })
+
+      it('should call updateResource and return a 202 if that particular download is in progress', function (done) {
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(false)
+        })
+
+        request(koop)
+          .get('/agol/test/itemid/0.zip')
+          .expect(202)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(true)
+            agol.updateResource.called.should.equal(true)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(false)
+            agol.files.createReadStream.called.should.equal(false)
+            agol.files.exists.restore()
             done()
           })
       })
