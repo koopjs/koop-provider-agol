@@ -1,4 +1,4 @@
-/* global describe, it, before, after*/
+/* global describe, it, before, after, beforeEach, afterEach*/
 
 var should = require('should')
 var Cache = require('../lib/cache.js')
@@ -103,6 +103,86 @@ describe('caching feature services', function () {
       info.version.should.equal('2.0')
       info._indexFields.should.equal(false)
       info.url.should.equal('https://services3.arcgis.com/FeatureServer/0')
+      done()
+    })
+  })
+})
+
+describe('updating feature services', function () {
+  var options = {
+    item: 'foo',
+    layer: 1,
+    id: 'arcgis'
+  }
+  beforeEach(function (done) {
+    sinon.stub(featureQueue, 'enqueue', function (queue, options) {
+      return
+    })
+
+    sinon.stub(koopCache, 'updateInfo', function (key, info, callback) {
+      callback(null)
+    })
+
+    done()
+  })
+
+  afterEach(function (done) {
+    featureQueue.enqueue.restore()
+    koopCache.updateInfo.restore()
+    koopCache.getInfo.restore()
+    done()
+  })
+
+  it('should enqueue a job if there is no information about the last import', function (done) {
+    sinon.stub(koopCache, 'getInfo', function (key, callback) {
+      callback(null, {
+        itemTitle: 'foo',
+        url: 'http://foo.com'
+      })
+    })
+
+    cache.updateFeatureService(options, function (err, info) {
+      should.not.exist(err)
+      featureQueue.enqueue.called.should.equal(true)
+      should.exist(info.importEnqueued)
+      done()
+    })
+  })
+
+  it('should enqueue a job if the last import was more than 12 hours ago', function (done) {
+    sinon.stub(koopCache, 'getInfo', function (key, callback) {
+      callback(null, {
+        itemTitle: 'foo',
+        url: 'http://foo.com',
+        importEnqueued: Date.now() - (13 * 60 * 60 * 1000)
+      })
+    })
+
+    cache.updateFeatureService(options, function (err, info) {
+      should.not.exist(err)
+      featureQueue.enqueue.called.should.equal(true)
+      should.exist(info.importEnqueued)
+      var timeElapsed = Date.now() - info.importEnqueued
+      timeElapsed.should.be.below(1000)
+      done()
+    })
+  })
+
+  it('should not enqueue a job if the last import was less than 12 hours ago', function (done) {
+    var lastImport = Date.now() + (13 * 60 * 60 * 1000)
+    sinon.stub(koopCache, 'getInfo', function (key, callback) {
+      callback(null, {
+        itemTitle: 'foo',
+        url: 'http://foo.com',
+        importEnqueued: lastImport
+      })
+    })
+
+    cache.updateFeatureService(options, function (err, info) {
+      should.not.exist(err)
+      featureQueue.enqueue.called.should.equal(false)
+      should.exist(info.importEnqueued)
+      info.importEnqueued.should.equal(lastImport)
       done()
     })
   })

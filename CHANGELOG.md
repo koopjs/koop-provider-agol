@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* Always serve a file if it is available, even if the data has expired
+* Downloads are served with `Last-Modified` header
+
+### Fixed
+* Make sure metadata in downloads is up to date
+
 ## [3.1.1] - 2016-03-17
 ### Fixed
 * 3.1.0 release was already taken?

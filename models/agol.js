@@ -215,12 +215,43 @@ var AGOL = function (koop) {
   */
   agol.updateResource = function (info, options, callback) {
     agol.log.debug(options)
-    // this will only work if data is not being stored on S3 and not the database
-    // if we try to update data that is already there we will get dupes
-    if (!config.db.store && info.type === 'Feature Service') return agol.cache.updateFeatureService(options, callback)
-    agol.dropResource(info.item, info.layer, null, function (err) {
+    // this will only work if data is not being stored in the database
+    if (info.type === 'Feature Service') {
+      agol.cache.updateFeatureService(options, callback)
+      agol.updateItemInfo(options, function (err) {
+        if (err) agol.log.error(err)
+      })
+    } else {
+      agol.dropResource(info.item, info.layer, null, function (err) {
+        if (err) return callback(err)
+        agol.cacheResource(options, callback)
+      })
+    }
+  }
+
+  /**
+  * Updates the info doc of a resource with AGOL properties
+  *
+  * @param {object} options - options describing the info doc to be updated
+  * @param {function} callback - the callback for when all is done
+  */
+  agol.updateItemInfo = function (options, callback) {
+    agol.portal.getItem(options.host, options.item, function (err, item) {
       if (err) return callback(err)
-      agol.cacheResource(options, callback)
+      var infoKey = 'agol:' + options.item + ':' + options.layer
+      agol.cache.getInfo(infoKey, function (err, info) {
+        if (err) return callback(err)
+        // In import-service we will automatically create export jobs under 2 conditions
+        // 1. The item has changed (including metadata)
+        // 2. The actual data has changed
+        if (info.itemModified !== item.modified) info.itemDirty = true
+        info.itemTitle = item.title
+        info.metadata = item.metadata
+        info.itemModified = item.modified
+        agol.cache.updateInfo(infoKey, info, function (err) {
+          callback(err)
+        })
+      })
     })
   }
 

@@ -184,7 +184,7 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_handleCached', params: req.params, query: req.query}))
     var options = Utils.createExportOptions(req, info)
     agol.files.exists(options.filePath, options.fileName, function (exists, path) {
-      if (path) return controller._returnFile(req, res, Path.join(options.filePath, options.fileName))
+      if (path) return controller._returnFile(req, res, Path.join(options.filePath, options.fileName), info)
       var exportStatus = Utils.determineStatus(req, info)
       var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
       if (error) error.code = 500
@@ -251,7 +251,6 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_handleExpired', params: req.params, query: req.query}))
     controller._handleCached(req, res, info)
     var options = Utils.createCacheOptions(req)
-    options.overwrite = true
     agol.updateResource(info, options, function (err, status) {
       if (err) agol.log.error(err)
       else agol.log.debug(status)
@@ -304,13 +303,17 @@ var Controller = function (agol, BaseController) {
    * @param {string} name - the name of the file
    * @private
    */
-  controller._returnFile = function (req, res, filePath) {
+  controller._returnFile = function (req, res, filePath, info) {
     agol.log.debug(JSON.stringify({route: '_returnFile', params: req.params, query: req.query, filePath: filePath}))
 
     if (req.query.url_only) return res.json({url: Utils.replaceUrl(req)})
 
     // forces browsers to download
-    res = Utils.setHeaders(res, Path.basename(filePath), req.params.format)
+    res = Utils.setHeaders(res, {
+      name: info.name,
+      format: req.params.format,
+      modified: info.retrieved_at
+    })
 
     agol.files.createReadStream(filePath).pipe(res)
   }
