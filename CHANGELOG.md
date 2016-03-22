@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.2.2] - 2016-03-22
 ### Changed
 * Use export worker for geohash
 
@@ -681,6 +681,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.2.2]: https://github.com/koopjs/koop-agol/compare/v3.2.1..v3.2.2
 [3.2.1]: https://github.com/koopjs/koop-agol/compare/v3.2.0..v3.2.1
 [3.2.0]: https://github.com/koopjs/koop-agol/compare/v3.1.0..v3.2.0
 [3.1.0]: https://github.com/koopjs/koop-agol/compare/v3.0.4..v3.1.0
