@@ -225,67 +225,6 @@ describe('AGOL Model', function () {
     })
   })
 
-  describe('when building a geohash', function () {
-    before(function (done) {
-      koop.cache.db.geoHashAgg = function () {}
-      sinon.stub(koop.cache.db, 'geoHashAgg', function (key, limit, precision, options, callback) {
-        callback(null, {geohash: 100})
-      })
-      sinon.stub(agol.files, 'write', function (path, name, agg, callback) {
-        callback(null, agg)
-      })
-      sinon.stub(agol.cache, 'getInfo', function (key, callback) {
-        callback(null, {geohashStatus: 'Processing'})
-      })
-      sinon.stub(koop.cache, 'updateInfo', function (key, info, callback) {
-        callback(null, true)
-      })
-      done()
-    })
-
-    after(function (done) {
-      koop.cache.updateInfo.restore()
-      agol.cache.getInfo.restore()
-      agol.files.write.restore()
-      delete koop.cache.db.geoHashAgg
-      done()
-    })
-
-    var hashOpts = {
-      key: 'testkey',
-      filePath: '/geohash-dir',
-      fileName: '/geohash.json',
-      query: {}
-    }
-
-    var info = {}
-
-    // all we test here is the flow of the code, the logic
-    // we make sure each method is called, but dont really test the methods here
-    it('should back before saveFile is called when there is no where clause', function (done) {
-      agol.buildGeohash(info, hashOpts, function (err, geohash) {
-        should.not.exist(err)
-        agol.cache.getInfo.called.should.equal(false)
-        agol.files.write.called.should.equal(false)
-        koop.cache.updateInfo.called.should.equal(true)
-        done()
-      })
-    })
-
-    it('should call saveFile before calling back when getting a geohash w/where clause', function (done) {
-      hashOpts.query = {where: '1=1'}
-      agol.buildGeohash(info, hashOpts, function (err, geohash) {
-        should.not.exist(err)
-        geohash.geohash.should.equal(100)
-        agol.cache.getInfo.called.should.equal(true)
-        koop.cache.db.geoHashAgg.called.should.equal(true)
-        agol.files.write.called.should.equal(true)
-        koop.cache.updateInfo.called.should.equal(true)
-        done()
-      })
-    })
-  })
-
   describe('Generating exports', function () {
     function FakeJob () {}
     util.inherits(FakeJob, EventEmitter)

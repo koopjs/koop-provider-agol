@@ -1,5 +1,4 @@
 /* @ flow */
-var https = require('https')
 var Sm = require('sphericalmercator')
 var merc = new Sm({size: 256})
 var fs = require('fs')
@@ -313,12 +312,24 @@ var Controller = function (agol, BaseController) {
 
     // forces browsers to download
     res = Utils.setHeaders(res, {
+      status: info.status,
       name: info.name,
       format: req.params.format,
       modified: info.retrieved_at
     })
 
     agol.files.createReadStream(filePath).pipe(res)
+  }
+
+  /**
+  * Get the geohash for a resource. This route can be removed only with a breaking change
+  *
+  * @param {object} req - the incoming request
+  * @param {object} res - the outgoing response
+  */
+  controller.getGeohash = function (req, res) {
+    req.params.format = 'geohash'
+    controller.getResource(req, res)
   }
 
   /**
@@ -480,102 +491,6 @@ var Controller = function (agol, BaseController) {
       // the data must be passed in to controller.processFeatureServer as the first element in an array
       // that should be removed in koop 3.0
       controller.processFeatureServer(req, res, data)
-    })
-  }
-
-  /**
-   * Handles incoming requests for geohashes
-   *
-   * @param {object} req - the incoming request object
-   * @param {object} res - the outgoing response object
-   */
-  controller.getGeohash = function (req, res) {
-    agol.log.debug(JSON.stringify({route: 'getGeohash', params: req.params, query: req.query}))
-
-    var hashOpts = Utils.createGeohashOptions(req)
-    agol.files.exists(hashOpts.filePath, hashOpts.fileName, function (exists, path, fileInfo) {
-      var options = {key: hashOpts.key, host: req.portal, item: req.params.item, layer: req.params.layer || 0}
-      agol.getInfo(options, function (err, info) {
-        if (err) return res.status(500).json(err)
-        if (exists) {
-          // this is logic for the expiration of the geohash itself
-          fileInfo = fileInfo || {}
-          info.expired = new Date(info.retrieved_at) > new Date(fileInfo.LastModified)
-          info.geohash_written = fileInfo.LastModified
-          // always return a geohash to the client if it exists
-          controller._returnGeohash(req, res, path, info)
-          // we set silent here so that we can take advantage of the controller functions
-          // that handle creating geohashes and caching resources without trying to send the response twice
-          req.params.silent = true
-          if (info.expired) controller._createGeohash(req, res, hashOpts, info)
-          if (info.status.expired) {
-            agol.dropResource(req.params.item, req.params.layer, {}, function (err) {
-              if (err) agol.log.error('Error dropping resource', err)
-            })
-          }
-        } else {
-          if (info.geohashStatus === 'Processing') return res.status(202).json({status: 'Processing'})
-          switch (info.status) {
-            case 'Cached':
-              return controller._createGeohash(req, res, hashOpts, info)
-            case 'Processing':
-              return controller._returnStatus(req, res, info)
-            case 'Expired':
-              return controller._createGeohash(req, res, hashOpts, info)
-            case 'Unavailable':
-              return controller._handleUnavailable(req, res, info)
-            case 'Failed':
-              return controller._handleFailed(req, res, info)
-            default:
-              agol.log.error(req.params, req.query, err, info)
-              return res.status(500).json({error: 'Unknown status'})
-          }
-        }
-      })
-    })
-  }
-
-  /**
-   * Returns a geohash proxied from s3 and sets headers
-   *
-   * @param {object} req - the incoming request object
-   * @param {object} res - the outgoing response object
-   * @param {string} path - the path to the geohash on the filesystem
-   * @param {object} info - the resource's info doc
-   * @private
-   */
-  controller._returnGeohash = function (req, res, path, info) {
-    agol.log.debug(JSON.stringify({route: '_returnGeohash', params: req.params, query: req.query}))
-    res.contentType('application/json')
-    if (info.expired || info.status === 'Expired') {
-      res.set('X-Expired', info.geohash_written)
-      res.set('Access-Control-Allow-Headers', 'X-Expired')
-      res.set('Access-Control-Expose-Headers', 'X-Expired')
-    }
-    if (path.substr(0, 4) !== 'http') return res.sendFile(path)
-    // Proxy to s3 urls allows us to not show the URL
-    https.get(path, function (proxyRes) {
-      if (proxyRes.headers['content-length'] === 0) return res.status(500).json({error: 'Empty geohash'})
-      proxyRes.pipe(res)
-    })
-  }
-
-  /**
-   * Handles creation of a geohash async
-   *
-   * @param {object} req - the incoming request object
-   * @param {object} res - the outgoing response object
-   * @param {object} options - filters to be placed on the data
-   * @param {object} info - the resource's info doc
-   * @private
-   */
-  controller._createGeohash = function (req, res, options, info) {
-    agol.log.debug(JSON.stringify({route: '_createGeohash', params: req.params, query: req.query}))
-    agol.buildGeohash(info, options, function (err, agg) {
-      if (req.params.silent) return
-      if (err) return res.status(500).json(err)
-      if (!agg) return res.status(202).json({status: 'Generating Geohash'})
-      res.status(200).json(agg)
     })
   }
 

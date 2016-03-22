@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Use export worker for geohash
+
 ## [3.2.1] - 2016-03-22
 ### Changed
 * Integrate with Koop-Worker 1.0.0 for exports

@@ -324,7 +324,7 @@ var AGOL = function (koop) {
     })
   }
 
-    /**
+  /**
    * Gets projection information for a shapefile export
    * @param {object} options - contains info on spatial reference, wkid and wkt
    * @param {function} callback - calls back with an error or wkt
@@ -342,59 +342,6 @@ var AGOL = function (koop) {
     // latest WKID is the more modern value
     var wkid = spatialRef.latestWkid || spatialRef.wkid
     agol.spatialReference.wkidToWkt(wkid, callback)
-  }
-
-  /**
-   * Builds a geohash and returns it async if there are filters or saves to the
-   * the db and returns processing
-   *
-   * @param {object} info - the item/layers info doc
-   * @param {object} options - describes the item and filters to apply
-   * @param {function} callback - calls back with an error, info or the geohash
-   * @private
-   */
-  agol.buildGeohash = function (info, options, callback) {
-    var filtered = (options.query.where || options.query.geometry)
-    info.geohashStatus = 'Processing'
-    agol.cache.updateInfo(options.key, info, function (err, success) {
-      if (err) return callback(err)
-      // trigger the callback right away so we can return 202 until it done
-      // if we dont have a where filter then we return with processing
-      if (!filtered) callback()
-      getAndSaveGeohash(function (err, agg) {
-        if (err) return done(err)
-        agol.cache.getInfo(options.key, function (err, info) {
-          if (err) return done(err)
-          delete info.geohashStatus
-          agol.cache.updateInfo(options.key, info, function (err, success) {
-            if (err) return done(err)
-            // if we DO have a where filter then we can return the agg right away
-            if (options.query.where || options.query.geometry) done(null, agg)
-          })
-        })
-      })
-    })
-
-    function getAndSaveGeohash (callback) {
-      var limit = options.limit || 100000
-      var precision = options.precision || 8
-
-      koop.cache.db.geoHashAgg(options.key, limit, precision, options, function (err, agg) {
-        if (err) return callback(err)
-        koop.files.write(options.filePath, options.fileName, JSON.stringify(agg), function (err) {
-          callback(err, agg)
-        })
-      })
-    }
-
-    // callback is already called in the case where we have a non-filtered request
-    // so this will only fire if the request is filtered
-    function done (err, agg) {
-      if (filtered) {
-        if (err) return callback(err)
-        callback(null, agg)
-      }
-    }
   }
 
   /**
