@@ -5,7 +5,7 @@ var merc = new Sm({size: 256})
 var fs = require('fs')
 var Utils = require('../lib/utils.js')
 var _ = require('lodash')
-var Path = require('path')
+var path = require('path')
 
 var Controller = function (agol, BaseController) {
   /**
@@ -183,8 +183,11 @@ var Controller = function (agol, BaseController) {
   controller._handleCached = function (req, res, info) {
     agol.log.debug(JSON.stringify({route: '_handleCached', params: req.params, query: req.query}))
     var options = Utils.createExportOptions(req, info)
-    agol.files.exists(options.filePath, options.fileName, function (exists, path) {
-      if (path) return controller._returnFile(req, res, Path.join(options.filePath, options.fileName), info)
+    var dirName = path.dirname(options.output)
+    var fileName = path.basename(options.output)
+
+    agol.files.exists(dirName, fileName, function (exists) {
+      if (exists) return controller._returnFile(req, res, options.output, info)
       var exportStatus = Utils.determineStatus(req, info)
       var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
       if (error) error.code = 500

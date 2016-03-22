@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Integrate with Koop-Worker 1.0.0 for exports
+
 ## [3.2.0] - 2016-03-21
 ### Added
 * Always serve a file if it is available, even if the data has expired
