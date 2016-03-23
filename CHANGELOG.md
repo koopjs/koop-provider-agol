@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Simplify cache key structure
 
+### Fixed
+* Files have the proper attachment
+
 ## [3.2.3] - 2016-03-23
 ### Fixed
 * Translate geometry into correct export option
