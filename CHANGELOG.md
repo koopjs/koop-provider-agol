@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Translate geometry into correct export option
+
 ## [3.2.2] - 2016-03-22
 ### Changed
 * Use export worker for geohash
