@@ -102,7 +102,7 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: 'getInfo', params: req.params, query: req.query}))
     var table = Utils.createTableKey(req.params)
     agol.cache.getInfo(table, function (err, info) {
-      if (err) return res.status(500).json({error: err.message})
+      if (err) return res.status(404).json({error: err.message})
       res.status(200).json(info)
     })
   }
@@ -220,25 +220,22 @@ var Controller = function (agol, BaseController) {
       response.status = 'Failed'
       return res.status(error.code || 502).json(response)
     }
-    var table = Utils.createTableKey(req.params)
-    agol.cache.getCount(table, {}, function (err, count) {
-      var code
-      if (err) agol.log.error('Failed to get count of rows in the DB' + ' ' + err)
-      response.count = count
-      info.generating = info.generating || {}
-      response.generating = info.generating[req.optionKey] || {}
-      if (info.error && info.error.message) {
-        response.error = info.error
-        code = 502
-      } else if (response.generating[req.params.format] === 'fail') {
-        response.error = 'Export job failed'
-        code = 500
-      }
+    var code
+    response.count = info.generating ? info.recordCount : info.importCount
+    response.count = info.importCount
+    info.generating = info.generating || {}
+    response.generating = info.generating[req.optionKey] || {}
+    if (info.error && info.error.message) {
+      response.error = info.error
+      code = 502
+    } else if (response.generating[req.params.format] === 'fail') {
+      response.error = 'Export job failed'
+      code = 500
+    }
 
-      if (response.error) response.status = 'Failed'
+    if (response.error) response.status = 'Failed'
 
-      res.status(code || 202).json(response)
-    })
+    res.status(code || 202).json(response)
   }
 
   /**

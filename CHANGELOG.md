@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * Files have the proper attachment
+* Count is reported directly during import process
 
 ## [3.2.3] - 2016-03-23
 ### Fixed
