@@ -281,15 +281,11 @@ describe('AGOL Controller', function () {
         callback(null, {status: 'Processing'})
       })
 
-      sinon.stub(agol.cache, 'getCount', function (key, options, callback) {
-        callback(null, 10000)
-      })
       done()
     })
 
     after(function (done) {
       agol.getInfo.restore()
-      agol.cache.getCount.restore()
       agol.find.restore()
       done()
     })
@@ -301,7 +297,6 @@ describe('AGOL Controller', function () {
           should.not.exist(err)
           res.should.have.status(202)
           agol.getInfo.called.should.equal(true)
-          agol.cache.getCount.called.should.equal(true)
           done()
         })
     })
