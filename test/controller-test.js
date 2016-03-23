@@ -448,7 +448,7 @@ describe('AGOL Controller', function () {
               fields: []
             },
             generating: {
-              'full_0': {
+              full: {
                 csv: 'progress'
               }
             }
@@ -501,7 +501,7 @@ describe('AGOL Controller', function () {
               fields: []
             },
             generating: {
-              'full_0': {
+              full: {
                 csv: 'fail'
               }
             }
@@ -554,7 +554,7 @@ describe('AGOL Controller', function () {
               fields: []
             },
             generating: {
-              'full_0': {
+              full: {
                 csv: false,
                 kml: 'fail',
                 zip: 'progress'
@@ -597,7 +597,6 @@ describe('AGOL Controller', function () {
           .get('/agol/test/itemid/0.csv')
           .expect(200)
           .end(function (err, res) {
-            console.log(JSON.stringify(res.body))
             should.not.exist(err)
             agol.files.exists.called.should.equal(true)
             agol.updateResource.called.should.equal(true)

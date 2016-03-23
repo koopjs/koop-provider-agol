@@ -47,13 +47,6 @@ describe('Utils', function () {
       done()
     })
 
-    it('should create different cache keys for different layers', function (done) {
-      var key1 = Utils.createCacheKey(params, reference_query)
-      var key2 = Utils.createCacheKey(params2, reference_query)
-      key1.should.not.equal(key2)
-      done()
-    })
-
     it('should not include the featureserver method in cache keys', function (done) {
       var key1 = Utils.createCacheKey(params, reference_query)
       var key2 = Utils.createCacheKey(params3, reference_query)
