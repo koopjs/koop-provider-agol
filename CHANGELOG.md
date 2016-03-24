@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Changed
 * Ignore outSR parameter if file is not csv
+* Remove schema update to >2.0 to 2.0
 
 ### Fixed
 * Create correct cache key for zip downloads with an outSR

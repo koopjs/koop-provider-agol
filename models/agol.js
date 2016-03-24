@@ -151,8 +151,6 @@ var AGOL = function (koop) {
   agol.getInfo = function (options, callback) {
     agol.cache.getInfo(options.key, function (err, info) {
       if (err && err.message !== 'Resource not found') return callback(err)
-      // needed for backwards compatibility with koop < 2.0
-      if (info && !info.version) return agol._updateInfoSchema(options, info, callback)
       if (info && info.status) {
         if (info.status === 'Processing') return callback(null, info)
         if (info.type !== 'Feature Service') return getPortalInfo(info)
@@ -397,42 +395,6 @@ var AGOL = function (koop) {
     if (expiration < new Date()) throw new Error('Expiration cannot be in the past')
 
     return expiration.getTime()
-  }
-
-  /**
-   * Updates the info doc schema
-   * @param {object} options - The original request options
-   * @param {object} info - The existing info doc
-   * @param {function} callback
-   * @private
-   */
-  agol._updateInfoSchema = function (options, info, callback) {
-    info = info || {}
-    if (!info.status) info.status = 'Cached'
-    info.version = '2.0'
-    agol.portal.getItem(options.host, options.item, function (err, itemInfo) {
-      if (err || !itemInfo) return callback(err || new Error('Item info was blank'))
-      info.type = itemInfo.type
-      info.url = itemInfo.url
-      if (itemInfo.type !== 'CSV' && itemInfo.type !== 'Feature Collection') {
-        var service = Utils.initFeatureService(itemInfo.url, {layer: options.layer})
-        service.info(function (err, serviceInfo) {
-          if (err || !serviceInfo) return callback(err || new Error('Service info was blank'))
-          if (serviceInfo.editingInfo && serviceInfo.editingInfo.lastEditDate) info.lastEditDate = info.retrieved_at
-          info.name = Utils.createName(itemInfo, serviceInfo, options.layer)
-          agol.cache.updateInfo(options.key, info, function (err) {
-            if (err) return callback(err)
-            agol.getInfo(options, callback)
-          })
-        })
-      } else {
-        info.name = Utils.cleanseName(itemInfo.title)
-        agol.cache.updateInfo(options.key, info, function (err) {
-          if (err) return callback(err)
-          agol.getInfo(options, callback)
-        })
-      }
-    })
   }
 
   /**
