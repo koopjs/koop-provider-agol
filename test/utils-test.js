@@ -39,6 +39,14 @@ describe('Utils', function () {
       bar: 2,
       where: 'where clause2'
     }
+
+    var test_query4 = {
+      outSR: {
+        latestWkid: 2927,
+        wkid: 2927
+      }
+    }
+
     var expected_key = Utils.createCacheKey(params, reference_query)
 
     it('should create the same cache key when query params are out of order', function (done) {
@@ -64,6 +72,13 @@ describe('Utils', function () {
     it('should create a difference cache key when there is different where clauses', function (done) {
       var key1 = Utils.createCacheKey(params, test_query2)
       var key2 = Utils.createCacheKey(params, test_query3)
+      key1.should.not.equal(key2)
+      done()
+    })
+
+    it('should create a difference cache key when there is different outSR', function (done) {
+      var key1 = Utils.createCacheKey(params, reference_query)
+      var key2 = Utils.createCacheKey(params, test_query4)
       key1.should.not.equal(key2)
       done()
     })
