@@ -155,10 +155,6 @@ var Controller = function (agol, BaseController) {
     agol.getInfo(infoOpts, function (err, info) {
       if (err) return controller._returnStatus(req, res, info, err)
       switch (info.status) {
-        case 'Cached':
-          return controller._handleCached(req, res, info)
-        case 'Processing':
-          return controller._returnStatus(req, res, info)
         case 'Expired':
           return controller._handleExpired(req, res, info)
         case 'Failed':
@@ -166,7 +162,7 @@ var Controller = function (agol, BaseController) {
         case 'Unavailable':
           return controller._handleUnavailable(req, res, info)
         default:
-          res.status(500).json({error: 'Unrecognized status'})
+          return controller._handleCached(req, res, info)
       }
     })
   }

@@ -271,37 +271,6 @@ describe('AGOL Controller', function () {
     })
   })
 
-  describe('Requesting a download when the resource is processing', function () {
-    before(function (done) {
-      sinon.stub(agol, 'find', function (id, callback) {
-        callback(null, {id: 'test', host: 'http://dummy.host.com'})
-      })
-
-      sinon.stub(agol, 'getInfo', function (key, callback) {
-        callback(null, {status: 'Processing'})
-      })
-
-      done()
-    })
-
-    after(function (done) {
-      agol.getInfo.restore()
-      agol.find.restore()
-      done()
-    })
-
-    it('should call Cache.getInfo and return 202', function (done) {
-      request(koop)
-        .get('/agol/test/itemid/0.zip')
-        .end(function (err, res) {
-          should.not.exist(err)
-          res.should.have.status(202)
-          agol.getInfo.called.should.equal(true)
-          done()
-        })
-    })
-  })
-
   describe('getting an item that is in a failed state', function () {
     beforeEach(function (done) {
       sinon.stub(agol, 'dropResource', function (id, item, options, callback) {
