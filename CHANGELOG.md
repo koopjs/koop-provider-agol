@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Added
+* Backwards compatibility with files saved under old cache-keying regime
+
 ### Changed
 * Ignore outSR parameter if file is not csv
 * Remove schema update to >2.0 to 2.0

@@ -181,9 +181,16 @@ var Controller = function (agol, BaseController) {
     var options = Utils.createExportOptions(req, info)
     var dirName = path.dirname(options.output)
     var fileName = path.basename(options.output)
+    var awsPath = options.output
+    // Make sure we can still find files that were created under the old cache-keying regime
+    if (info.version !== 3) {
+      var key = Utils.createCacheKey(req.params, req.query)
+      fileName = fileName.replace(/\/full\//, '/' + key + '/')
+      awsPath = path.join(dirName, fileName)
+    }
 
     agol.files.exists(dirName, fileName, function (exists) {
-      if (exists) return controller._returnFile(req, res, options.output, info)
+      if (exists) return controller._returnFile(req, res, awsPath, info)
 
       var exportStatus = Utils.determineStatus(req, info)
 
