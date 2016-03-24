@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Added
 * Backwards compatibility with files saved under old cache-keying regime
+* Support regenerated individual expired files
 
 ### Changed
 * Ignore outSR parameter if file is not csv

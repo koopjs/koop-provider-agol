@@ -511,17 +511,21 @@ describe('AGOL Controller', function () {
         })
 
         sinon.stub(agol, 'getInfo', function (key, callback) {
+          var date = Date.now()
           callback(null, {
             status: 'Expired',
             name: 'Export',
+            version: 3,
+            retrieved_at: date,
             info: {
               fields: []
             },
             generating: {
               full: {
-                csv: false,
+                csv: date,
                 kml: 'fail',
-                zip: 'progress'
+                zip: 'progress',
+                geojson: (date - 1000)
               }
             }
           })
@@ -550,6 +554,25 @@ describe('AGOL Controller', function () {
         agol.files.createReadStream.restore()
         agol.files.exists.restore()
         done()
+      })
+
+      it('should call updateResource, generate export and return a file if it exists but it\'s out of date', function (done) {
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(true, './files/foo.geojson')
+        })
+
+        request(koop)
+          .get('/agol/test/itemid/0.geojson')
+          .expect(200)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(true)
+            agol.updateResource.called.should.equal(true)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(true)
+            agol.files.createReadStream.called.should.equal(true)
+            done()
+          })
       })
 
       it('should call updateResource and return a file if it exists', function (done) {

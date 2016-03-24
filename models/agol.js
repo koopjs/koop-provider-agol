@@ -252,13 +252,19 @@ var AGOL = function (koop) {
       agol.enqueueExport(options)
       .once('start', function () { agol.updateJob('start', options) })
       .once('progress', function () { agol.updateJob('progress', options) })
-      .once('finish', function () { agol.updateJob('finish', options) })
+      .once('finish', function () {
+        // Hack to make sure this fires after other progress updates have been saved
+        setTimeout(function () {
+          agol.updateJob('finish', options)
+        }, 1000)
+      })
       .once('fail', function () { agol.updateJob('fail', options) })
       agol.updateJob('queued', options, callback)
     })
   }
 
   agol.updateJob = function (status, options, callback) {
+    agol.log.info('Export Job', status, options)
     var table = Utils.createTableKey(options)
     agol.cache.getInfo(table, function (err, info) {
       if (err) {
@@ -267,9 +273,7 @@ var AGOL = function (koop) {
       }
       info.generating = info.generating || {}
       var generating = info.generating[options.key] = info.generating[options.key] || {}
-      generating[options.format] = status
-      agol.log.info('Export Job', status, options)
-      if (status === 'finish') generating[options.format] = false
+      generating[options.format] = status === 'finish' ? info.retrieved_at : status
       agol.cache.updateInfo(table, info, function (err) {
         if (err) agol.log.error(err)
         if (callback) callback(err, info)

@@ -190,10 +190,17 @@ var Controller = function (agol, BaseController) {
     }
 
     agol.files.exists(dirName, fileName, function (exists) {
-      if (exists) return controller._returnFile(req, res, awsPath, info)
-
       var exportStatus = Utils.determineStatus(req, info)
-
+      if (exists) {
+        // check to see if the file itself is Expired
+        // if it is, we will still serve it but we need to enqueue a new one
+        if (exportStatus !== info.retrieved_at) {
+          agol.generateExport(options, function (err) {
+            if (err) agol.log.error(err)
+          })
+        }
+        return controller._returnFile(req, res, awsPath, info)
+      }
       // if a job is already running or we don't actually have the data in the cache yet
       // hand off to returnStatus for a 202 response
       var jobInProgress = ['queued', 'start', 'progress', 'fail'].indexOf(exportStatus) > -1
