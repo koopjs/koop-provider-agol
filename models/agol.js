@@ -33,51 +33,6 @@ var AGOL = function (koop) {
     }
     agol.featureQueue = FeatureQueue.create(qOpts)
 
-    /**
-     * Drops the resource from any failed jobs and removes the job from the queue
-     *
-     * @param {function} callback - calls back with an error or the failed jobs
-     */
-    agol.dropAndRemoveFailed = function (callback) {
-      agol.log.info('Dropping resources and removing jobs from failures')
-      var report = {
-        successful: [],
-        failed: []
-      }
-      agol.featureQueue.failed(0, 9999999, function (err, failed) {
-        if (err) {
-          agol.log.error('Error while trying to fetch failed jobs', err)
-          return finish(err)
-        }
-        async.each(failed, function (job, callback) {
-          agol.featureQueue.removeFailed(job, function (err) {
-            if (!job.payload || !job.payload.args) return callback()
-            var params = job.payload.args[0]
-            if (err) {
-              agol.log.error('Error while trying to remove failed job', params.item, params.layer, err)
-              report.failed.push(job)
-              return callback()
-            }
-            agol.cache.drop(params.item, params.layer, {}, function (err) {
-              if (err) {
-                agol.log.error('Error while trying to drop failed resource', params.item, params.layer, err)
-                report.failed.push(job)
-                return callback()
-              }
-              report.successful.push(job)
-              callback()
-            })
-          })
-        }, finish)
-      })
-
-      function finish (err) {
-        if (callback) callback(err, report)
-      }
-    }
-    // every 30 minutes clear out resources where the job failed
-    // currently we don't fail any jobs on purpose so this *should* only happen
-    // if the process crashes
     var day = 24 * 60 * 60 * 1000
     setInterval(agol.dropAndRemoveFailed, day)
   }
@@ -474,6 +429,52 @@ var AGOL = function (koop) {
     }
     callback(null, response)
   }
+
+  /**
+   * Drops the resource from any failed jobs and removes the job from the queue
+   *
+   * @param {function} callback - calls back with an error or the failed jobs
+   */
+  agol.dropAndRemoveFailed = function (callback) {
+    if (!agol.featureQueue) return callback(new Error('Feature Queue not enabled'))
+    agol.log.info('Dropping resources and removing jobs from failures')
+    var report = {
+      successful: [],
+      failed: []
+    }
+    agol.featureQueue.failed(0, 9999999, function (err, failed) {
+      if (err) {
+        agol.log.error('Error while trying to fetch failed jobs', err)
+        return finish(err)
+      }
+      async.each(failed, function (job, callback) {
+        agol.featureQueue.removeFailed(job, function (err) {
+          if (!job.payload || !job.payload.args) return callback()
+          var params = job.payload.args[0]
+          if (err) {
+            agol.log.error('Error while trying to remove failed job', params.item, params.layer, err)
+            report.failed.push(job)
+            return callback()
+          }
+          agol.cache.drop(params.item, params.layer, {}, function (err) {
+            if (err) {
+              agol.log.error('Error while trying to drop failed resource', params.item, params.layer, err)
+              report.failed.push(job)
+              return callback()
+            }
+            report.successful.push(job)
+            callback()
+          })
+        })
+      }, finish)
+    })
+
+    function finish (err) {
+      if (callback) callback(err, report)
+    }
+  }
+  // currently we don't fail any jobs on purpose so this *should* only happen
+  // if the process crashes
 
   return agol
 }
