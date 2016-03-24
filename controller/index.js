@@ -21,12 +21,12 @@ var Controller = function (agol, BaseController) {
    * @param {function} next - calls the next route handler
    */
    // TODO remove this and just call it from different functions
-  controller.setHostKey = function (req, res, next) {
+  controller.setHost = function (req, res, next) {
     agol.log.debug(JSON.stringify({route: 'setHostKey', params: req.params, query: req.query}))
 
     req.params.silent = false
     if (!req.params.id) return next()
-    req.optionKey = Utils.createCacheKey(req.params, req.query)
+
     agol.find(req.params.id, function (err, data) {
       if (err) return res.status(404).send(err)
       req.portal = data.host
@@ -145,6 +145,7 @@ var Controller = function (agol, BaseController) {
    */
   controller.getResource = function (req, res) {
     agol.log.debug(JSON.stringify({route: 'getResource', params: req.params, query: req.query}))
+    req.optionKey = Utils.createCacheKey(req.params, req.query)
     var table = Utils.createTableKey(req.params)
     var infoOpts = {
       host: req.portal,

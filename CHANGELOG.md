@@ -3,8 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Changed
+* Ignore outSR parameter if file is not csv
+
 ### Fixed
-* Create correct cache key for downloads with an outSR
+* Create correct cache key for zip downloads with an outSR
 
 ## [3.3.0] - 2016-03-24
 ### Changed

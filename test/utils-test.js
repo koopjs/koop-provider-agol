@@ -7,11 +7,13 @@ describe('Utils', function () {
   describe('creating a cache key', function () {
     var params = {
       item: 'item',
-      layer: 0
+      layer: 0,
+      format: 'zip'
     }
     var params2 = {
       item: 'item',
-      layer: 1
+      layer: 1,
+      format: 'csv'
     }
     var params3 = {
       item: 'item',
@@ -20,6 +22,16 @@ describe('Utils', function () {
     var params4 = {
       item: 'item',
       0: '1.csv'
+    }
+    var params5 = {
+      item: 'item',
+      layer: 0,
+      format: 'csv'
+    }
+    var params6 = {
+      item: 'item',
+      layer: 0,
+      format: 'kml'
     }
     var reference_query = {
       foo: 1,
@@ -80,6 +92,13 @@ describe('Utils', function () {
       var key1 = Utils.createCacheKey(params, reference_query)
       var key2 = Utils.createCacheKey(params, test_query4)
       key1.should.not.equal(key2)
+      done()
+    })
+
+    it('should ignore the outSR parameter when the format requested is not a shapefile', function (done) {
+      var key1 = Utils.createCacheKey(params5, test_query4)
+      var key2 = Utils.createCacheKey(params6, test_query4)
+      key1.should.equal(key2)
       done()
     })
 
