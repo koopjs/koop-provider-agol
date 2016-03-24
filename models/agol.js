@@ -243,7 +243,7 @@ var AGOL = function (koop) {
         // In import-service we will automatically create export jobs under 2 conditions
         // 1. The item has changed (including metadata)
         // 2. The actual data has changed
-        if (info.itemModified !== item.modified) info.itemDirty = true
+        if (info.metadata !== item.metadata) info.itemDirty = true
         info.itemTitle = item.title
         info.metadata = item.metadata
         info.itemModified = item.modified
@@ -297,10 +297,10 @@ var AGOL = function (koop) {
       if (err) return callback(err)
       options.srs = wkt
       agol.enqueueExport(options)
-      .once('start', function (info) { agol.updateJob('start', options) })
-      .once('progress', function (info) { agol.updateJob('progress', options) })
-      .once('finish', function (info) { agol.updateJob('finish', options) })
-      .once('fail', function (info) { agol.updateJob('fail', options) })
+      .once('start', function () { agol.updateJob('start', options) })
+      .once('progress', function () { agol.updateJob('progress', options) })
+      .once('finish', function () { agol.updateJob('finish', options) })
+      .once('fail', function () { agol.updateJob('fail', options) })
       agol.updateJob('queued', options, callback)
     })
   }

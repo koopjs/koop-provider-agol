@@ -15,7 +15,6 @@ var fakeCache = {
   updateInfo: function () {},
   setFail: function () {}
 }
-var updatedInfo
 describe('importing a feature service into the cache', function () {
   beforeEach(function (done) {
     importService = new ImportService({
@@ -52,7 +51,6 @@ describe('importing a feature service into the cache', function () {
     })
 
     sinon.stub(importService.cache, 'updateInfo', function (key, info, callback) {
-      updatedInfo = info
       callback(null)
     })
 
@@ -88,15 +86,11 @@ describe('importing a feature service into the cache', function () {
       callback(null)
     })
 
-    importService.on('done', function (updated) {
-      importService.cache.insertPartial.called.should.equal(true)
-      importService.cache.setFail.called.should.equal(false)
-      importService.cache.getInfo.called.should.equal(true)
-      importService.cache.updateInfo.called.should.equal(true)
-      importService.cache.updateInfo.calledWith(importService.key)
+    importService.on('done', function (result) {
+      var updatedInfo = result.info
       updatedInfo.status.should.equal('Cached')
       updatedInfo.sha1.should.equal('c538d5eeb6f8365e6300e3d42700253a3fe9d9bd')
-      updated.should.equal(true)
+      result.updated.should.equal(true)
       importService.cache.insertPartial.restore()
       done()
     })

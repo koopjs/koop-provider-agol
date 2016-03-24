@@ -186,10 +186,12 @@ var Controller = function (agol, BaseController) {
       var exportStatus = Utils.determineStatus(req, info)
       var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
       if (error) error.code = 500
-      if (['queued', 'start', 'progress', 'fail'].indexOf(exportStatus) > -1) return controller._returnStatus(req, res, info, error)
+      var jobInProgress = ['queued', 'start', 'progress', 'fail'].indexOf(exportStatus) > -1
+      var processing = info.status === 'Processing'
+      if (jobInProgress || processing) return controller._returnStatus(req, res, info, error)
       // only enqueue a job if it's not already queued or running
-      agol.generateExport(options, function (err, status, created) {
-        controller._returnStatus(req, res, status, err)
+      agol.generateExport(options, function (err) {
+        if (err) agol.log.error(err)
       })
     })
   }
@@ -218,7 +220,6 @@ var Controller = function (agol, BaseController) {
     }
     var code
     response.count = info.generating ? info.recordCount : info.importCount
-    response.count = info.importCount
     info.generating = info.generating || {}
     response.generating = info.generating[req.optionKey] || {}
     if (info.error && info.error.message) {

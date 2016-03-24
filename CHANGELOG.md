@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Simplify controller action for `getResource`
+
+### Fixed
+* Downloads are served even when status is processing
+* Info is updated properly when importService job finishes
+
 ## [3.2.4] - 2016-03-23
 ### Changed
 * Simplify cache key structure
