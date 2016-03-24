@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.4.0] - 2016-03-24
 ### Added
 * Backwards compatibility with files saved under old cache-keying regime
 * Support regenerated individual expired files
@@ -714,6 +714,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.4.0]: https://github.com/koopjs/koop-agol/compare/v3.3.0..v3.4.0
 [3.3.0]: https://github.com/koopjs/koop-agol/compare/v3.2.4..v3.3.0
 [3.2.4]: https://github.com/koopjs/koop-agol/compare/v3.2.3..v3.2.4
 [3.2.3]: https://github.com/koopjs/koop-agol/compare/v3.2.2..v3.2.3
