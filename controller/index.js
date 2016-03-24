@@ -183,15 +183,20 @@ var Controller = function (agol, BaseController) {
 
     agol.files.exists(dirName, fileName, function (exists) {
       if (exists) return controller._returnFile(req, res, options.output, info)
+
       var exportStatus = Utils.determineStatus(req, info)
-      var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
-      if (error) error.code = 500
+
+      // if a job is already running or we don't actually have the data in the cache yet
+      // hand off to returnStatus for a 202 response
       var jobInProgress = ['queued', 'start', 'progress', 'fail'].indexOf(exportStatus) > -1
       var processing = info.status === 'Processing'
+      var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
+      if (error) error.code = 500
       if (jobInProgress || processing) return controller._returnStatus(req, res, info, error)
+
       // only enqueue a job if it's not already queued or running
-      agol.generateExport(options, function (err) {
-        if (err) agol.log.error(err)
+      agol.generateExport(options, function (err, status, created) {
+        controller._returnStatus(req, res, status, err)
       })
     })
   }
