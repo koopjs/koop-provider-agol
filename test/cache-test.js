@@ -236,7 +236,8 @@ describe('checking expiration', function () {
       modified_at: Date.now(),
       retrieved_at: Date.now() - 100,
       url: 'foo',
-      type: 'CSV'
+      type: 'CSV',
+      version: 3
     }
 
     cache.checkExpiration(info, 0, function (err, expired, info) {
@@ -252,7 +253,8 @@ describe('checking expiration', function () {
       modified_at: Date.now(),
       retrieved_at: Date.now() + 100,
       url: 'foo',
-      type: 'CSV'
+      type: 'CSV',
+      version: 3
     }
 
     cache.checkExpiration(info, 0, function (err, expired, info) {
@@ -266,7 +268,8 @@ describe('checking expiration', function () {
   it('should call back with expired when a non-hosted feature service was retrieved more than 24 hours ago', function (done) {
     var info = {
       url: 'http://expired.com/FeatureServer/0',
-      expires_at: Date.now() - (24 * 60 * 60 * 1000 + 100)
+      expires_at: Date.now() - (24 * 60 * 60 * 1000 + 100),
+      version: 3
     }
 
     cache.checkExpiration(info, 0, function (err, expired, info) {
@@ -280,7 +283,8 @@ describe('checking expiration', function () {
   it('should call back with not expired when a non-hosted feature service was less than 24 hours ago', function (done) {
     var info = {
       url: 'http://expired.com/FeatureServer/0',
-      expires_at: Date.now() + 100
+      expires_at: Date.now() + 100,
+      version: 3
     }
 
     cache.checkExpiration(info, 0, function (err, expired, info) {
@@ -294,7 +298,8 @@ describe('checking expiration', function () {
   it('should call back with expired when a hosted feature service is expired', function (done) {
     var info = {
       url: 'http://expired.com/FeatureServer/0',
-      lastEditDate: Date.now() - 100
+      lastEditDate: Date.now() - 100,
+      version: 3
     }
 
     var fixture = nock('http://expired.com')
@@ -312,7 +317,8 @@ describe('checking expiration', function () {
   it('should call back with not expired when a hosted feature service is not expired', function (done) {
     var info = {
       url: 'http://expired.com/FeatureServer/0',
-      lastEditDate: new Date('2015').getTime()
+      lastEditDate: new Date('2015').getTime(),
+      version: 3
     }
 
     var fixture = nock('http://expired.com')

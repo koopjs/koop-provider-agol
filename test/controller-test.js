@@ -505,30 +505,34 @@ describe('AGOL Controller', function () {
     })
 
     describe('when the resource has expired', function () {
+      var date = Date.now()
+      var info = {
+        status: 'Expired',
+        name: 'Export',
+        version: 3,
+        retrieved_at: date,
+        info: {
+          fields: []
+        },
+        generating: {
+          full: {
+            csv: date,
+            kml: 'fail',
+            zip: 'progress',
+            geojson: (date - 1000)
+          },
+          'cc7da4c76af29314530c59e0ea60fe7c': {
+            geojson: (date - 1000)
+          }
+        }
+      }
       beforeEach(function (done) {
         sinon.stub(agol, 'find', function (id, callback) {
           callback(null, { id: 'test', host: 'http://dummy.host.com' })
         })
 
         sinon.stub(agol, 'getInfo', function (key, callback) {
-          var date = Date.now()
-          callback(null, {
-            status: 'Expired',
-            name: 'Export',
-            version: 3,
-            retrieved_at: date,
-            info: {
-              fields: []
-            },
-            generating: {
-              full: {
-                csv: date,
-                kml: 'fail',
-                zip: 'progress',
-                geojson: (date - 1000)
-              }
-            }
-          })
+          callback(null, info)
         })
 
         sinon.stub(agol, 'generateExport', function (options, callback) {
@@ -571,6 +575,47 @@ describe('AGOL Controller', function () {
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
+            done()
+          })
+      })
+
+      it('should call generate export, updateResource and return a file if the filtered version is out of data and not currently generating', function (done) {
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(true, './files/foo.geojson')
+        })
+
+        request(koop)
+          .get('/agol/test/itemid/0.geojson?where=trees%20like%20foo')
+          .expect(200)
+          .end(function (err, res) {
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(true)
+            agol.updateResource.called.should.equal(true)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(true)
+            agol.files.createReadStream.called.should.equal(true)
+            done()
+          })
+      })
+
+      it('should call generate export and not return a file if the filtered version is out of data and not currently generating', function (done) {
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(true, './files/foo.geojson')
+        })
+
+        info.status = 'Cached'
+
+        request(koop)
+          .get('/agol/test/itemid/0.geojson?where=trees%20like%20foo')
+          .expect(202)
+          .end(function (err, res) {
+            info.status = 'Expired'
+            should.not.exist(err)
+            agol.files.exists.called.should.equal(true)
+            agol.updateResource.called.should.equal(false)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(true)
+            agol.files.createReadStream.called.should.equal(false)
             done()
           })
       })

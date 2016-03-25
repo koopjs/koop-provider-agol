@@ -246,7 +246,7 @@ var AGOL = function (koop) {
    * @param {function} callback - calls back with an error or status and whether a new job was created
    */
   agol.generateExport = function (options, callback) {
-    getWkt(options.outSr, function (err, wkt) {
+    getWkt(options.outSR, function (err, wkt) {
       if (err) return callback(err)
       options.srs = wkt
       agol.enqueueExport(options)

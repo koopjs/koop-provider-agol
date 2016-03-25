@@ -296,6 +296,68 @@ describe('Utils', function () {
     })
   })
 
+  describe('creating export options', function () {
+    it('should have all the expected properties for a table that is on the lastest version', function (done) {
+      var req = {
+        params: {
+          item: '1ef',
+          layer: '1',
+          format: 'zip'
+        },
+        query: {
+          where: 'trees like fire',
+          geometry: '"geometry"',
+          outSR: 'outSR'
+        },
+        optionKey: 'full'
+      }
+      var table = {
+        name: 'download',
+        metadata: 'metadata',
+        version: 3
+      }
+      var eOpts = Utils.createExportOptions(req, table)
+      eOpts.table.should.equal('agol:1ef:1')
+      eOpts.source.should.equal('files/1ef_1/full/1ef_1.geojson')
+      eOpts.output.should.equal('files/1ef_1/full/1ef_1.zip')
+      eOpts.key.should.equal('full')
+      eOpts.name.should.equal('download')
+      eOpts.format.should.equal('zip')
+      eOpts.metadata.should.equal('metadata')
+      eOpts.where.should.equal('trees like fire')
+      eOpts.outSR.should.equal('outSR')
+      eOpts.geometry.should.equal('geometry')
+      done()
+    })
+
+    it('should have all the expected properties for a table that is not on the lastest version', function (done) {
+      var req = {
+        params: {
+          item: '1ef',
+          layer: '1',
+          format: 'zip'
+        },
+        query: {
+        },
+        optionKey: 'full'
+      }
+      var table = {
+        name: 'download',
+        metadata: 'metadata',
+        version: '2.0'
+      }
+      var eOpts = Utils.createExportOptions(req, table)
+      eOpts.table.should.equal('agol:1ef:1')
+      eOpts.source.should.equal('files/1ef_1/full/download.geojson')
+      eOpts.output.should.equal('files/1ef_1/6f6cace075907b472bfe309f5abfc344/download.zip')
+      eOpts.key.should.equal('full')
+      eOpts.name.should.equal('download')
+      eOpts.format.should.equal('zip')
+      eOpts.metadata.should.equal('metadata')
+      done()
+    })
+  })
+
   describe('generating a failure message', function () {
     it('should generate a message with no error body passed in', function (done) {
       var error = new Error()

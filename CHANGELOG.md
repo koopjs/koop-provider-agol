@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* All tables build under schema != 3 will be automatically expired
+* Always serve filtered downloads from the same cache as the full downloads
+
+### Fixed
+* Ensure all the write export options are set
+
 ## [3.4.0] - 2016-03-24
 ### Added
 * Backwards compatibility with files saved under old cache-keying regime

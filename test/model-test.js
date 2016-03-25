@@ -23,6 +23,10 @@ var agol = require('../models/agol.js')(koop)
 
 describe('AGOL Model', function () {
   describe('getting info', function () {
+    afterEach(function (done) {
+      agol.cache.getInfo.restore()
+      done()
+    })
     it('should return status: unavailable when the resource is not cached', function (done) {
       sinon.stub(agol.cache, 'getInfo', function (key, callback) {
         callback(new Error('Resource not found'))
@@ -31,14 +35,13 @@ describe('AGOL Model', function () {
       agol.getInfo({key: 'test'}, function (err, info) {
         should.not.exist(err)
         info.status.should.equal('Unavailable')
-        agol.cache.getInfo.restore()
         done()
       })
     })
 
     it('should return status: Expired when the resource is expired', function (done) {
       sinon.stub(agol.cache, 'getInfo', function (key, callback) {
-        callback(null, {status: 'Cached', type: 'Feature Service', version: '2.0'})
+        callback(null, {status: 'Cached', type: 'Feature Service', version: 3})
       })
 
       sinon.stub(agol.cache, 'checkExpiration', function (info, layer, callback) {
@@ -48,7 +51,6 @@ describe('AGOL Model', function () {
       agol.getInfo({key: 'test'}, function (err, info) {
         should.not.exist(err)
         info.status.should.equal('Expired')
-        agol.cache.getInfo.restore()
         agol.cache.checkExpiration.restore()
         done()
       })
@@ -56,17 +58,16 @@ describe('AGOL Model', function () {
 
     it('should return with status: Cached when the resource is not expired', function (done) {
       sinon.stub(agol.cache, 'getInfo', function (key, callback) {
-        callback(null, {status: 'Cached', type: 'Feature Service', version: '2.0'})
+        callback(null, {status: 'Cached', type: 'Feature Service', version: 3})
       })
 
       sinon.stub(agol.cache, 'checkExpiration', function (info, layer, callback) {
-        callback(null, false, {status: 'Cached', type: 'Feature Service', version: '2.0'})
+        callback(null, false, {status: 'Cached', type: 'Feature Service', version: 3})
       })
 
       agol.getInfo({key: 'test'}, function (err, info) {
         should.not.exist(err)
         info.status.should.equal('Cached')
-        agol.cache.getInfo.restore()
         agol.cache.checkExpiration.restore()
         done()
       })
@@ -74,20 +75,19 @@ describe('AGOL Model', function () {
 
     it('should return with status: Processing when a feature service resource is processing', function (done) {
       sinon.stub(agol.cache, 'getInfo', function (key, callback) {
-        callback(null, {status: 'Processing', version: '2.0', type: 'Feature Service'})
+        callback(null, {status: 'Processing', version: 3, type: 'Feature Service'})
       })
 
       agol.getInfo({key: 'test'}, function (err, info) {
         should.not.exist(err)
         info.status.should.equal('Processing')
-        agol.cache.getInfo.restore()
         done()
       })
     })
 
     it('should return with status: Expired with a csv item has been modified', function (done) {
       sinon.stub(agol.cache, 'getInfo', function (key, callback) {
-        callback(null, {status: 'Cached', retrieved_at: Date.now(), version: '2.0', type: 'CSV', url: 'foo'})
+        callback(null, {status: 'Cached', retrieved_at: Date.now(), version: 3, type: 'CSV', url: 'foo'})
       })
 
       sinon.stub(agol.portal, 'getItem', function (host, item, callback) {
@@ -97,7 +97,6 @@ describe('AGOL Model', function () {
       agol.getInfo({key: 'test'}, function (err, info) {
         should.not.exist(err)
         info.status.should.equal('Expired')
-        agol.cache.getInfo.restore()
         agol.portal.getItem.restore()
         done()
       })
