@@ -191,7 +191,7 @@ var Controller = function (agol, BaseController) {
           if (err) agol.log.error(err)
           // always serve filtered data from the same cache as the full export
           if (info.status === 'Cached' && (req.query.where || req.query.geometry)) {
-            controller._returnStatus(req, res, info, error)
+            controller._returnStatus(req, res, info)
           } else {
             controller._returnFile(req, res, options.output, info)
           }
@@ -326,7 +326,8 @@ var Controller = function (agol, BaseController) {
       status: info.status,
       name: info.name,
       format: req.params.format,
-      modified: info.retrieved_at
+      modified: info.retrieved_at,
+      expired: info.status === 'Expired'
     })
 
     agol.files.createReadStream(filePath).pipe(res)

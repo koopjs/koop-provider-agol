@@ -265,8 +265,7 @@ var AGOL = function (koop) {
 
   agol.updateJob = function (status, options, callback) {
     agol.log.info('Export Job', status, options)
-    var table = Utils.createTableKey(options)
-    agol.cache.getInfo(table, function (err, info) {
+    agol.cache.getInfo(options.table, function (err, info) {
       if (err) {
         if (callback) callback(err, info)
         return agol.log.error(err)
@@ -274,7 +273,7 @@ var AGOL = function (koop) {
       info.generating = info.generating || {}
       var generating = info.generating[options.key] = info.generating[options.key] || {}
       generating[options.format] = status === 'finish' ? info.retrieved_at : status
-      agol.cache.updateInfo(table, info, function (err) {
+      agol.cache.updateInfo(options.table, info, function (err) {
         if (err) agol.log.error(err)
         if (callback) callback(err, info)
       })

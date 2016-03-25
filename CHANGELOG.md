@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Progress is reported properly
+* Expired header is only present on downloads when the cache is expired
+
 ## [3.4.1] - 2016-03-25
 ### Changed
 * All tables build under schema != 3 will be automatically expired
