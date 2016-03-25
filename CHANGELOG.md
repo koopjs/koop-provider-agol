@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.4.1] - 2016-03-25
 ### Changed
 * All tables build under schema != 3 will be automatically expired
 * Always serve filtered downloads from the same cache as the full downloads
