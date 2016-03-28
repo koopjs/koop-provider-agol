@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Info is updated in strict order during import jobs
+
 ## [3.4.2] - 2016-03-25
 ### Fixed
 * Progress is reported properly
