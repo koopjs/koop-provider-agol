@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.4.5] - 2016-03-28
 ### Fixed
 * Added hideous hack for reporting import status in the correct order :(
 
@@ -739,6 +739,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.4.5]: https://github.com/koopjs/koop-agol/compare/v3.3.4..v3.4.5
 [3.4.4]: https://github.com/koopjs/koop-agol/compare/v3.3.3..v3.4.4
 [3.4.3]: https://github.com/koopjs/koop-agol/compare/v3.3.2..v3.4.3
 [3.4.2]: https://github.com/koopjs/koop-agol/compare/v3.3.1..v3.4.2
