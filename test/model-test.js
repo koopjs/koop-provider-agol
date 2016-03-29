@@ -195,22 +195,25 @@ describe('AGOL Model', function () {
   })
 
   describe('when getting the expiration date on a resource', function () {
+    afterEach(function (done) {
+      agol.cache.getInfo.restore()
+      done()
+    })
     it('should call back with an error when the resource does not exist', function (done) {
-      sinon.stub(agol, 'getInfo', function (key, callback) {
+      sinon.stub(agol.cache, 'getInfo', function (key, callback) {
         callback(new Error('Resource not found'))
       })
 
       agol.getExpiration('testkey', function (err, expiration) {
         should.exist(err)
         err.message.should.equal('Resource not found')
-        agol.getInfo.restore()
         done()
       })
     })
 
     it('should call back with a Unix timestamp from the db when the resource exists', function (done) {
       var time = new Date().getTime()
-      sinon.stub(agol, 'getInfo', function (key, callback) {
+      sinon.stub(agol.cache, 'getInfo', function (key, callback) {
         var info = {expires_at: time}
         callback(null, info)
       })
@@ -218,7 +221,6 @@ describe('AGOL Model', function () {
       agol.getExpiration('testkey', function (err, expiration) {
         should.not.exist(err)
         expiration.should.equal(time)
-        agol.getInfo.restore()
         done()
       })
     })
