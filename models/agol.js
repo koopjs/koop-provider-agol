@@ -394,7 +394,7 @@ var AGOL = function (koop) {
           errors.push(formatJobError(job, err))
           return next()
         }
-        var formats = job.formats || ['kml', 'csv', 'zip']
+        var formats = job.formats || ['kml', 'csv', 'zip', 'geohash']
         async.each(formats, function (format, done) {
           req.optionKey = Utils.createCacheKey(job, {
             where: job.where,
