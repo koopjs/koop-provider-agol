@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased - 2016-03-29
+## [3.4.8] - 2016-03-29
 ### Fixed
 * Always instantiate the feature queue
 
@@ -757,6 +757,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.4.8]: https://github.com/koopjs/koop-agol/compare/v3.3.7..v3.4.8
 [3.4.7]: https://github.com/koopjs/koop-agol/compare/v3.3.6..v3.4.7
 [3.4.6]: https://github.com/koopjs/koop-agol/compare/v3.3.5..v3.4.6
 [3.4.5]: https://github.com/koopjs/koop-agol/compare/v3.3.4..v3.4.5
