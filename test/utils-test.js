@@ -375,4 +375,22 @@ describe('Utils', function () {
       done()
     })
   })
+
+  describe('setting defaults for a feature service request', function () {
+    it('should coerce a web mercator wkt into a wkid object', function (done) {
+      var params = {
+        layer: 0
+      }
+      var query = {
+        geometry: {
+          spatialReference: {
+            wkt: 'PROJCS["WGS_1984_Web_Mercator",GEOGCS["GCS_WGS_1984_Major_Auxiliary_Sphere",DATUM["D_WGS_1984_Major_Auxiliary_Sphere",SPHEROID["WGS_1984_Major_Auxiliary_Sphere",6378137.0,0.0]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Mercator"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",${Central_Meridian}],PARAMETER["Standard_Parallel_1",0.0],UNIT["Meter",1.0]]'
+          }
+        }
+      }
+      var fsOpts = Utils.setServiceDefaults(params, query)
+      fsOpts.geometry.spatialReference.latestWkid.should.equal(3857)
+      done()
+    })
+  })
 })
