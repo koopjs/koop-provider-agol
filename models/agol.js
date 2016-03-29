@@ -307,7 +307,7 @@ var AGOL = function (koop) {
    * @param {function} callback - calls back with an error or the expiration date
    */
   agol.getExpiration = function (key, callback) {
-    agol.getInfo(key, function (err, info) {
+    agol.cache.getInfo(key, function (err, info) {
       if (err || !info) return callback(err || new Error('Resource not found'))
       callback(null, info.expires_at)
     })

@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * Handle string based geometry query on feature service
 * Coerce Web Mercator WKT to wkid
+* Expires_at is set correctly for on-prem services
 
 ## [3.4.5] - 2016-03-28
 ### Fixed
