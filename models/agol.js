@@ -23,19 +23,17 @@ var AGOL = function (koop) {
   config.agol = config.agol || {}
   agol.log = koop.log
 
-  if (config.agol.request_workers && config.queue) {
-    var connection = config.queue.connection
-    var qOpts = {
-      connection: connection,
-      log: agol.log,
-      cache: new Cache({cache: koop.cache, log: koop.log}),
-      agol_path: Utils.agol_path
-    }
-    agol.featureQueue = FeatureQueue.create(qOpts)
-
-    var day = 24 * 60 * 60 * 1000
-    setInterval(agol.dropAndRemoveFailed, day)
+  var connection = config.queue && config.queue.connection
+  var qOpts = {
+    connection: connection,
+    log: agol.log,
+    cache: new Cache({cache: koop.cache, log: koop.log}),
+    agol_path: Utils.agol_path
   }
+  var day = 24 * 60 * 60 * 1000
+  setInterval(agol.dropAndRemoveFailed, day)
+
+  agol.featureQueue = FeatureQueue.create(qOpts)
 
   agol.csvQueue = new CSVQueue({
     cache: koop.cache,

@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased - 2016-03-29
+### Fixed
+* Always instantiate the feature queue
+
 ## [3.4.7] - 2016-03-29
 ### Changed
 * Add test to confirm wkt coercion
