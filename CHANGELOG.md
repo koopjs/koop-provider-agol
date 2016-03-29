@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Handle string based geometry query on feature service
+* Coerce Web Mercator WKT to wkid
+
 ## [3.4.5] - 2016-03-28
 ### Fixed
 * Added hideous hack for reporting import status in the correct order :(
