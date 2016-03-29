@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Changed
 * Automatically enqueue geohash export
+* Clean up importCount property when import is done
+
 ### Fixed
 * Handle string based geometry query on feature service
 * Coerce Web Mercator WKT to wkid
