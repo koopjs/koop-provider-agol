@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Added hideous hack for reporting import status in the correct order :(
+
 ## [3.4.4] - 2016-03-28
 ### Changed
 * Report progress earlier in import page handling action
