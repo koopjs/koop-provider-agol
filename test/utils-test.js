@@ -356,6 +356,55 @@ describe('Utils', function () {
       eOpts.metadata.should.equal('metadata')
       done()
     })
+
+    it('should parse a geometry string into an envelope', function (done) {
+      var req = {
+        params: {
+          item: '1ef',
+          layer: '1',
+          format: 'zip'
+        },
+        query: {
+          where: 'date >= date \'2015\'',
+          geometry: '-90,-180,90,180'
+        },
+        optionKey: 'full'
+      }
+      var table = {
+        name: 'download',
+        metadata: 'metadata',
+        version: 3
+      }
+      var eOpts = Utils.createExportOptions(req, table)
+      eOpts.geometry.xmin.should.equal(-90)
+      eOpts.geometry.ymin.should.equal(-180)
+      eOpts.geometry.xmax.should.equal(90)
+      eOpts.geometry.ymax.should.equal(180)
+      done()
+    })
+
+    it('should coerce dates in the where clause to ISO strings', function (done) {
+      var date = new Date('2015')
+      var req = {
+        params: {
+          item: '1ef',
+          layer: '1',
+          format: 'zip'
+        },
+        query: {
+          where: 'date >= date \'2015\''
+        },
+        optionKey: 'full'
+      }
+      var table = {
+        name: 'download',
+        metadata: 'metadata',
+        version: 3
+      }
+      var eOpts = Utils.createExportOptions(req, table)
+      eOpts.where.should.equal('date >= ' + date.toISOString())
+      done()
+    })
   })
 
   describe('generating a failure message', function () {
