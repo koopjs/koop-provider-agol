@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.4.9] - 2016-03-30
 ### Fixed
 * Last-modified header on exported file is set according to the vintage of the cache when the export was created
 
