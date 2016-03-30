@@ -519,10 +519,10 @@ describe('AGOL Controller', function () {
             csv: date,
             kml: 'fail',
             zip: 'progress',
-            geojson: (date - 1000)
+            geojson: 1000
           },
           'cc7da4c76af29314530c59e0ea60fe7c': {
-            geojson: (date - 1000)
+            geojson: 1000
           }
         }
       }
@@ -570,6 +570,9 @@ describe('AGOL Controller', function () {
           .expect(200)
           .end(function (err, res) {
             should.not.exist(err)
+            var lastMod = new Date(res.headers['last-modified']).getTime()
+            lastMod.should.equal(1000)
+            should.exist(res.headers['x-expired'])
             agol.files.exists.called.should.equal(true)
             agol.updateResource.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
@@ -579,7 +582,7 @@ describe('AGOL Controller', function () {
           })
       })
 
-      it('should call generate export, updateResource and return a file if the filtered version is out of data and not currently generating', function (done) {
+      it('should call generate export, updateResource and return a file if the filtered version is out of date and not currently generating', function (done) {
         sinon.stub(agol.files, 'exists', function (path, name, callback) {
           callback(true, './files/foo.geojson')
         })

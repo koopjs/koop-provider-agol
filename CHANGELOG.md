@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Last-modified header on exported file is set according to the vintage of the cache when the export was created
+
 ## [3.4.8] - 2016-03-29
 ### Fixed
 * Always instantiate the feature queue

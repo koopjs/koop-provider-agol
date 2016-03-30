@@ -320,14 +320,18 @@ var Controller = function (agol, BaseController) {
     agol.log.debug(JSON.stringify({route: '_returnFile', params: req.params, query: req.query, filePath: filePath}))
 
     if (req.query.url_only) return res.json({url: Utils.replaceUrl(req)})
-
+    var modified
+    try {
+      modified = info.generating[req.optionKey][req.params.format]
+    } catch (e) {
+      modified = info.retrieved_at
+    }
     // forces browsers to download
     res = Utils.setHeaders(res, {
-      status: info.status,
       name: info.name,
       format: req.params.format,
-      modified: info.retrieved_at,
-      expired: info.status === 'Expired'
+      modified: modified || info.retrieved_at,
+      expired: (modified < info.retrieved_at) || info.status === 'Expired'
     })
 
     agol.files.createReadStream(filePath).pipe(res)
