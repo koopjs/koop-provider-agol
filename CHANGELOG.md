@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Date coercer is generalized to multiple dates in where clause and more types of date strings
+
 ## [3.5.0] - 2016-03-30
 ### Added
 * Dates are coerced to ISO strings in where clauses
@@ -765,6 +769,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.0]: https://github.com/koopjs/koop-agol/compare/v3.3.9..v3.5.0
+[3.4.9]: https://github.com/koopjs/koop-agol/compare/v3.3.8..v3.4.9
 [3.4.8]: https://github.com/koopjs/koop-agol/compare/v3.3.7..v3.4.8
 [3.4.7]: https://github.com/koopjs/koop-agol/compare/v3.3.6..v3.4.7
 [3.4.6]: https://github.com/koopjs/koop-agol/compare/v3.3.5..v3.4.6

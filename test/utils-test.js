@@ -402,7 +402,54 @@ describe('Utils', function () {
         version: 3
       }
       var eOpts = Utils.createExportOptions(req, table)
-      eOpts.where.should.equal('date >= ' + date.toISOString())
+      eOpts.where.should.equal(`date >= '${date.toISOString()}'`)
+      done()
+    })
+
+    it('should coerce multiple dates in the where clause to ISO strings', function (done) {
+      var date = new Date('2015')
+      var req = {
+        params: {
+          item: '1ef',
+          layer: '1',
+          format: 'zip'
+        },
+        query: {
+          where: 'date >= date \'2015\' AND date2 < date \'2015\''
+        },
+        optionKey: 'full'
+      }
+      var table = {
+        name: 'download',
+        metadata: 'metadata',
+        version: 3
+      }
+      var eOpts = Utils.createExportOptions(req, table)
+      eOpts.where.should.equal(`date >= '${date.toISOString()}' AND date2 < '${date.toISOString()}'`)
+      done()
+    })
+
+    it('should coerce multiple dates in the where clause to ISO strings', function (done) {
+      var date1 = new Date('2012-03-14 00:00:00').toISOString()
+      var date2 = new Date('2012-03-17 23:59:59').toISOString()
+      var req = {
+        params: {
+          item: '1ef',
+          layer: '1',
+          format: 'zip'
+        },
+        query: {
+          where: `Date1 >= date '2012-03-14 00:00:00' AND Date1 <= date '2012-03-17 23:59:59' AND foo like crime`
+        },
+        optionKey: 'full'
+      }
+      var table = {
+        name: 'download',
+        metadata: 'metadata',
+        version: 3
+      }
+      var eOpts = Utils.createExportOptions(req, table)
+      eOpts.where.should.equal(`Date1 >= '${date1}' AND Date1 <= '${date2}' AND foo like crime`)
       done()
     })
   })
