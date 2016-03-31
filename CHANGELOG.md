@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.5.2] - 2016-03-30
 ### Fixed
 * Jobs submitted with layer 0 are bulk enqueued properly
 
@@ -773,6 +773,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.2]: https://github.com/koopjs/koop-agol/compare/v3.5.1..v3.5.2
 [3.5.1]: https://github.com/koopjs/koop-agol/compare/v3.5.0..v3.5.1
 [3.5.0]: https://github.com/koopjs/koop-agol/compare/v3.4.9..v3.5.0
 [3.4.9]: https://github.com/koopjs/koop-agol/compare/v3.4.8..v3.4.9
