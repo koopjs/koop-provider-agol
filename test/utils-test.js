@@ -330,7 +330,7 @@ describe('Utils', function () {
       done()
     })
 
-    it('should have all the expected properties for a table that is not on the lastest version', function (done) {
+    it('should have all the expected properties for a table that is not on the latest version', function (done) {
       var req = {
         params: {
           item: '1ef',
@@ -354,6 +354,28 @@ describe('Utils', function () {
       eOpts.name.should.equal('download')
       eOpts.format.should.equal('zip')
       eOpts.metadata.should.equal('metadata')
+      done()
+    })
+
+    it('should create the correct source and output when the layer on a job is 0', function (done) {
+      var req = {
+        optionKey: 'full',
+        query: {},
+        params: {}
+      }
+      var table = {
+        name: 'download',
+        metadata: 'metadata',
+        version: 3
+      }
+      var job = {
+        item: '1ef',
+        layer: 0
+      }
+      var format = 'zip'
+      var eOpts = Utils.createExportOptions(req, table, job, format)
+      eOpts.source.should.equal('files/1ef_0/full/1ef_0.geojson')
+      eOpts.output.should.equal('files/1ef_0/full/1ef_0.zip')
       done()
     })
 

@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Jobs submitted with layer 0 are bulk enqueued properly
+
 ## [3.5.1] - 2016-03-30
 ### Changed
 * Date coercer is generalized to multiple dates in where clause and more types of date strings
