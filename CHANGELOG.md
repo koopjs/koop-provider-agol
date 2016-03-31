@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Store metadata about export progress and written files separately
+
 ## [3.5.2] - 2016-03-30
 ### Fixed
 * Jobs submitted with layer 0 are bulk enqueued properly

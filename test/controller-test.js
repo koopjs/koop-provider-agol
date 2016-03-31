@@ -516,9 +516,13 @@ describe('AGOL Controller', function () {
         },
         generating: {
           full: {
-            csv: date,
             kml: 'fail',
-            zip: 'progress',
+            zip: 'progress'
+          }
+        },
+        generated: {
+          full: {
+            csv: date,
             geojson: 1000
           },
           'cc7da4c76af29314530c59e0ea60fe7c': {

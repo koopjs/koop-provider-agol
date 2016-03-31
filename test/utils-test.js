@@ -290,7 +290,7 @@ describe('Utils', function () {
           }
         }
       }
-      var status = Utils.determineStatus(req, info)
+      var status = Utils.determineExportStatus(req, info)
       status.should.equal('start')
       done()
     })

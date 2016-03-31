@@ -182,28 +182,27 @@ var Controller = function (agol, BaseController) {
     var dirName = path.dirname(options.output)
     var fileName = path.basename(options.output)
     agol.files.exists(dirName, fileName, function (exists) {
-      var exportStatus = Utils.determineStatus(req, info)
+      var fileStatus = Utils.determineFileStatus(req, info)
       if (exists) {
-        if (exportStatus === info.retrieved_at) return controller._returnFile(req, res, options.output, info)
-        // check to see if the file itself is Expired
-        // if it is, we will still serve it but we need to enqueue a new one
+        // if the file is completely up to date, we can just return it
+        if (fileStatus === info.retrieved_at) return controller._returnFile(req, res, options.output, info)
+        // if it is not up to date, we need to generate a new one
         agol.generateExport(options, function (err, status) {
           if (err) agol.log.error(err)
           // always serve filtered data from the same cache as the full export
-          if (info.status === 'Cached' && (req.query.where || req.query.geometry)) {
-            controller._returnStatus(req, res, info)
-          } else {
-            controller._returnFile(req, res, options.output, info)
-          }
+          var isFiltered = req.query.where || req.query.geometry
+          if (info.status === 'Cached' && isFiltered) return controller._returnStatus(req, res, info)
+          // default to returning a file
+          controller._returnFile(req, res, options.output, info)
         })
       } else {
         // if a job is already running or we don't actually have the data in the cache yet
         // hand off to returnStatus for a 202 response
-        var jobInProgress = ['queued', 'start', 'progress', 'fail'].indexOf(exportStatus) > -1
+        var exportStatus = Utils.determineExportStatus(req, info)
         var processing = info.status === 'Processing'
         var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
         if (error) error.code = 500
-        if (jobInProgress || processing) return controller._returnStatus(req, res, info, error)
+        if (exportStatus || processing) return controller._returnStatus(req, res, info, error)
 
         // only enqueue a job if it's not already queued or running
         agol.generateExport(options, function (err, status, created) {
@@ -322,7 +321,7 @@ var Controller = function (agol, BaseController) {
     if (req.query.url_only) return res.json({url: Utils.replaceUrl(req)})
     var modified
     try {
-      modified = info.generating[req.optionKey][req.params.format]
+      modified = info.generated[req.optionKey][req.params.format]
     } catch (e) {
       modified = info.retrieved_at
     }

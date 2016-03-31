@@ -270,7 +270,14 @@ var AGOL = function (koop) {
       }
       info.generating = info.generating || {}
       var generating = info.generating[options.key] = info.generating[options.key] || {}
-      generating[options.format] = status === 'finish' ? info.retrieved_at : status
+      if (status === 'finish') {
+        info.generated = info.generated || {}
+        info.generated[options.key] = info.generated[options.key] || {}
+        info.generated[options.key][options.format] = info.retrieved_at
+        delete info.generating[options.key][options.format]
+      } else {
+        generating[options.format] = status
+      }
       agol.cache.updateInfo(options.table, info, function (err) {
         if (err) agol.log.error(err)
         if (callback) callback(err, info)
