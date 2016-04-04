@@ -519,15 +519,6 @@ describe('AGOL Controller', function () {
             kml: 'fail',
             zip: 'progress'
           }
-        },
-        generated: {
-          full: {
-            csv: date,
-            geojson: 1000
-          },
-          'cc7da4c76af29314530c59e0ea60fe7c': {
-            geojson: 1000
-          }
         }
       }
       beforeEach(function (done) {
@@ -566,7 +557,33 @@ describe('AGOL Controller', function () {
 
       it('should call updateResource, generate export and return a file if it exists but it\'s out of date', function (done) {
         sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(true, './files/foo.geojson')
+          callback(true, './files/foo.geojson', {
+            Metadata: {
+              retrieved_at: new Date(1000)
+            }
+          })
+        })
+
+        request(koop)
+          .get('/agol/test/itemid/0.geojson')
+          .expect(200)
+          .end(function (err, res) {
+            should.not.exist(err)
+            var lastMod = new Date(res.headers['last-modified']).getTime()
+            lastMod.should.equal(1000)
+            should.exist(res.headers['x-expired'])
+            agol.files.exists.called.should.equal(true)
+            agol.updateResource.called.should.equal(true)
+            agol.getInfo.called.should.equal(true)
+            agol.generateExport.called.should.equal(true)
+            agol.files.createReadStream.called.should.equal(true)
+            done()
+          })
+      })
+
+      it('should call updateResource, generate export and return a file if it exists but it\'s out of date and there is no retrieved_at date', function (done) {
+        sinon.stub(agol.files, 'exists', function (path, name, callback) {
+          callback(true, './files/foo.geojson', {LastModified: new Date(1000)})
         })
 
         request(koop)
@@ -588,7 +605,11 @@ describe('AGOL Controller', function () {
 
       it('should call generate export, updateResource and return a file if the filtered version is out of date and not currently generating', function (done) {
         sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(true, './files/foo.geojson')
+          callback(true, './files/foo.geojson', {
+            Metadata: {
+              retrieved_at: new Date(1000)
+            }
+          })
         })
 
         request(koop)
@@ -605,9 +626,13 @@ describe('AGOL Controller', function () {
           })
       })
 
-      it('should call generate export and not return a file if the filtered version is out of data and not currently generating', function (done) {
+      it('should call generate export and not return a file if the filtered version is out of date and not currently generating', function (done) {
         sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(true, './files/foo.geojson')
+          callback(true, './files/foo.geojson', {
+            Metadata: {
+              retrieved_at: new Date(1000)
+            }
+          })
         })
 
         info.status = 'Cached'

@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Leverage info stored on the actual file on S3 when it's available
+
 ## [3.5.3] - 2016-03-31
 ### Changed
 * Store metadata about export progress and written files separately

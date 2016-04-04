@@ -181,35 +181,52 @@ var Controller = function (agol, BaseController) {
     var options = Utils.createExportOptions(req, info)
     var dirName = path.dirname(options.output)
     var fileName = path.basename(options.output)
-    agol.files.exists(dirName, fileName, function (exists) {
-      var fileStatus = Utils.determineFileStatus(req, info)
-      if (exists) {
-        // if the file is completely up to date, we can just return it
-        if (fileStatus === info.retrieved_at) return controller._returnFile(req, res, options.output, info)
-        // if it is not up to date, we need to generate a new one
-        agol.generateExport(options, function (err, status) {
-          if (err) agol.log.error(err)
-          // always serve filtered data from the same cache as the full export
-          var isFiltered = req.query.where || req.query.geometry
-          if (info.status === 'Cached' && isFiltered) return controller._returnStatus(req, res, info)
-          // default to returning a file
-          controller._returnFile(req, res, options.output, info)
-        })
-      } else {
-        // if a job is already running or we don't actually have the data in the cache yet
-        // hand off to returnStatus for a 202 response
-        var exportStatus = Utils.determineExportStatus(req, info)
-        var processing = info.status === 'Processing'
-        var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
-        if (error) error.code = 500
-        if (exportStatus || processing) return controller._returnStatus(req, res, info, error)
-
-        // only enqueue a job if it's not already queued or running
-        agol.generateExport(options, function (err, status, created) {
-          controller._returnStatus(req, res, status, err)
-        })
-      }
+    agol.files.exists(dirName, fileName, function (exists, path, fileInfo) {
+      if (exists) handleFileExists(req, res, info, fileInfo, options)
+      else handleFileNotExists(req, res, info)
     })
+  }
+
+  function handleFileExists (req, res, dataInfo, fileInfo) {
+    var options = Utils.createExportOptions(req, dataInfo)
+    var outdated = fileOutdated(dataInfo, fileInfo)
+    if (!outdated) return controller._returnFile(req, res, options.output, dataInfo, fileInfo)
+
+    var exportStatus = Utils.determineExportStatus(req, dataInfo)
+    if (!exportStatus && dataInfo.version === 3.0) agol.generateExport(options, function (err, status) { if (err) agol.log.error(err) })
+
+    // always serve filtered data from the same cache as the full export
+    var isFiltered = req.query.where || req.query.geometry
+    if (dataInfo.status === 'Cached' && isFiltered) return controller._returnStatus(req, res, dataInfo)
+    else controller._returnFile(req, res, options.output, dataInfo, fileInfo)
+  }
+
+  function handleFileNotExists (req, res, info) {
+    // if a job is already running or we don't actually have the data in the cache yet
+    // hand off to returnStatus for a 202 response
+    var exportStatus = Utils.determineExportStatus(req, info)
+    var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
+    if (error) error.code = 500
+    if (exportStatus || info.status === 'Processing') return controller._returnStatus(req, res, info, error)
+    var options = Utils.createExportOptions(req, info)
+    // only enqueue a job if it's not already queued or running
+    agol.generateExport(options, function (err, status, created) {
+      controller._returnStatus(req, res, status, err)
+    })
+  }
+
+  function determineFileVintage (dataInfo, fileInfo) {
+    fileInfo = fileInfo || {}
+    fileInfo.Metadata = fileInfo.Metadata || {}
+    var fileVintage = fileInfo.Metadata.retrieved_at || fileInfo.LastModified || dataInfo.retrieved_at
+    return new Date(fileVintage)
+  }
+
+  function fileOutdated (dataInfo, fileInfo) {
+    var fileVintage = determineFileVintage(dataInfo, fileInfo)
+    var dataVintage = new Date(dataInfo.retrieved_at)
+    // Is the file we exported older than the last time we retrieved data from the underlying resource?
+    return fileVintage < dataVintage
   }
 
   /**
@@ -315,22 +332,17 @@ var Controller = function (agol, BaseController) {
    * @param {string} name - the name of the file
    * @private
    */
-  controller._returnFile = function (req, res, filePath, info) {
+  controller._returnFile = function (req, res, filePath, dataInfo, fileInfo) {
     agol.log.debug(JSON.stringify({route: '_returnFile', params: req.params, query: req.query, filePath: filePath}))
 
     if (req.query.url_only) return res.json({url: Utils.replaceUrl(req)})
-    var modified
-    try {
-      modified = info.generated[req.optionKey][req.params.format]
-    } catch (e) {
-      modified = info.retrieved_at
-    }
+    var fileVintage = determineFileVintage(dataInfo, fileInfo)
     // forces browsers to download
     res = Utils.setHeaders(res, {
-      name: info.name,
+      name: dataInfo.name,
       format: req.params.format,
-      modified: modified || info.retrieved_at,
-      expired: (modified < info.retrieved_at) || info.status === 'Expired'
+      modified: fileVintage,
+      expired: (fileVintage < dataInfo.retrieved_at) || dataInfo.status === 'Expired'
     })
 
     agol.files.createReadStream(filePath).pipe(res)
