@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Changed
 * Leverage info stored on the actual file on S3 when it's available
+* Don't automatically expire datasets with outdated schema versions
 
 ## [3.5.3] - 2016-03-31
 ### Changed
