@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.5.4] - 2016-04-04
 ### Changed
 * Leverage info stored on the actual file on S3 when it's available
 * Don't automatically expire datasets with outdated schema versions
@@ -782,6 +782,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.4]: https://github.com/koopjs/koop-agol/compare/v3.5.3..v3.5.4
 [3.5.3]: https://github.com/koopjs/koop-agol/compare/v3.5.2..v3.5.3
 [3.5.2]: https://github.com/koopjs/koop-agol/compare/v3.5.1..v3.5.2
 [3.5.1]: https://github.com/koopjs/koop-agol/compare/v3.5.0..v3.5.1
