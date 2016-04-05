@@ -5,6 +5,7 @@ var fs = require('fs')
 var Utils = require('../lib/utils.js')
 var _ = require('lodash')
 var path = require('path')
+var config = require('config')
 
 var Controller = function (agol, BaseController) {
   /**
@@ -190,8 +191,8 @@ var Controller = function (agol, BaseController) {
   function handleFileExists (req, res, dataInfo, fileInfo) {
     var options = Utils.createExportOptions(req, dataInfo)
     var outdated = fileOutdated(dataInfo, fileInfo)
-    if (!outdated) return controller._returnFile(req, res, options.output, dataInfo, fileInfo)
-
+    if (!outdated || isFullGeojson(req)) return controller._returnFile(req, res, options.output, dataInfo, fileInfo)
+    // if we are not storing data in the db we should never be writing new full geojson exports
     var exportStatus = Utils.determineExportStatus(req, dataInfo)
     if (!exportStatus && dataInfo.version === 3.0) agol.generateExport(options, function (err, status) { if (err) agol.log.error(err) })
 
@@ -223,10 +224,15 @@ var Controller = function (agol, BaseController) {
   }
 
   function fileOutdated (dataInfo, fileInfo) {
-    var fileVintage = determineFileVintage(dataInfo, fileInfo)
-    var dataVintage = new Date(dataInfo.retrieved_at)
+    var fileVintage = Date.parse(determineFileVintage(dataInfo, fileInfo))
+    var dataVintage = Date.parse(dataInfo.retrieved_at)
     // Is the file we exported older than the last time we retrieved data from the underlying resource?
-    return fileVintage < dataVintage
+    // temporary fix because some geojson on S3 has a slightly earlier date than the retrieved_at
+    return (fileVintage + (60 * 1000 * 5)) < dataVintage
+  }
+
+  function isFullGeojson (req) {
+    return req.params.format === 'geojson' && req.optionKey === 'full' && config.db && !config.db.store
   }
 
   /**

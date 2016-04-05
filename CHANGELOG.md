@@ -2,7 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.5.7] - 2016-04-05
+### Changed
+* Add fudge factor in determining whether a file is outdated
+
 ## [3.5.6] - 2016-04-05
+### Added
 * Save seconds elapsed for last import job
 
 ### Changed
