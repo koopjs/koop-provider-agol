@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Dont try to compute sha too soon
+* Ensure that all features are written before closing write stream
+
 ## [3.5.4] - 2016-04-04
 ### Changed
 * Leverage info stored on the actual file on S3 when it's available
