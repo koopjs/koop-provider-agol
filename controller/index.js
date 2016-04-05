@@ -225,7 +225,7 @@ var Controller = function (agol, BaseController) {
 
   function fileOutdated (dataInfo, fileInfo) {
     var fileVintage = Date.parse(determineFileVintage(dataInfo, fileInfo))
-    var dataVintage = Date.parse(dataInfo.retrieved_at)
+    var dataVintage = dataInfo.retrieved_at
     // Is the file we exported older than the last time we retrieved data from the underlying resource?
     // temporary fix because some geojson on S3 has a slightly earlier date than the retrieved_at
     return (fileVintage + (60 * 1000 * 5)) < dataVintage

@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.5.8] - 2016-04-05
+### Fixed
+* Fix broken date parsing
+
 ## [3.5.7] - 2016-04-05
 ### Changed
 * Add fudge factor in determining whether a file is outdated
@@ -798,6 +802,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.8]: https://github.com/koopjs/koop-agol/compare/v3.5.7..v3.5.8
+[3.5.7]: https://github.com/koopjs/koop-agol/compare/v3.5.6..v3.5.7
 [3.5.6]: https://github.com/koopjs/koop-agol/compare/v3.5.5..v3.5.6
 [3.5.5]: https://github.com/koopjs/koop-agol/compare/v3.5.4..v3.5.5
 [3.5.4]: https://github.com/koopjs/koop-agol/compare/v3.5.3..v3.5.4
