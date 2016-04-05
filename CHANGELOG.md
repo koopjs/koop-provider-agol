@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+* Save seconds elapsed for last import job
+
+### Changed
+* Set retrieved_at to the time an import started
+
 ## [3.5.5] - 2016-04-04
 ### Fixed
 * Dont try to compute sha too soon
