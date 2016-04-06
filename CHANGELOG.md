@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.5.11] - 2016-04-06
+### Fixed
+* Jobs failures are returned to the tasker when the info doc is missing
+
 ## [3.5.10] - 2016-04-06
 ### Changed
 * Fail immediately when info doc is missing on import job
