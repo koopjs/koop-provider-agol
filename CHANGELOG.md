@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.5.9] - 2016-04-06
 ### Changed
 * Don't rely on upload finish event to report job completion
 
@@ -810,6 +810,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.9]: https://github.com/koopjs/koop-agol/compare/v3.5.8..v3.5.9
 [3.5.8]: https://github.com/koopjs/koop-agol/compare/v3.5.7..v3.5.8
 [3.5.7]: https://github.com/koopjs/koop-agol/compare/v3.5.6..v3.5.7
 [3.5.6]: https://github.com/koopjs/koop-agol/compare/v3.5.5..v3.5.6
