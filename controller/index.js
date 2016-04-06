@@ -348,7 +348,7 @@ var Controller = function (agol, BaseController) {
       name: dataInfo.name,
       format: req.params.format,
       modified: fileVintage,
-      expired: (fileVintage < dataInfo.retrieved_at) || dataInfo.status === 'Expired'
+      expired: fileOutdated(dataInfo, fileInfo) || dataInfo.status === 'Expired'
     })
 
     agol.files.createReadStream(filePath).pipe(res)

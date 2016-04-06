@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Fail immediately when info doc is missing on import job
+* Use fileOutdated function to determine if file is expired
+
 ## [3.5.9] - 2016-04-06
 ### Changed
 * Don't rely on upload finish event to report job completion
