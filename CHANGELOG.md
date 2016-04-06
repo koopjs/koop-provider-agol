@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.5.10] - 2016-04-06
 ### Changed
 * Fail immediately when info doc is missing on import job
 * Use fileOutdated function to determine if file is expired
@@ -815,6 +815,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.10]: https://github.com/koopjs/koop-agol/compare/v3.5.9..v3.5.10
 [3.5.9]: https://github.com/koopjs/koop-agol/compare/v3.5.8..v3.5.9
 [3.5.8]: https://github.com/koopjs/koop-agol/compare/v3.5.7..v3.5.8
 [3.5.7]: https://github.com/koopjs/koop-agol/compare/v3.5.6..v3.5.7
