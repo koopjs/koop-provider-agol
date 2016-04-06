@@ -3,8 +3,12 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Changed
+* Don't rely on upload finish event to report job completion
+
 ### Fixed
 * Don't try to get page count when pages call fails in import worker
+* Don't try to update importCount if the info document does not exist in the database
 
 ## [3.5.8] - 2016-04-05
 ### Fixed
