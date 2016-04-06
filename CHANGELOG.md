@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Don't try to get page count when pages call fails in import worker
+
 ## [3.5.8] - 2016-04-05
 ### Fixed
 * Fix broken date parsing
