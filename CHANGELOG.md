@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.5.13] - 2016-04-07
 ### Added
 * Log remaining pages left in import job
 
@@ -833,6 +833,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.13]: https://github.com/koopjs/koop-agol/compare/v3.5.12..v3.5.13
 [3.5.12]: https://github.com/koopjs/koop-agol/compare/v3.5.11..v3.5.12
 [3.5.11]: https://github.com/koopjs/koop-agol/compare/v3.5.10..v3.5.11
 [3.5.10]: https://github.com/koopjs/koop-agol/compare/v3.5.9..v3.5.10
