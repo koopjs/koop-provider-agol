@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* Log remaining pages left in import job
+
+### Changed
+* Revert back to pageQueue drain for ending import job
+
+### Fixed
+* Ensure pageCount is always decremented in import service
+
 ## [3.5.12] - 2016-04-06
 ### Fixed
 * Protect against case where service has no pages
