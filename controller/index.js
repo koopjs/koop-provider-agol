@@ -6,6 +6,7 @@ var Utils = require('../lib/utils.js')
 var _ = require('lodash')
 var path = require('path')
 var config = require('config')
+var FILE_MIN_TTL = (60 * 1000 * 5) || (config.agol && config.agol.file_min_ttl)
 
 var Controller = function (agol, BaseController) {
   /**
@@ -228,7 +229,7 @@ var Controller = function (agol, BaseController) {
     var dataVintage = dataInfo.retrieved_at
     // Is the file we exported older than the last time we retrieved data from the underlying resource?
     // temporary fix because some geojson on S3 has a slightly earlier date than the retrieved_at
-    return (fileVintage + (60 * 1000 * 5)) < dataVintage
+    return (fileVintage + FILE_MIN_TTL) < dataVintage
   }
 
   function isFullGeojson (req) {

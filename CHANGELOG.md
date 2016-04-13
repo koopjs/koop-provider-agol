@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.5.14] - 2016-04-13
+### Changed
+* Make fudge factor for determining whether a file is out of data configurable
+
 ## [3.5.13] - 2016-04-07
 ### Added
 * Log remaining pages left in import job
