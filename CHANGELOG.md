@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.5.15] - 2016-04-13
+### Fixed
+* Reverse default of `file_min_ttl`
+
 ## [3.5.14] - 2016-04-13
 ### Changed
 * Make fudge factor for determining whether a file is out of data configurable
@@ -837,6 +841,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.15]: https://github.com/koopjs/koop-agol/compare/v3.5.14..v3.5.15
+[3.5.14]: https://github.com/koopjs/koop-agol/compare/v3.5.13..v3.5.14
 [3.5.13]: https://github.com/koopjs/koop-agol/compare/v3.5.12..v3.5.13
 [3.5.12]: https://github.com/koopjs/koop-agol/compare/v3.5.11..v3.5.12
 [3.5.11]: https://github.com/koopjs/koop-agol/compare/v3.5.10..v3.5.11
