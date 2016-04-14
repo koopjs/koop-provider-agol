@@ -3,8 +3,11 @@ var should = require('should') // eslint-disable-line
 var sinon = require('sinon')
 var request = require('supertest')
 var koop = require('koop')({logfile: './test.log'})
+var LocalFs = require('koop-localfs')
+koop.register(LocalFs)
 var _ = require('lodash')
 var fs = require('fs')
+var pathModule = require('path')
 
 var Provider = require('../index.js')
 var agol = Provider.model(koop)
@@ -367,8 +370,8 @@ describe('AGOL Controller', function () {
           })
         })
 
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(false, null)
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(new Error('ENOENT'))
         })
 
         sinon.stub(agol, 'generateExport', function (options, callback) {
@@ -378,7 +381,7 @@ describe('AGOL Controller', function () {
       })
 
       after(function (done) {
-        agol.files.exists.restore()
+        agol.files.stat.restore()
         agol.getInfo.restore()
         agol.find.restore()
         agol.generateExport.restore()
@@ -419,8 +422,8 @@ describe('AGOL Controller', function () {
           })
         })
 
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(false, null)
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(new Error('ENOENT'))
         })
 
         sinon.stub(agol, 'generateExport', function (options, callback) {
@@ -430,7 +433,7 @@ describe('AGOL Controller', function () {
       })
 
       after(function (done) {
-        agol.files.exists.restore()
+        agol.files.stat.restore()
         agol.getInfo.restore()
         agol.find.restore()
         agol.generateExport.restore()
@@ -443,7 +446,7 @@ describe('AGOL Controller', function () {
           .expect(202)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
             done()
@@ -472,8 +475,8 @@ describe('AGOL Controller', function () {
           })
         })
 
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(false, null)
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(new Error('ENOENT'))
         })
 
         sinon.stub(agol, 'generateExport', function (options, callback) {
@@ -483,7 +486,7 @@ describe('AGOL Controller', function () {
       })
 
       after(function (done) {
-        agol.files.exists.restore()
+        agol.files.stat.restore()
         agol.getInfo.restore()
         agol.find.restore()
         agol.generateExport.restore()
@@ -496,7 +499,7 @@ describe('AGOL Controller', function () {
           .expect(500)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
             done()
@@ -539,7 +542,9 @@ describe('AGOL Controller', function () {
         })
 
         sinon.stub(agol.files, 'createReadStream', function (path) {
-          return fs.createReadStream('./test/fixtures/csvData.csv')
+          console.log(process.cwd())
+          var fixture = pathModule.join(__dirname, 'fixtures/csvData.csv')
+          return fs.createReadStream(fixture)
         })
 
         done()
@@ -551,13 +556,13 @@ describe('AGOL Controller', function () {
         agol.generateExport.restore()
         agol.updateResource.restore()
         agol.files.createReadStream.restore()
-        agol.files.exists.restore()
+        agol.files.stat.restore()
         done()
       })
 
       it('should call updateResource, generate export and return a file if it exists but it\'s out of date', function (done) {
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(true, './files/foo.geojson', {
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(null, {
             Metadata: {
               retrieved_at: new Date(1000)
             }
@@ -572,7 +577,7 @@ describe('AGOL Controller', function () {
             var lastMod = new Date(res.headers['last-modified']).getTime()
             lastMod.should.equal(1000)
             should.exist(res.headers['x-expired'])
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
@@ -582,8 +587,8 @@ describe('AGOL Controller', function () {
       })
 
       it('should call updateResource, generate export and return a file if it exists but it\'s out of date and there is no retrieved_at date', function (done) {
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(true, './files/foo.geojson', {LastModified: new Date(1000)})
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(null, {mtime: new Date(1000)})
         })
 
         request(koop)
@@ -594,7 +599,7 @@ describe('AGOL Controller', function () {
             var lastMod = new Date(res.headers['last-modified']).getTime()
             lastMod.should.equal(1000)
             should.exist(res.headers['x-expired'])
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
@@ -604,8 +609,8 @@ describe('AGOL Controller', function () {
       })
 
       it('should call generate export, updateResource and return a file if the filtered version is out of date and not currently generating', function (done) {
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(true, './files/foo.geojson', {
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(null, {
             Metadata: {
               retrieved_at: new Date(1000)
             }
@@ -617,7 +622,7 @@ describe('AGOL Controller', function () {
           .expect(200)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
@@ -627,8 +632,8 @@ describe('AGOL Controller', function () {
       })
 
       it('should call generate export and not return a file if the filtered version is out of date and not currently generating', function (done) {
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(true, './files/foo.geojson', {
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(null, {
             Metadata: {
               retrieved_at: new Date(1000)
             }
@@ -643,7 +648,7 @@ describe('AGOL Controller', function () {
           .end(function (err, res) {
             info.status = 'Expired'
             should.not.exist(err)
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
@@ -653,8 +658,8 @@ describe('AGOL Controller', function () {
       })
 
       it('should call updateResource and return a file if it exists', function (done) {
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(true, './files/foo.csv')
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(null)
         })
 
         request(koop)
@@ -662,7 +667,7 @@ describe('AGOL Controller', function () {
           .expect(200)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
@@ -672,8 +677,8 @@ describe('AGOL Controller', function () {
       })
 
       it('should call updateResource and try to generate a file if it does not exist', function (done) {
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(false)
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(new Error('ENOENT'))
         })
 
         request(koop)
@@ -681,7 +686,7 @@ describe('AGOL Controller', function () {
           .expect(202)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
@@ -691,8 +696,8 @@ describe('AGOL Controller', function () {
       })
 
       it('should call updateResource and return a 500 if that particular download has failed', function (done) {
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(false)
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(new Error('ENOENT'))
         })
 
         request(koop)
@@ -700,7 +705,7 @@ describe('AGOL Controller', function () {
           .expect(500)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
@@ -710,8 +715,8 @@ describe('AGOL Controller', function () {
       })
 
       it('should call updateResource and return a 202 if that particular download is in progress', function (done) {
-        sinon.stub(agol.files, 'exists', function (path, name, callback) {
-          callback(false)
+        sinon.stub(agol.files, 'stat', function (path, callback) {
+          callback(new Error('ENOENT'))
         })
 
         request(koop)
@@ -719,7 +724,7 @@ describe('AGOL Controller', function () {
           .expect(202)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.files.exists.called.should.equal(true)
+            agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(true)
             agol.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)

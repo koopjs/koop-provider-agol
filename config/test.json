@@ -1,6 +1,5 @@
 {
   "db": {
     "store": true
-	},
-	"api": "http://koop.dev"
+	}
 }

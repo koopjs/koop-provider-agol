@@ -7,7 +7,7 @@ var path = require('path')
 var ImportService = require('../lib/import-service.js')
 var Logger = require('koop-logger')
 var log = new Logger({})
-var Files = require('koop/lib').Files
+var LocalFs = require('koop-localfs')
 
 var importService
 var fakeCache = {
@@ -27,7 +27,7 @@ describe('importing a feature service into the cache', function () {
       log: log,
       cache: fakeCache,
       itemTitle: 'foobar',
-      files: new Files({config: {data_dir: './test/data'}})
+      files: new LocalFs({rootDir: path.join(__dirname, 'data')})
     })
 
     // speed up the backoff so the test runs faster and does not time out

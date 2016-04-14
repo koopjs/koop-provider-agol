@@ -38,19 +38,19 @@ var AGOL = function (koop) {
   agol.csvQueue = new CSVQueue({
     cache: koop.cache,
     log: koop.log,
-    files: koop.files
+    files: koop.fs
   })
 
   agol.cache = new Cache({
     cache: koop.cache,
-    files: koop.files,
+    files: koop.fs,
     log: koop.log,
     featureQueue: agol.featureQueue,
     csvQueue: agol.csvQueue,
     indexFields: indexFields
   })
 
-  agol.files = koop.files
+  agol.files = koop.fs
 
   agol.spatialReference = new SpatialReference({db: agol.cache.db, logger: agol.log})
 
