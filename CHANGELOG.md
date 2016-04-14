@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.5.17] - 2016-04-14
 ### Changed
 * Update worker for s3fs
 
@@ -852,6 +852,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.5.17]: https://github.com/koopjs/koop-agol/compare/v3.5.16..v3.5.17
 [3.5.16]: https://github.com/koopjs/koop-agol/compare/v3.5.15..v3.5.16
 [3.5.15]: https://github.com/koopjs/koop-agol/compare/v3.5.14..v3.5.15
 [3.5.14]: https://github.com/koopjs/koop-agol/compare/v3.5.13..v3.5.14
