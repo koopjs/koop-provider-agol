@@ -4,7 +4,6 @@ var merc = new Sm({size: 256})
 var fs = require('fs')
 var Utils = require('../lib/utils.js')
 var _ = require('lodash')
-var path = require('path')
 var config = require('config')
 var FILE_MIN_TTL = (config.agol && config.agol.file_min_ttl) || (60 * 1000 * 5)
 
@@ -24,7 +23,7 @@ var Controller = function (agol, BaseController) {
    */
    // TODO remove this and just call it from different functions
   controller.setHost = function (req, res, next) {
-    agol.log.debug(JSON.stringify({route: 'setHostKey', params: req.params, query: req.query}))
+    agol.log.debug(JSON.stringify({route: 'setHost', params: req.params, query: req.query}))
 
     req.params.silent = false
     if (!req.params.id) return next()
@@ -181,10 +180,8 @@ var Controller = function (agol, BaseController) {
   controller._handleCached = function (req, res, info) {
     agol.log.debug(JSON.stringify({route: '_handleCached', params: req.params, query: req.query}))
     var options = Utils.createExportOptions(req, info)
-    var dirName = path.dirname(options.output)
-    var fileName = path.basename(options.output)
-    agol.files.exists(dirName, fileName, function (exists, path, fileInfo) {
-      if (exists) handleFileExists(req, res, info, fileInfo, options)
+    agol.files.stat(options.output, function (err, fileInfo) {
+      if (!err) handleFileExists(req, res, info, fileInfo, options)
       else handleFileNotExists(req, res, info)
     })
   }
@@ -220,7 +217,7 @@ var Controller = function (agol, BaseController) {
   function determineFileVintage (dataInfo, fileInfo) {
     fileInfo = fileInfo || {}
     fileInfo.Metadata = fileInfo.Metadata || {}
-    var fileVintage = fileInfo.Metadata.retrieved_at || fileInfo.LastModified || dataInfo.retrieved_at
+    var fileVintage = fileInfo.Metadata.retrieved_at || fileInfo.mtime || dataInfo.retrieved_at
     return new Date(fileVintage)
   }
 

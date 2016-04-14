@@ -9,14 +9,12 @@ var sinon = require('sinon')
 var nock = require('nock')
 var fs = require('fs')
 var path = require('path')
+var LocalFs = require('koop-localfs')
 
 var koopLib = require('koop/lib')
 var koopCache = new koopLib.DataCache()
-var koopFiles = new koopLib.Files({
-  config: {
-    data_dir: './test/data'
-  }
-})
+var koopFiles = new LocalFs({rootDir: path.join(__dirname, 'data')})
+
 koopCache.db = koopLib.LocalDB
 koopCache.db = koopLib.LocalDB
 var Logger = require('koop-logger')
