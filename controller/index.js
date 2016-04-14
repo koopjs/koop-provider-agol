@@ -5,7 +5,7 @@ var fs = require('fs')
 var Utils = require('../lib/utils.js')
 var _ = require('lodash')
 var config = require('config')
-var FILE_MIN_TTL = (config.agol && config.agol.file_min_ttl) || (60 * 1000 * 5)
+var FILE_MIN_TTL = parseInt((config.agol && config.agol.file_min_ttl) || (60 * 1000 * 5), 10)
 
 var Controller = function (agol, BaseController) {
   /**

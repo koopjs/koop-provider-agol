@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Integrated Koop's new fs api
 
+### Fixed
+* Always coerce file_min_ttl to float
+
 ## [3.5.15] - 2016-04-13
 ### Fixed
 * Reverse default of `file_min_ttl`
