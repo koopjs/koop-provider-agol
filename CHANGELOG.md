@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Update worker for s3fs
+
 ## [3.5.16] - 2016-04-14
 ### Changed
 * Integrated Koop's new fs api
