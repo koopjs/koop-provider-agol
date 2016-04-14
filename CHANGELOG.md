@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Integrated Koop's new fs api
+
 ## [3.5.15] - 2016-04-13
 ### Fixed
 * Reverse default of `file_min_ttl`
