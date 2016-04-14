@@ -6,12 +6,12 @@ var MultiWorker = require('node-resque').multiWorker
 var Work = require('./lib/work.js')
 var koop = require('koop')(config)
 var Cache = require('./lib/cache.js')
-var cache = require('koop-pgcache')
+var pgCache = require('koop-pgcache')
 var fs = require('koop-s3fs')
 var stringify = require('json-stringify-safe')
 var _ = require('lodash')
 
-koop.register(cache)
+koop.register(pgCache)
 koop.register(fs)
 
 // set global number of sockets if in the config
