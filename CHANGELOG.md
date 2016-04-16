@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Use `rmdirp` for deleting files
+
 ## [3.5.17] - 2016-04-14
 ### Changed
 * Update worker for s3fs
