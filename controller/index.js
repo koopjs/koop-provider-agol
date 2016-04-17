@@ -7,9 +7,9 @@ var _ = require('lodash')
 var config = require('config')
 var FILE_MIN_TTL = parseInt((config.agol && config.agol.file_min_ttl) || (60 * 1000 * 5), 10)
 var portals = {
-  devext: "https://devext.arcgis.com",
-  qaext: "https://qaext.arcgis.com",
-  arcgis: "https://www.arcgis.com"
+  devext: 'https://devext.arcgis.com',
+  qaext: 'https://qaext.arcgis.com',
+  arcgis: 'https://www.arcgis.com'
 }
 
 var Controller = function (agol, BaseController) {
@@ -163,8 +163,6 @@ var Controller = function (agol, BaseController) {
     agol.getInfo(infoOpts, function (err, info) {
       if (err) return controller._returnStatus(req, res, info, err)
       switch (info.status) {
-        case 'Expired':
-          return controller._handleExpired(req, res, info)
         case 'Failed':
           return controller._handleFailed(req, res, info)
         case 'Unavailable':
@@ -186,7 +184,9 @@ var Controller = function (agol, BaseController) {
   controller._handleCached = function (req, res, info) {
     agol.log.debug(JSON.stringify({route: '_handleCached', params: req.params, query: req.query}))
     var options = Utils.createExportOptions(req, info)
+    var start = Date.now()
     agol.files.stat(options.output, function (err, fileInfo) {
+      agol.log.debug('Checking for file took:', (Date.now() -  start) / 1000, 'seconds')
       if (!err) handleFileExists(req, res, info, fileInfo, options)
       else handleFileNotExists(req, res, info)
     })
@@ -276,24 +276,6 @@ var Controller = function (agol, BaseController) {
     if (response.error) response.status = 'Failed'
 
     res.status(code || 202).json(response)
-  }
-
-  /**
-   * Handles the case when data requested is expired
-   *
-   * @param {object} req - the incoming request
-   * @param {object} res - the outgoing response
-   * @param {object} info - item's info doc
-   * @private
-   */
-  controller._handleExpired = function (req, res, info) {
-    agol.log.debug(JSON.stringify({route: '_handleExpired', params: req.params, query: req.query}))
-    controller._handleCached(req, res, info)
-    var options = Utils.createCacheOptions(req)
-    agol.updateResource(info, options, function (err, status) {
-      if (err) agol.log.error(err)
-      else agol.log.debug(status)
-    })
   }
 
   /**

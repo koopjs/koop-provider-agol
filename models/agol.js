@@ -105,12 +105,20 @@ var AGOL = function (koop) {
     agol.cache.getInfo(options.key, function (err, info) {
       if (err && err.message !== 'Resource not found') return callback(err)
       if (info && info.status) {
-        if (info.status === 'Processing') return callback(null, info)
         if (info.type !== 'Feature Service') return getPortalInfo(info)
-        return agol.cache.checkExpiration(info, options.layer, expirationCallback)
+        callback(null, info)
+        agol.cache.checkExpiration(info, options.layer, function (err, expired) {
+          if (err) return agol.log.error(err)
+          if (!expired) return
+          agol.updateResource(info, options, function (err, status) {
+            if (err) agol.log.error(err)
+            else agol.log.debug(status)
+          })
+        })
+      } else {
+        // default case for missing info
+        callback(null, {status: 'Unavailable'})
       }
-      // default case for missing info
-      callback(null, {status: 'Unavailable'})
     })
 
     function getPortalInfo (info) {
