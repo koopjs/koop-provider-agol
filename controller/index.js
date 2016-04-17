@@ -6,6 +6,11 @@ var Utils = require('../lib/utils.js')
 var _ = require('lodash')
 var config = require('config')
 var FILE_MIN_TTL = parseInt((config.agol && config.agol.file_min_ttl) || (60 * 1000 * 5), 10)
+var portals = {
+  devext: "https://devext.arcgis.com",
+  qaext: "https://qaext.arcgis.com",
+  arcgis: "https://www.arcgis.com"
+}
 
 var Controller = function (agol, BaseController) {
   /**
@@ -27,7 +32,8 @@ var Controller = function (agol, BaseController) {
 
     req.params.silent = false
     if (!req.params.id) return next()
-
+    req.portal = portals[req.params.id]
+    if (req.portal) return next()
     agol.find(req.params.id, function (err, data) {
       if (err) return res.status(404).send(err)
       req.portal = data.host
