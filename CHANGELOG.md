@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Integrated esri-to-geojson
+
 ## [3.5.18] - 2016-04-16
 ### Changed
 * Use `rmdirp` for deleting files
