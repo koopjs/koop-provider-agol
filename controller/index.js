@@ -186,7 +186,7 @@ var Controller = function (agol, BaseController) {
     var options = Utils.createExportOptions(req, info)
     var start = Date.now()
     agol.files.stat(options.output, function (err, fileInfo) {
-      agol.log.debug('Checking for file took:', (Date.now() -  start) / 1000, 'seconds')
+      agol.log.debug('Checking for file took:', (Date.now() - start) / 1000, 'seconds')
       if (!err) handleFileExists(req, res, info, fileInfo, options)
       else handleFileNotExists(req, res, info)
     })
