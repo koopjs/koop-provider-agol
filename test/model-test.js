@@ -43,7 +43,7 @@ describe('AGOL Model', function () {
 
     it('should return status: Expired when the resource is expired', function (done) {
       sinon.stub(agol.cache, 'getInfo', function (key, callback) {
-        callback(null, {status: 'Cached', type: 'Feature Service', version: 3})
+        callback(null, {status: 'Expired', type: 'Feature Service', version: 3})
       })
 
       sinon.stub(agol.cache, 'checkExpiration', function (info, layer, callback) {
