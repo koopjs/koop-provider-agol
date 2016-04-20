@@ -7,9 +7,9 @@ var _ = require('lodash')
 var config = require('config')
 var FILE_MIN_TTL = parseInt((config.agol && config.agol.file_min_ttl) || (60 * 1000 * 5), 10)
 var portals = {
-  devext: "https://devext.arcgis.com",
-  qaext: "https://qaext.arcgis.com",
-  arcgis: "https://www.arcgis.com"
+  devext: 'https://devext.arcgis.com',
+  qaext: 'https://qaext.arcgis.com',
+  arcgis: 'https://www.arcgis.com'
 }
 
 var Controller = function (agol, BaseController) {
