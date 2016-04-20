@@ -347,15 +347,27 @@ var Controller = function (agol, BaseController) {
 
     if (req.query.url_only) return res.json({url: Utils.replaceUrl(req)})
     var fileVintage = determineFileVintage(dataInfo, fileInfo)
-    // forces browsers to download
     res = Utils.setHeaders(res, {
       name: dataInfo.name,
       format: req.params.format,
       modified: fileVintage,
       expired: fileOutdated(dataInfo, fileInfo) || dataInfo.status === 'Expired'
     })
-
+    // Leverage NGINX's X-Accel-Redirect directive to send requests to S3 if NGINX is configured
+    if (config.nginx && config.filesystem.s3) {
+      if (req.headers['accept-encoding'] && req.headers['accept-encoding'].match(/gzip/i)) {
+        return redirect(req, res, filePath)
+      } else if (config.nginx.gunzip) {
+        return redirect(req, res, filePath)
+      }
+    }
     agol.files.createReadStream(filePath).pipe(res)
+  }
+
+  function redirect (req, res, filePath) {
+    res.setHeader('X-Accel-Redirect', '/koop-redirect/' + config.filesystem.s3.bucket + '/' + filePath)
+    res.setHeader('Content-Encoding', 'gzip')
+    res.status(200).send()
   }
 
   /**

@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* Redirect download traffic to S3 when NGINX is configured
+
 ## [3.5.19] - 2016-04-19
 ### Changed
 * Integrated esri-to-geojson
