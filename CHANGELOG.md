@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.6.0] - 2016-04-25
 ### Added
 * Redirect download traffic to S3 when NGINX is configured
 
@@ -868,6 +868,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.6.0]: https://github.com/koopjs/koop-agol/compare/v3.5.19..v3.6.0
 [3.5.19]: https://github.com/koopjs/koop-agol/compare/v3.5.18..v3.5.19
 [3.5.18]: https://github.com/koopjs/koop-agol/compare/v3.5.17..v3.5.18
 [3.5.17]: https://github.com/koopjs/koop-agol/compare/v3.5.16..v3.5.17
