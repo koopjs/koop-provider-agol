@@ -108,7 +108,6 @@ var AGOL = function (koop) {
         if (info.type !== 'Feature Service') return getPortalInfo(info)
         callback(null, info)
         agol.cache.checkExpiration(info, options.layer, function (err, expired) {
-          console.log(expired)
           if (err) return agol.log.error(err)
           if (!expired) return
           agol.updateResource(info, options, function (err, status) {
@@ -173,7 +172,6 @@ var AGOL = function (koop) {
   * @param {function} callback - the callback for when all is gone
   */
   agol.updateResource = function (info, options, callback) {
-    console.log(info)
     agol.log.debug(options)
     // this will only work if data is not being stored in the database
     if (info.type === 'Feature Service') {
