@@ -109,9 +109,10 @@ describe('AGOL Model', function () {
       function execTest () {
         agol.cache.checkExpiration.called.should.equal(true)
         agol.updateResource.called.should.equal(true)
-        done()
+
         agol.cache.checkExpiration.restore()
         agol.updateResource.restore()
+        done()
       }
     })
   })
