@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Redirect download traffic to S3 when NGINX is configured
 
+### Changed
+* Wait for upload finish event before ending import job
+* Do expiration checks after files are served
+
 ## [3.5.19] - 2016-04-19
 ### Changed
 * Integrated esri-to-geojson
