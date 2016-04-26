@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Specify number of retries for export jobs
+
 ## [3.6.0] - 2016-04-25
 ### Added
 * Redirect download traffic to S3 when NGINX is configured

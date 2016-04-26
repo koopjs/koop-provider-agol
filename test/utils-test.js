@@ -327,6 +327,7 @@ describe('Utils', function () {
       eOpts.where.should.equal('trees like fire')
       eOpts.outSR.should.equal('outSR')
       eOpts.geometry.should.equal('geometry')
+      eOpts.maxRetries.should.equal(3)
       done()
     })
 
