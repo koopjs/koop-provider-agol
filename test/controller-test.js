@@ -659,7 +659,7 @@ describe('AGOL Controller', function () {
 
       it('should call generate export and return a file if it exists', function (done) {
         sinon.stub(agol.files, 'stat', function (path, callback) {
-          callback(null)
+          callback(null, {})
         })
 
         request(koop)
