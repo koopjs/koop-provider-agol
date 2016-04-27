@@ -226,6 +226,19 @@ describe('caching csvs', function () {
       done()
     })
   })
+
+  it('should not pass errors through', function (done) {
+    sinon.stub(cache, 'get', function (item, layer, options, callback) {
+      callback(new Error('Syntax error'))
+    })
+
+    cache.csv(options, function (err, status, geojson) {
+      should.exist(err)
+      err.message.should.equal('Syntax error')
+      cache.get.restore()
+      done()
+    })
+  })
 })
 
 describe('checking expiration', function () {
