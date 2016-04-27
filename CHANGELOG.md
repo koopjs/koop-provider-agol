@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Don't gunzip data for clients that accept gzip when streaming
+* Only redirect downloads when the file on S3 has proper headers
+
 ## [3.6.1] - 2016-04-25
 ### Changed
 * Specify number of retries for export jobs

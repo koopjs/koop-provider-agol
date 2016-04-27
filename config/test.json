@@ -1,5 +1,10 @@
 {
   "db": {
     "store": true
-	}
+	},
+  "filesystem": {
+    "local": {
+      "rootDir": "test/data"
+    }
+  }
 }
