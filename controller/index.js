@@ -336,28 +336,31 @@ var Controller = function (agol, BaseController) {
       expired: fileOutdated(dataInfo, fileInfo) || dataInfo.status === 'Expired'
     })
     var acceptsGzip = new RegExp(/gzip/i).test(req.headers['accept-encoding'])
-    var hasGzipHeader = new RegExp(/gzip/i).test(fileInfo.ContentEncoding)
-    if (canRedirect(acceptsGzip, hasGzipHeader)) redirect(res, filePath)
+    if (canRedirect(acceptsGzip, fileInfo, req.params.format)) redirect(res, filePath)
     else stream(res, filePath, acceptsGzip)
   }
 
-  function canRedirect (acceptsGzip, hasGzipHeader) {
+  function canRedirect (acceptsGzip, fileInfo, format) {
     // NGINX is enabled
     return config.nginx &&
     // The file is stored on S3
     config.filesystem.s3 &&
-    // With the proper headers
-    hasGzipHeader &&
+    // With the proper content encoding header
+    new RegExp(/gzip/i).test(fileInfo.ContentEncoding) &&
+    // And the proper content type header
+    fileInfo.ContentType === Utils.contentTypes[format] &&
     // The client accepts gzip or gunzip is enabled on NGINX
     (acceptsGzip || config.nginx.gunzip)
   }
 
   function redirect (res, filePath) {
+    agol.log.debug('redirecting to s3', filePath)
     res.setHeader('X-Accel-Redirect', '/koop-redirect/' + config.filesystem.s3.bucket + '/' + filePath)
     res.status(200).send()
   }
 
   function stream (res, filePath, acceptsGzip) {
+    agol.log.debug('streaming through app server', filePath)
     var options = {}
     if (acceptsGzip && config.filesystem.s3) {
       options.gunzip = false
