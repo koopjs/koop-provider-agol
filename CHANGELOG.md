@@ -885,6 +885,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.6.4]: https://github.com/koopjs/koop-agol/compare/v3.6.3..v3.6.4
 [3.6.3]: https://github.com/koopjs/koop-agol/compare/v3.6.2..v3.6.3
 [3.6.2]: https://github.com/koopjs/koop-agol/compare/v3.6.1..v3.6.2
 [3.6.1]: https://github.com/koopjs/koop-agol/compare/v3.6.0..v3.6.1
