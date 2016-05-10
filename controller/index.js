@@ -533,7 +533,7 @@ var Controller = function (agol, BaseController) {
     req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
     var options = {item: req.params.item, layer: req.params.layer || 0, host: req.portal, query: req.query}
     agol.cacheResource(options, function (error, info, data) {
-      if (error) return res.status(error.code || 500).json(error.error || error)
+      if (error) return res.status(error.code || 500).json({error: error.message})
       var fsQuery = Utils.setServiceDefaults(req.params, req.query)
       req.query = _.omit(fsQuery, ['geometry', 'where'])
       // the data must be passed in to controller.processFeatureServer as the first element in an array
