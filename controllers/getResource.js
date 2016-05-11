@@ -201,7 +201,10 @@ module.exports = function (agol, controller) {
       options.gunzip = false
       res.setHeader('Content-Encoding', 'gzip')
     }
-    agol.files.createReadStream(filePath, options).pipe(res)
+    agol.files.createReadStream(filePath, options)
+    .on('error', function (e) { agol.log.error(e) })
+    .pipe(res)
+    .on('error', function (e) { agol.log.error(e) })
   }
 
   /**
