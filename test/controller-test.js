@@ -5,7 +5,6 @@ var request = require('supertest')
 var koop = require('koop')({logfile: './test.log'})
 var LocalFs = require('koop-localfs')
 koop.register(LocalFs)
-var _ = require('lodash')
 var fs = require('fs')
 var pathModule = require('path')
 
@@ -276,14 +275,6 @@ describe('AGOL Controller', function () {
 
   describe('getting an item that is in a failed state', function () {
     beforeEach(function (done) {
-      sinon.stub(agol, 'dropResource', function (id, item, options, callback) {
-        callback(null)
-      })
-
-      sinon.stub(agol, 'cacheResource', function (options, callback) {
-        callback(null, {status: 'Processing'})
-      })
-
       sinon.stub(agol, 'find', function (id, callback) {
         callback(null, {id: 'test', host: 'http://dummy.host.com'})
       })
@@ -292,62 +283,27 @@ describe('AGOL Controller', function () {
     })
 
     afterEach(function (done) {
-      controller._returnStatus.restore()
-      agol.dropResource.restore()
-      agol.cacheResource.restore()
       agol.find.restore()
       done()
     })
 
-    it('should call drop and cacheResource if failure was more than 30 minutes ago', function (done) {
-      sinon.stub(controller, '_returnStatus', function (req, res, info) {
-        res.status(202).send({})
-      })
-      // yes is this a hack, but onSecondCall is not available when you instantiate sinon.stub with an object and method
-      var infoFunc = _.clone(agol.getInfo)
-      var stub = sinon.stub()
-      stub.onFirstCall().callsArgWith(1, null, {
-        status: 'Failed',
-        retrieved_at: Date.now() - (45 * 60 * 1000)
-      })
-      stub.onSecondCall().callsArgWith(1, null, {
-        status: 'Unavailable'
-      })
-      agol.getInfo = stub
-
-      request(koop)
-        .get('/agol/test/itemId/3.zip')
-        .expect(202)
-        .end(function (err, res) {
-          should.not.exist(err)
-          agol.dropResource.called.should.equal(true)
-          controller._returnStatus.called.should.equal(true)
-          agol.cacheResource.called.should.equal(true)
-          agol.getInfo = infoFunc
-          done()
-        })
-    })
-
-    it('should call _returnStatus if failure was less than 30 minutes ago', function (done) {
-      sinon.stub(agol, 'getInfo', function (key, callback) {
+    it('should return a 502 if failure was less than 30 minutes ago', function (done) {
+      sinon.stub(agol.cache, 'getInfo', function (key, callback) {
         callback(null, {
           status: 'Failed',
-          retrieved_at: Date.now() - (15 * 60 * 1000)
+          retrieved_at: Date.now() - (15 * 60 * 1000),
+          error: {
+            message: 'Fail whaletastic'
+          }
         })
-      })
-
-      sinon.stub(controller, '_returnStatus', function (req, res, info) {
-        res.status(502).send({})
       })
 
       request(koop)
         .get('/agol/test/itemId/3.zip')
         .expect(502)
         .end(function (err, res) {
-          agol.getInfo.restore()
+          agol.cache.getInfo.restore()
           should.not.exist(err)
-          agol.dropResource.called.should.equal(false)
-          controller._returnStatus.called.should.equal(true)
           done()
         })
     })
@@ -360,7 +316,7 @@ describe('AGOL Controller', function () {
           callback(null, { id: 'test', host: 'http://dummy.host.com' })
         })
 
-        sinon.stub(agol, 'getInfo', function (key, callback) {
+        sinon.stub(agol.cache, 'getInfo', function (key, callback) {
           callback(null, {
             status: 'Cached',
             name: 'Export',
@@ -382,7 +338,7 @@ describe('AGOL Controller', function () {
 
       after(function (done) {
         agol.files.stat.restore()
-        agol.getInfo.restore()
+        agol.cache.getInfo.restore()
         agol.find.restore()
         agol.generateExport.restore()
         done()
@@ -394,7 +350,7 @@ describe('AGOL Controller', function () {
           .expect(202)
           .end(function (err, res) {
             should.not.exist(err)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
             done()
           })
@@ -407,7 +363,7 @@ describe('AGOL Controller', function () {
           callback(null, { id: 'test', host: 'http://dummy.host.com' })
         })
 
-        sinon.stub(agol, 'getInfo', function (key, callback) {
+        sinon.stub(agol.cache, 'getInfo', function (key, callback) {
           callback(null, {
             status: 'Cached',
             name: 'Export',
@@ -434,7 +390,7 @@ describe('AGOL Controller', function () {
 
       after(function (done) {
         agol.files.stat.restore()
-        agol.getInfo.restore()
+        agol.cache.getInfo.restore()
         agol.find.restore()
         agol.generateExport.restore()
         done()
@@ -447,7 +403,7 @@ describe('AGOL Controller', function () {
           .end(function (err, res) {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
             done()
           })
@@ -460,7 +416,7 @@ describe('AGOL Controller', function () {
           callback(null, { id: 'test', host: 'http://dummy.host.com' })
         })
 
-        sinon.stub(agol, 'getInfo', function (key, callback) {
+        sinon.stub(agol.cache, 'getInfo', function (key, callback) {
           callback(null, {
             status: 'Cached',
             name: 'Export',
@@ -487,7 +443,7 @@ describe('AGOL Controller', function () {
 
       after(function (done) {
         agol.files.stat.restore()
-        agol.getInfo.restore()
+        agol.cache.getInfo.restore()
         agol.find.restore()
         agol.generateExport.restore()
         done()
@@ -500,7 +456,7 @@ describe('AGOL Controller', function () {
           .end(function (err, res) {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
             done()
           })
@@ -529,7 +485,7 @@ describe('AGOL Controller', function () {
           callback(null, { id: 'test', host: 'http://dummy.host.com' })
         })
 
-        sinon.stub(agol, 'getInfo', function (key, callback) {
+        sinon.stub(agol.cache, 'getInfo', function (key, callback) {
           callback(null, info)
         })
 
@@ -552,7 +508,7 @@ describe('AGOL Controller', function () {
 
       afterEach(function (done) {
         agol.find.restore()
-        agol.getInfo.restore()
+        agol.cache.getInfo.restore()
         agol.generateExport.restore()
         agol.updateResource.restore()
         agol.files.createReadStream.restore()
@@ -579,7 +535,7 @@ describe('AGOL Controller', function () {
             should.exist(res.headers['x-expired'])
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
             done()
@@ -601,7 +557,7 @@ describe('AGOL Controller', function () {
             should.exist(res.headers['x-expired'])
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
             done()
@@ -624,7 +580,7 @@ describe('AGOL Controller', function () {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
             done()
@@ -650,7 +606,7 @@ describe('AGOL Controller', function () {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(false)
             done()
@@ -669,7 +625,7 @@ describe('AGOL Controller', function () {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
             agol.files.createReadStream.called.should.equal(true)
             done()
@@ -688,7 +644,7 @@ describe('AGOL Controller', function () {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(false)
             done()
@@ -707,7 +663,7 @@ describe('AGOL Controller', function () {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
             agol.files.createReadStream.called.should.equal(false)
             done()
@@ -726,7 +682,7 @@ describe('AGOL Controller', function () {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
-            agol.getInfo.called.should.equal(true)
+            agol.cache.getInfo.called.should.equal(true)
             agol.generateExport.called.should.equal(false)
             agol.files.createReadStream.called.should.equal(false)
             done()
@@ -755,7 +711,7 @@ describe('AGOL Controller', function () {
         callback(null, { id: 'test', host: 'http://dummy.host.com' })
       })
 
-      sinon.stub(agol, 'getInfo', function (key, callback) {
+      sinon.stub(agol.cache, 'getInfo', function (key, callback) {
         callback(null, {status: 'Cached'})
       })
 
@@ -768,7 +724,7 @@ describe('AGOL Controller', function () {
     after(function (done) {
       delete agol.tileGet
       agol.cache.get.restore()
-      agol.getInfo.restore()
+      agol.cache.getInfo.restore()
       agol.find.restore()
       done()
     })
@@ -800,55 +756,30 @@ describe('AGOL Controller', function () {
     })
 
     it('should return 202 when the resource is processing', function (done) {
-      sinon.stub(controller, 'testMethod', function (req, res) {
+      sinon.stub(agol.cache, 'getInfo', function (options, callback) {
         var info = {
-          status: 'processing',
+          status: 'Processing',
           retrieved_at: Date.now()
         }
-        controller._returnStatus(req, res, info)
+        callback(null, info)
       })
 
       request(koop)
-        .get('/test')
+        .get('/agol/arcgis/foo/0.csv')
         .expect(202)
         .end(function (err, res) {
-          controller.testMethod.restore()
-          should.not.exist(err)
-          done()
-        })
-    })
-
-    it('should return 502 when the info doc says the resource has failed', function (done) {
-      sinon.stub(controller, 'testMethod', function (req, res) {
-        var info = {
-          status: 'Failed',
-          retrieved_at: Date.now(),
-          error: {
-            code: 400,
-            response: 'Failed to perform query operation',
-            url: 'http://www.failure.com',
-            message: 'Failed while paging'
-          }
-        }
-        controller._returnStatus(req, res, info)
-      })
-
-      request(koop)
-        .get('/test')
-        .expect(502)
-        .end(function (err, res) {
-          controller.testMethod.restore()
+          agol.cache.getInfo.restore()
           should.not.exist(err)
           done()
         })
     })
 
     it('should return 502 when an error is passed in', function (done) {
-      sinon.stub(controller, 'testMethod', function (req, res) {
-        var info = {
-          status: 'Processing',
-          retrieved_at: Date.now()
-        }
+      sinon.stub(agol.cache, 'getInfo', function (options, callback) {
+        callback(new Error('Resource not found'))
+      })
+
+      sinon.stub(agol, 'cacheResource', function (options, callback) {
         var error = new Error('Failed to get layer metadata')
         error.url = 'http://www.failure.com'
         error.body = {
@@ -856,11 +787,11 @@ describe('AGOL Controller', function () {
           message: 'Failed to perform query',
           details: []
         }
-        controller._returnStatus(req, res, info, error)
+        callback(error)
       })
 
       request(koop)
-        .get('/test')
+        .get('/agol/arcgis/foo/0.csv')
         .expect(502)
         .end(function (err, res) {
           res.body.status.should.equal('Failed')
@@ -868,7 +799,8 @@ describe('AGOL Controller', function () {
           res.body.error.code.should.equal(500)
           res.body.error.response.should.equal('Failed to perform query')
           res.body.error.request.should.equal('http://www.failure.com')
-          controller.testMethod.restore()
+          agol.cache.getInfo.restore()
+          agol.cacheResource.restore()
           should.not.exist(err)
           done()
         })

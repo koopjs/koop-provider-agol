@@ -95,46 +95,13 @@ var AGOL = function (koop) {
     koop.cache.db.serviceRemove('agol:services', parseInt(id, 0) || id, callback)
   }
 
-  /**
-   * Gets the resource's cache/expiration status
-   *
-   * @param {string} key - The resource's identifier
-   * @param {function} callback - calls back with an error or the cache status and item info
-   */
-  agol.getInfo = function (options, callback) {
-    agol.cache.getInfo(options.key, function (err, info) {
-      if (err && err.message !== 'Resource not found') return callback(err)
-      if (info && info.status) {
-        if (info.type !== 'Feature Service') return getPortalInfo(info)
-        callback(null, info)
-        agol.cache.checkExpiration(info, options.layer, function (err, expired) {
-          if (err) return agol.log.error(err)
-          if (!expired) return
-          agol.updateResource(info, options, function (err, status) {
-            if (err) agol.log.error(err)
-            else agol.log.debug(status)
-          })
-        })
-      } else {
-        // default case for missing info
-        callback(null, {status: 'Unavailable'})
-      }
-    })
-
-    function getPortalInfo (info) {
-      agol.portal.getItem(options.host, options.item, function (err, item) {
-        if (err) return callback(err)
-        info.modified_at = item.modified
-        agol.cache.checkExpiration(info, options.layer, expirationCallback)
+  agol.updateIfExpired = function (info, options, callback) {
+    agol.cache.checkExpiration(info, options.layer, function (err, expired) {
+      if (err || !expired) return callback(err)
+      agol.updateResource(info, options, function (err, status) {
+        callback(err, status)
       })
-    }
-
-    function expirationCallback (err, expired, info) {
-      if (err) return callback(err)
-      info = info || {}
-      info.status = expired ? 'Expired' : info.status
-      callback(null, info)
-    }
+    })
   }
 
   /**
@@ -222,6 +189,7 @@ var AGOL = function (koop) {
    * @param {function} callback - calls back with an error or whether the data was dropped
    */
   agol.dropResource = function (item, layer, options, callback) {
+    console.log(item, layer)
     agol.cache.drop(item, layer, options, callback)
   }
 
