@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 * Better error handling for csv errors
 
+### Changed
+* esri-to-geojsonV1.0.2
+
 ## [3.6.3] - 2016-05-09
 ### Fixed
 * Only redirect to NGINX when the correct content-type is set
