@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Can set default portal from an env. Call `koop/agol/_env` to access it.
 
+### Changed
+* Refactor controller into may sub controllers
+
 ## [3.6.4] - 2016-05-10
 ### Fixed
 * Better error handling for csv errors

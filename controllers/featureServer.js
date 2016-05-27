@@ -29,6 +29,10 @@ module.exports = function (agol, controller) {
     agol.cache.getInfo(table, function (err, info) {
       if (err) return res.status(500).json({error: err.message})
       fetchServiceData(agol, controller, req, res)
+      var updateOpts = { host: req.portal, key: table, item: req.params.item, layer: req.params.layer || 0 }
+      agol.updateIfExpired(info, updateOpts, function (err) {
+        if (err) agol.log.error(err)
+      })
     })
   }
 }
