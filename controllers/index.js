@@ -9,12 +9,6 @@ var Hosts = require('./hosts.js')
 var Expiration = require('./expiration.js')
 var Utils = require('../lib/utils.js')
 
-var portals = {
-  devext: 'https://devext.arcgis.com',
-  qaext: 'https://qaext.arcgis.com',
-  arcgis: 'https://www.arcgis.com'
-}
-
 var Controller = function (agol, BaseController) {
   /**
    * The primary controller onto which all methods are attached
@@ -29,14 +23,10 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    * @param {function} next - calls the next route handler
    */
-   // TODO remove this and just call it from different functions
   controller.setHost = function (req, res, next) {
     agol.log.debug(JSON.stringify({route: 'setHost', params: req.params, query: req.query}))
-
     req.params.silent = false
     if (!req.params.id) return next()
-    req.portal = portals[req.params.id]
-    if (req.portal) return next()
     agol.find(req.params.id, function (err, data) {
       if (err) return res.status(404).send(err)
       req.portal = data.host

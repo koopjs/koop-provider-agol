@@ -17,7 +17,6 @@ var AGOL = function (koop) {
   var config = koop.config
   // set field indexing off by default
   var indexFields
-  config.agol
   if (config.agol && config.agol.indexFields) indexFields = true
   else indexFields = false
   config.agol = config.agol || {}
@@ -79,6 +78,11 @@ var AGOL = function (koop) {
    * @param {function} callback - The callback.
    */
   agol.find = function (id, callback) {
+    var hosts = { devext: 'https://devext.arcgis.com', qaext: 'https://qaext.arcgis.com', arcgis: 'https://www.arcgis.com' }
+    // try to use one of the defaults
+    if (id === '_env') id = config.agol.env
+    var host = hosts[id]
+    if (host) return callback(null, {host: host})
     koop.cache.db.serviceGet('agol:services', parseInt(id, 0) || id, function (err, res) {
       if (err) return callback('No service table found for that id. Try POSTing {"id":"arcgis", "host":"http://www.arcgis.com"} to /agol', null)
       callback(null, res)

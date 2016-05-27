@@ -9,6 +9,7 @@ var koop = require('koop/lib')
 var config = {}
 // setup koop
 config.data_dir = __dirname + '/output/'
+config.agol = {env: 'arcgis'}
 koop.config = config
 var Logger = require('koop-logger')
 koop.log = new Logger({logfile: './test.log'})
@@ -24,6 +25,16 @@ koop.fs = new LocalFs({rootDir: path.join(__dirname, 'data')})
 var agol = require('../models/agol.js')(koop)
 
 describe('AGOL Model', function () {
+  describe('getting the host portal', function () {
+    it('should use the portal from the configured env value', function (done) {
+      agol.find('_env', function (err, data) {
+        should.not.exist(err)
+        data.host.should.equal('https://www.arcgis.com')
+        done()
+      })
+    })
+  })
+
   describe('remove items', function () {
     before(function (done) {
       sinon.stub(koop.cache, 'remove', function (host, itemid, opts, callback) {
