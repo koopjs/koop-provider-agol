@@ -7,7 +7,7 @@ var Work = require('./lib/work.js')
 var koop = require('koop')(config)
 var Cache = require('./lib/cache.js')
 var pgCache = require('koop-pgcache')
-var fs = require('koop-s3fs')
+var fs = config.filesystem.local ? require('koop-localfs') : require('koop-s3fs')
 var stringify = require('json-stringify-safe')
 var _ = require('lodash')
 
