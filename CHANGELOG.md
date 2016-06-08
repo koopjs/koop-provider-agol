@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Worker can use koop-localfs
+
 ## [3.7.0] - 2016-05-27
 ### Added
 * Can set default portal from an env. Call `koop/agol/_env` to access it.
