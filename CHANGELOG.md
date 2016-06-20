@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## unreleased
+### Changed
+* createExportOptions now takes fields array
+
 ## [3.7.1] - 2016-06-08
 ### Changed
 * Worker can use koop-localfs
