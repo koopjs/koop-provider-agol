@@ -314,7 +314,8 @@ describe('Utils', function () {
       var table = {
         name: 'download',
         metadata: 'metadata',
-        version: 3
+        version: 3,
+        info: { fields: [] }
       }
       var eOpts = Utils.createExportOptions(req, table)
       eOpts.table.should.equal('agol:1ef:1')
@@ -323,6 +324,7 @@ describe('Utils', function () {
       eOpts.key.should.equal('full')
       eOpts.name.should.equal('download')
       eOpts.format.should.equal('zip')
+      eOpts.fields.length.should.equal(0)
       eOpts.metadata.should.equal('metadata')
       eOpts.where.should.equal('trees like fire')
       eOpts.outSR.should.equal('outSR')
