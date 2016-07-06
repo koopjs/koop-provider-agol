@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## unreleased
+## [3.7.2] - 2016-07-06
 ### Changed
 * createExportOptions now takes fields array
 
@@ -903,6 +903,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.7.2]: https://github.com/koopjs/koop-agol/compare/v3.7.1..v3.7.2
 [3.7.1]: https://github.com/koopjs/koop-agol/compare/v3.7.0..v3.7.1
 [3.7.0]: https://github.com/koopjs/koop-agol/compare/v3.6.4..v3.7.0
 [3.6.4]: https://github.com/koopjs/koop-agol/compare/v3.6.3..v3.6.4
