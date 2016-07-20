@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Dont check if csv was updated on first request
+
 ## [3.7.3] - 2016-07-20
 ### Changed
 * Update default file ttl to 0 seconds

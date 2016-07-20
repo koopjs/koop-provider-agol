@@ -28,7 +28,9 @@ module.exports = function (agol, controller) {
     var table = Utils.createTableKey(req.params)
     agol.cache.getInfo(table, function (err, info) {
       if (err && err.message !== 'Resource not found') return res.status(500).json({error: err.message})
-      fetchServiceData(agol, controller, req, res)
+      fetchServiceData(req, res)
+      // need to stop here if this is a new dataset
+      if (err) return
       var updateOpts = { host: req.portal, key: table, item: req.params.item, layer: req.params.layer || 0 }
       agol.updateIfExpired(info, updateOpts, function (err) {
         if (err) agol.log.error(err)
