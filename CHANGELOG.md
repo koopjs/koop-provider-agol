@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Changed
+* Update default file ttl to 0 seconds
+
 ### Fixed
 * Don't return 500 if csv data is not in the cache
 

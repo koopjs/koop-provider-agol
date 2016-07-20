@@ -1,6 +1,6 @@
 var Utils = require('../lib/utils.js')
 var config = require('config')
-var FILE_MIN_TTL = parseInt((config.agol && config.agol.file_min_ttl) || (60 * 1000 * 5), 10)
+var FILE_MIN_TTL = parseInt((config.agol && config.agol.file_min_ttl) || 0)
 module.exports = function (agol, controller) {
   function failedResource (info) {
     return info && info.status && info.status === 'Failed'
