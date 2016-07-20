@@ -41,7 +41,6 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    */
   controller.getInfo = function (req, res) {
-					console.log('this is rong')
     agol.log.debug(JSON.stringify({route: 'getInfo', params: req.params, query: req.query}))
     var table = Utils.createTableKey(req.params)
     agol.cache.getInfo(table, function (err, info) {
