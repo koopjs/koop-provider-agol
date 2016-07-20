@@ -2,9 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.7.4] - 2016-07-20
 ### Fixed
 * Dont check if csv was updated on first request
+* First return of csv feature service has correct name
+* Corrected broken spec
 
 ## [3.7.3] - 2016-07-20
 ### Changed
@@ -914,6 +916,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.7.4]: https://github.com/koopjs/koop-agol/compare/v3.7.3..v3.7.4
 [3.7.3]: https://github.com/koopjs/koop-agol/compare/v3.7.2..v3.7.3
 [3.7.2]: https://github.com/koopjs/koop-agol/compare/v3.7.1..v3.7.2
 [3.7.1]: https://github.com/koopjs/koop-agol/compare/v3.7.0..v3.7.1
