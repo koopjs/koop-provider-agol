@@ -626,7 +626,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(false)
+            agol.generateExport.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
             done()
           })
