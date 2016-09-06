@@ -100,7 +100,7 @@ describe('importing a feature service into the cache', function () {
       .times(4)
       .reply(500, {error: {}})
 
-    importService.on('error', function (error) {
+    importService.on('fail', function (error) {
       importService._fail(error)
       importService.cache.setFail.called.should.equal(true)
       done()
