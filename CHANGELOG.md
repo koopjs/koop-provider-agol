@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* `DELETE queue/worker/:id` removes a worker from the queue
+* `DELETE queue/workers:pattern` removes workers matching `:pattern` from the queue
+
+### Changed
+* Do not push jobs into the failed queue on well-handled failures
+* `clearFailed` is no longer run every 24 hours
+
 ## [3.7.4] - 2016-07-20
 ### Fixed
 * Dont check if csv was updated on first request
