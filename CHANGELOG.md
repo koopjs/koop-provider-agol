@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.8.1] - 2016-09-06
 ### Fixed
 * Only call cleanWorkers once and hour
-
+* cleanWorkers is initialized properly
 
 ## [3.8.0] - 2016-09-06
 ### Added

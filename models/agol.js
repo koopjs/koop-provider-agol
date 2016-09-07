@@ -30,12 +30,6 @@ var AGOL = function (koop) {
     agol_path: Utils.agol_path
   }
 
-  setInterval(function () {
-    agol.cleanWorkers(function (err) {
-      if (err) agol.log.debug(err)
-    })
-  }, 60 * 60 * 1000)
-
   agol.featureQueue = FeatureQueue.create(qOpts)
 
   agol.csvQueue = new CSVQueue({
@@ -464,18 +458,6 @@ var AGOL = function (koop) {
     function finish (err) {
       if (callback) callback(err, report)
     }
-  }
-
-  /**
-   * Clears out workers that have been working on a job for > 24 hours
-   *
-   * @param {function} callback - calls back with an error or the failed jobs
-   */
-  agol.cleanWorkers = function (callback) {
-    if (!agol.featureQueue) return callback(new Error('Feature Queue not enabled'))
-    agol.log.info('Clearing old workers from the queue')
-    var day = 24 * 60 * 60 * 1000
-    agol.featureQueue.cleanOldWorkers(day, callback)
   }
 
   return agol
