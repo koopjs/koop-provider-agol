@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.8.0] - 2016-09-06
 ### Added
 * `DELETE queue/worker/:id` removes a worker from the queue
 * `DELETE queue/workers:pattern` removes workers matching `:pattern` from the queue
@@ -925,6 +925,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.8.0]: https://github.com/koopjs/koop-agol/compare/v3.7.4..v3.8.0
 [3.7.4]: https://github.com/koopjs/koop-agol/compare/v3.7.3..v3.7.4
 [3.7.3]: https://github.com/koopjs/koop-agol/compare/v3.7.2..v3.7.3
 [3.7.2]: https://github.com/koopjs/koop-agol/compare/v3.7.1..v3.7.2
