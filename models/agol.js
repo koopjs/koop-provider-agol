@@ -31,10 +31,10 @@ var AGOL = function (koop) {
   }
 
   setInterval(function () {
-    agol.cleanWorkers(60 * 60 * 1000, function (err) {
+    agol.cleanWorkers(function (err) {
       if (err) agol.log.debug(err)
     })
-  })
+  }, 60 * 60 * 1000)
 
   agol.featureQueue = FeatureQueue.create(qOpts)
 
@@ -473,7 +473,7 @@ var AGOL = function (koop) {
    */
   agol.cleanWorkers = function (callback) {
     if (!agol.featureQueue) return callback(new Error('Feature Queue not enabled'))
-    agol.log.info('Dropping resources and removing jobs from failures')
+    agol.log.info('Clearing old workers from the queue')
     var day = 24 * 60 * 60 * 1000
     agol.featureQueue.cleanOldWorkers(day, callback)
   }
