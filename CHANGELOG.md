@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.9.0] - 2016-09-21
 ### Added
 * Datasets API
 
@@ -934,6 +934,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.9.0]: https://github.com/koopjs/koop-agol/compare/v3.8.1..v3.9.0
+[3.8.1]: https://github.com/koopjs/koop-agol/compare/v3.8.0..v3.8.1
 [3.8.0]: https://github.com/koopjs/koop-agol/compare/v3.7.4..v3.8.0
 [3.7.4]: https://github.com/koopjs/koop-agol/compare/v3.7.3..v3.7.4
 [3.7.3]: https://github.com/koopjs/koop-agol/compare/v3.7.2..v3.7.3
