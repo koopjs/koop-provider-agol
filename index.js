@@ -4,7 +4,7 @@ var provider = {
   plugin_name: 'agol',
   hosts: true,
   controller: require('./controllers'),
-  routes: require('./routes'),
+  routes: require('./routes.js'),
   model: require('./models/agol.js'),
   status: {
     version: pkg.version
