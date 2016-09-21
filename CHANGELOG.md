@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* Datasets API
+
 ## [3.8.1] - 2016-09-06
 ### Fixed
 * Only call cleanWorkers once and hour
