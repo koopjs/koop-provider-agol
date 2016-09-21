@@ -20,15 +20,6 @@ module.exports = function (agol, controller) {
       if (req.params.method === 'import') enqueue(agol.bulkImport, req, res)
       else if (req.params.action === 'export') enqueue(agol.bulkExport, req, res)
       else return res.status(400).json({error: 'Unsupported method'})
-    },
-    /**
-     * Put a specific dataset on the export queue
-     *
-     * @param {object} req - the incoming request object
-     * @param {object} res - the outgoing response object
-     */
-    export: function (req, res) {
-      enqueue(agol.bulkExport, req, res)
     }
   }
 
@@ -38,9 +29,10 @@ module.exports = function (agol, controller) {
     if (req.query.formats) {
       formats = req.query.formats.split(',')
     }
+    var idParts = req.params.dataset.split('_')
     var options = [{
-      item: req.params.item,
-      layer: req.params.layer,
+      item: idParts[0],
+      layer: idParts[1] || 0,
       formats: formats || ['csv', 'kml', 'zip', 'geohash']
     }]
     enqueueAction(req, options, function (err, info) {
