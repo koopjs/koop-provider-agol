@@ -1,6 +1,7 @@
 /* @ flow */
 var Tiles = require('./tiles.js')
 var Queue = require('./queue.js')
+var Dataset = require('./dataset.js')
 var Bulk = require('./bulk.js')
 var FeatureServer = require('./featureServer.js')
 var GetResource = require('./getResource.js')
@@ -82,6 +83,8 @@ var Controller = function (agol, BaseController) {
   controller.bulk = Bulk(agol, controller)
 
   controller.queue = Queue(agol, controller)
+
+  controller.dataset = Dataset(agol, controller)
 
   controller.featureserver = FeatureServer(agol, controller)
 

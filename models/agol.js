@@ -4,6 +4,7 @@ var Cache = require('../lib/cache')
 var FeatureQueue = require('../lib/feature-queue')
 var CSVQueue = require('../lib/csv-queue')
 var Portal = require('../lib/portal')
+var Dataset = require('../lib/dataset')
 var Utils = require('../lib/utils')
 var async = require('async')
 var SpatialReference = require('spatialreference')
@@ -45,6 +46,11 @@ var AGOL = function (koop) {
     featureQueue: agol.featureQueue,
     csvQueue: agol.csvQueue,
     indexFields: indexFields
+  })
+
+  agol.dataset = new Dataset({
+    cache: koop.cache,
+    log: koop.log
   })
 
   agol.files = koop.fs
