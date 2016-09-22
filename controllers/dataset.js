@@ -18,7 +18,7 @@ module.exports = function (agol, controller) {
      */
     POST: function (req, res) {
       if (req.params.method === 'import') enqueue(agol.bulkImport, req, res)
-      else if (req.params.action === 'export') enqueue(agol.bulkExport, req, res)
+      else if (req.params.method === 'export') enqueue(agol.bulkExport, req, res)
       else return res.status(400).json({error: 'Unsupported method'})
     },
     /**
