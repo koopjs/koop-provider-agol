@@ -231,16 +231,22 @@ var AGOL = function (koop) {
     getWkt(options.outSR, function (err, wkt) {
       if (err) return callback(err)
       options.srs = wkt
-      agol.enqueueExport(options)
+      var xport = agol.enqueueExport(options)
+
+      xport
       .once('start', function () { agol.updateJob('start', options) })
       .once('progress', function () { agol.updateJob('progress', options) })
       .once('finish', function () {
+        xport.removeAllListeners()
         // Hack to make sure this fires after other progress updates have been saved
         setTimeout(function () {
           agol.updateJob('finish', options)
         }, 1000)
       })
-      .once('fail', function () { agol.updateJob('fail', options) })
+      .once('fail', function () {
+        xport.removeAllListeners()
+        agol.updateJob('fail', options)
+      })
       agol.updateJob('queued', options, callback)
     })
   }
