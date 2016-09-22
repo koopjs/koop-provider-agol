@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Update keys on dataset API
+
 ## [3.10.0] - 2016-09-22
 ### Added
 * Datasets: delete

@@ -1,0 +1,195 @@
+{
+  "itemTitle": "Simple Point Dataset",
+  "version": 3,
+  "url": "http://servicesdev.arcgis.com/LjjARY1mkhxulWPq/arcgis/rest/services/Simple_Point_Dataset/FeatureServer",
+  "type": "Feature Service",
+  "itemModified": 1447444169000,
+  "_indexFields": false,
+  "_indexGeometry": false,
+  "_indexGeohash": false,
+  "retrieved_at": 1463059747870,
+  "status": "Cached",
+  "host": {},
+  "name": "Simple_Point_Dataset",
+  "fields": [
+    {
+      "name": "FID",
+      "type": "esriFieldTypeInteger",
+      "actualType": "int",
+      "alias": "FID",
+      "sqlType": "sqlTypeInteger",
+      "nullable": false,
+      "editable": false,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "FID"
+    },
+    {
+      "name": "OBJECTID_1",
+      "type": "esriFieldTypeInteger",
+      "actualType": "int",
+      "alias": "OBJECTID_1",
+      "sqlType": "sqlTypeInteger",
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "OBJECTID_1"
+    },
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeInteger",
+      "actualType": "int",
+      "alias": "OBJECTID",
+      "sqlType": "sqlTypeInteger",
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "OBJECTID"
+    },
+    {
+      "name": "ID",
+      "type": "esriFieldTypeInteger",
+      "actualType": "int",
+      "alias": "ID",
+      "sqlType": "sqlTypeInteger",
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "ID"
+    },
+    {
+      "name": "Airports",
+      "type": "esriFieldTypeString",
+      "actualType": "nvarchar",
+      "alias": "Airports",
+      "sqlType": "sqlTypeNVarchar",
+      "length": 80,
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "Airports"
+    },
+    {
+      "name": "Address",
+      "type": "esriFieldTypeString",
+      "actualType": "nvarchar",
+      "alias": "Address",
+      "sqlType": "sqlTypeNVarchar",
+      "length": 80,
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "Address"
+    },
+    {
+      "name": "City",
+      "type": "esriFieldTypeString",
+      "actualType": "nvarchar",
+      "alias": "City",
+      "sqlType": "sqlTypeNVarchar",
+      "length": 80,
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "City"
+    },
+    {
+      "name": "State",
+      "type": "esriFieldTypeString",
+      "actualType": "nvarchar",
+      "alias": "State",
+      "sqlType": "sqlTypeNVarchar",
+      "length": 80,
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "State"
+    },
+    {
+      "name": "Zip",
+      "type": "esriFieldTypeInteger",
+      "actualType": "int",
+      "alias": "Zip",
+      "sqlType": "sqlTypeInteger",
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "Zip"
+    },
+    {
+      "name": "URL",
+      "type": "esriFieldTypeString",
+      "actualType": "nvarchar",
+      "alias": "URL",
+      "sqlType": "sqlTypeNVarchar",
+      "length": 80,
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "URL"
+    },
+    {
+      "name": "X",
+      "type": "esriFieldTypeDouble",
+      "actualType": "float",
+      "alias": "X",
+      "sqlType": "sqlTypeFloat",
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "X"
+    },
+    {
+      "name": "Y",
+      "type": "esriFieldTypeDouble",
+      "actualType": "float",
+      "alias": "Y",
+      "sqlType": "sqlTypeFloat",
+      "nullable": true,
+      "editable": true,
+      "domain": null,
+      "defaultValue": null,
+      "outName": "Y"
+    },
+    {
+      "name": "GlobalID",
+      "type": "esriFieldTypeGlobalID",
+      "alias": "GlobalID",
+      "sqlType": "sqlTypeOther",
+      "length": 38,
+      "nullable": false,
+      "editable": false,
+      "domain": null,
+      "defaultValue": "NEWID() WITH VALUES",
+      "outName": "GlobalID"
+    }
+  ],
+  "lastEditDate": 1447444172391,
+  "expires_at": 1463146145249,
+  "failedLastImport": false,
+  "recordCount": 2,
+  "sha1": "e9b0d9330dacabbee5e9e9259525b1bdfcc53bce",
+  "generating": {
+    "full": {
+      "kml": "queued",
+      "geohash": "fail"
+    }
+  },
+  "generated": {
+    "full": {
+      "zip": 1474580198027,
+      "csv": 1474580198027,
+      "kml": 1474580198027
+    }
+  }
+}

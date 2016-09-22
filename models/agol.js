@@ -197,7 +197,6 @@ var AGOL = function (koop) {
    * @param {function} callback - calls back with an error or whether the data was dropped
    */
   agol.dropResource = function (item, layer, options, callback) {
-    console.log(item, layer)
     agol.cache.drop(item, layer, options, callback)
   }
 

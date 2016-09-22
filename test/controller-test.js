@@ -498,7 +498,6 @@ describe('AGOL Controller', function () {
         })
 
         sinon.stub(agol.files, 'createReadStream', function (path) {
-          console.log(process.cwd())
           var fixture = pathModule.join(__dirname, 'fixtures/csvData.csv')
           return fs.createReadStream(fixture)
         })
