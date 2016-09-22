@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Datasets: delete
 
+### Fixed
+* Datasets: export
+* Removed suspected memory leak with export jobs
+
 ## [3.9.0] - 2016-09-21
 ### Added
 * Datasets API
