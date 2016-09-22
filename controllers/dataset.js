@@ -20,6 +20,20 @@ module.exports = function (agol, controller) {
       if (req.params.method === 'import') enqueue(agol.bulkImport, req, res)
       else if (req.params.action === 'export') enqueue(agol.bulkExport, req, res)
       else return res.status(400).json({error: 'Unsupported method'})
+    },
+    /**
+     * Deletes a dataset from the cache
+     *
+     * @param {object} req - the incoming request object
+     * @param {object} res - the outgoing response object
+     */
+    DELETE: function (req, res) {
+      agol.log.debug(JSON.stringify({route: 'dataset:delete', params: req.params, query: req.query}))
+      var ids = decomposeId(req.params.dataset)
+      agol.dropResource(ids.item, ids.layer, {}, function (err) {
+        if (err) return res.status(500).send({error: err.message})
+        res.status(200).json({status: 'Deleted'})
+      })
     }
   }
 
@@ -29,10 +43,10 @@ module.exports = function (agol, controller) {
     if (req.query.formats) {
       formats = req.query.formats.split(',')
     }
-    var idParts = req.params.dataset.split('_')
+    var ids = decomposeId(req.params.dataset)
     var options = [{
-      item: idParts[0],
-      layer: idParts[1] || 0,
+      item: ids.item,
+      layer: ids.layer,
       formats: formats || ['csv', 'kml', 'zip', 'geohash']
     }]
     enqueueAction(req, options, function (err, info) {
@@ -59,5 +73,13 @@ module.exports = function (agol, controller) {
     var action = actions[req.method]
     if (!action) return res.status(400).json({error: 'Unsupported action'})
     action(req, res)
+  }
+}
+
+function decomposeId (dataset) {
+  var parts = dataset.split('_')
+  return {
+    item: parts[0],
+    layer: parts[1] || 0
   }
 }

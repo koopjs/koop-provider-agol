@@ -25,8 +25,9 @@ module.exports = {
   'get /agol/:id/datasets': 'dataset',
   'get /agol/:id/datasets/:dataset': 'dataset',
   'post /agol/:id/datasets/:dataset/:method': 'dataset',
+  'delete /agol/:id/datasets/:dataset': 'dataset',
 
-  // index contrller
+  // index controller
   'get /agol/:id/:item': 'getInfo',
 
   // this method needs to come before layer/format
