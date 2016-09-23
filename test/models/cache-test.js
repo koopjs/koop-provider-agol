@@ -1,10 +1,10 @@
 /* global describe, it, before, after, beforeEach, afterEach*/
 
 var should = require('should')
-var Cache = require('../lib/cache.js')
-var CSVQueue = require('../lib/csv-queue')
-var FeatureQueue = require('../lib/feature-queue')
-var Utils = require('../lib/utils')
+var Cache = require('../../models/cache.js')
+var CSVQueue = require('../../models/csv-queue')
+var FeatureQueue = require('../../models/feature-queue')
+var Utils = require('../../lib/utils')
 var sinon = require('sinon')
 var nock = require('nock')
 var fs = require('fs')
@@ -47,10 +47,10 @@ var cache = new Cache({
 })
 
 describe('caching feature services', function () {
-  var serviceFixture = JSON.parse(fs.readFileSync(path.join(__dirname, '/fixtures/serviceInfo.json')))
-  var layerFixture = JSON.parse(fs.readFileSync(path.join(__dirname, '/fixtures/layerInfo.json')))
-  var pageFixture = JSON.parse(fs.readFileSync(path.join(__dirname, '/fixtures/page.json')))
-  var countFixture = JSON.parse(fs.readFileSync(path.join(__dirname, '/fixtures/featureCount.json')))
+  var serviceFixture = require('../fixtures/serviceInfo.json')
+  var layerFixture = require('../fixtures/layerInfo.json')
+  var pageFixture = require('../fixtures/page.json')
+  var countFixture = require('../fixtures/featureCount.json')
   var options = {
     itemInfo: {
       title: 'Title',
@@ -188,15 +188,14 @@ describe('updating feature services', function () {
 
 describe('caching csvs', function () {
   var options = {
-    itemInfo: JSON.parse(fs.readFileSync(path.join(__dirname, '/fixtures/csvItem.json'))),
+    itemInfo: require('../fixtures/csvItem.json'),
     item: 'itemCSV',
     layer: 0,
     expiration: new Date('2015').getTime(),
     host: 'http://www.arcgis.com',
     hostId: 'arcgis'
   }
-
-  var csvData = fs.readFileSync(path.join(__dirname, '/fixtures/csvData.csv'))
+  var csvData = fs.readFileSync(path.resolve('test/fixtures/csvData.csv'))
   var fixture = nock('http://www.arcgis.com')
   fixture.get('/sharing/rest/content/items/itemCSV/data')
     .reply(200, csvData)

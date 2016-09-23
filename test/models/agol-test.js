@@ -22,7 +22,7 @@ var LocalFs = require('koop-localfs')
 var path = require('path')
 koop.fs = new LocalFs({rootDir: path.join(__dirname, 'data')})
 
-var agol = require('../models/agol.js')(koop)
+var agol = require('../../models/agol.js')(koop)
 
 describe('AGOL Model', function () {
   describe('getting the host portal', function () {
@@ -37,7 +37,7 @@ describe('AGOL Model', function () {
 
   describe('remove items', function () {
     before(function (done) {
-      sinon.stub(koop.cache, 'remove', function (host, itemid, opts, callback) {
+      sinon.stub(agol.cache._cache, 'remove', function (host, itemid, opts, callback) {
         callback()
       })
 
@@ -45,17 +45,13 @@ describe('AGOL Model', function () {
     })
 
     after(function (done) {
-      koop.cache.remove.restore()
+      agol.cache._cache.remove.restore()
       done()
     })
 
-    // beforeEach(function(done){
-    //  done()
-    // })
-
     it('should call cache db remove on dropItem', function (done) {
       agol.dropResource('item', 'layer', {}, function () {
-        koop.cache.remove.called.should.equal(true)
+        agol.cache._cache.remove.called.should.equal(true)
         done()
       })
     })

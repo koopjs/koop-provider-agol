@@ -8,7 +8,7 @@ koop.register(LocalFs)
 var fs = require('fs')
 var pathModule = require('path')
 
-var Provider = require('../index.js')
+var Provider = require('../../index.js')
 var agol = Provider.model(koop)
 var controller = Provider.controller(agol, koop.BaseController)
 koop._bindRoutes(Provider.routes, controller)
@@ -498,7 +498,7 @@ describe('AGOL Controller', function () {
         })
 
         sinon.stub(agol.files, 'createReadStream', function (path) {
-          var fixture = pathModule.join(__dirname, 'fixtures/csvData.csv')
+          var fixture = pathModule.resolve('test/fixtures/csvData.csv')
           return fs.createReadStream(fixture)
         })
 

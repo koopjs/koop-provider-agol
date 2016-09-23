@@ -1,5 +1,5 @@
 var util = require('util')
-var Utils = require('./utils.js')
+var Utils = require('../lib/utils.js')
 
 /**
  * @class

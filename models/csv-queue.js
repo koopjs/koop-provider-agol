@@ -1,6 +1,6 @@
 var async = require('async')
 var CSVRequest = require('./csv-request.js')
-var Utils = require('./utils.js')
+var Utils = require('../lib/utils.js')
 var path = require('path')
 
 /**

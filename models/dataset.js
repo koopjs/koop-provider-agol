@@ -1,4 +1,4 @@
-var Utils = require('./utils')
+var Utils = require('../lib/utils')
 var _ = require('lodash')
 
 function Dataset (options) {

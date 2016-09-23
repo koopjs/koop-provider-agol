@@ -1,4 +1,4 @@
-var Utils = require('./utils.js')
+var Utils = require('../lib/utils.js')
 var esriToGeojson = require('esri-to-geojson').fromEsri
 var async = require('async')
 var CACHE_LIFE = 24 * 60 * 60 * 1000

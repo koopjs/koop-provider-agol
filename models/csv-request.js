@@ -1,4 +1,4 @@
-var Utils = require('./utils.js')
+var Utils = require('../lib/utils.js')
 var csvToGeojson = require('esri-to-geojson').fromCSV
 var Csv = require('csv')
 

@@ -1,10 +1,9 @@
 /* global describe, it, beforeEach, afterEach */
 var nock = require('nock')
-var fs = require('fs')
 var sinon = require('sinon')
 var should = require('should')  // eslint-disable-line
 var path = require('path')
-var ImportService = require('../lib/import-service.js')
+var ImportService = require('../../lib/import-service.js')
 var Logger = require('koop-logger')
 var log = new Logger({})
 var LocalFs = require('koop-localfs')
@@ -61,16 +60,16 @@ describe('importing a feature service into the cache', function () {
   it('should update the info doc with status: Cached when the job is complete', function (done) {
     var fixture = nock('https://services3.arcgis.com')
     fixture.get('/layer/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/smallPage.json'))))
+      .reply(200, require('../fixtures/smallPage.json'))
 
     fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/featureCount.json'))))
+      .reply(200, require('../fixtures/featureCount.json'))
 
     fixture.get('/layer/FeatureServer/0?f=json')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/layerInfo.json'))))
+      .reply(200, require('../fixtures/layerInfo.json'))
 
     fixture.get('/layer/FeatureServer?f=json')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/serviceInfo.json'))))
+      .reply(200, require('../fixtures/serviceInfo.json'))
 
     sinon.stub(importService.cache, 'insertPartial', function (item, layer, geojson, callback) {
       callback(null)
@@ -91,10 +90,10 @@ describe('importing a feature service into the cache', function () {
   it('should call setFail when the job fails while getting features', function (done) {
     var fixture = nock('https://services3.arcgis.com')
     fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/featureCount.json'))))
+      .reply(200, require('../fixtures/featureCount.json'))
 
     fixture.get('/layer/FeatureServer/0?f=json')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/layerInfo.json'))))
+      .reply(200, require('../fixtures/layerInfo.json'))
 
     fixture.get('/layer/FeatureServer/0/query?where=1=1')
       .times(4)
@@ -113,16 +112,16 @@ describe('importing a feature service into the cache', function () {
     var fixture = nock('https://services3.arcgis.com')
 
     fixture.get('/layer/FeatureServer?f=json')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/serviceInfo.json'))))
+      .reply(200, require('../fixtures/serviceInfo.json'))
 
     fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/featureCount.json'))))
+      .reply(200, require('../fixtures/featureCount.json'))
 
     fixture.get('/layer/FeatureServer/0?f=json')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/layerInfo.json'))))
+      .reply(200, require('../fixtures/layerInfo.json'))
 
     fixture.get('/layer/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
-      .reply(200, JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/smallPage.json'))))
+      .reply(200, require('../fixtures/smallPage.json'))
 
     sinon.stub(importService.cache, 'insertPartial', function (item, layer, geojson, callback) {
       callback(new Error(''))

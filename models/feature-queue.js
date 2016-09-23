@@ -1,5 +1,5 @@
 var Resque = require('node-resque').queue
-var Work = require('./work.js')
+var Work = require('../lib/work.js')
 
 module.exports = {
   create: function (options) {

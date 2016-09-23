@@ -1,7 +1,7 @@
 /* global before, after, it, describe */ //eslint-disable-line
 var should = require('should')
 var sinon = require('sinon')
-var infoDoc = require('./fixtures/infoDoc.json')
+var infoDoc = require('../fixtures/infoDoc.json')
 
 var koop = require('koop/lib')
 var config = {}
@@ -12,7 +12,7 @@ koop.cache.db = koop.LocalDB
 koop.cache.db.query = function () {}
 koop.cache.db.log = koop.log
 
-var agol = require('../models/agol.js')(koop)
+var agol = require('../../models/agol.js')(koop)
 
 describe('The dataset model', function () {
   describe('findRecord', function () {
@@ -77,7 +77,7 @@ describe('The dataset model', function () {
     })
   }) // end findRecord
 
-  describe.only('findRecords', function () {
+  describe('findRecords', function () {
     before(function (done) {
       sinon.stub(agol.dataset.cache.db, 'query', function (key, callback) {
         var rows = [

@@ -1,15 +1,16 @@
 /* global describe, it*/
 var fs = require('fs')
 var nock = require('nock')
-var Portal = require('../lib/portal.js')
+var Portal = require('../../models/portal.js')
 var Logger = require('koop-logger')
 var log = new Logger({})
 var should = require('should')
+var path = require('path')
 
 var portal = new Portal({log: log})
 describe('when getting an item with metadata', function () {
-  var itemInfo = fs.readFileSync(__dirname + '/fixtures/itemWMeta.json')
-  var metadata = fs.readFileSync(__dirname + '/fixtures/metadata.xml')
+  var itemInfo = require('../fixtures/itemWMeta.json')
+  var metadata = fs.readFileSync(path.resolve('test/fixtures/metadata.xml'))
 
   var fixture = nock('http://www.arcgis.com/')
   fixture.get('/sharing/rest/content/items/97743c604c1d43d088043e25683aca5c?f=json')
@@ -27,7 +28,7 @@ describe('when getting an item with metadata', function () {
 })
 
 describe('when getting an item with no url', function () {
-  var itemInfo = fs.readFileSync(__dirname + '/fixtures/itemNoUrl.json')
+  var itemInfo = require('../fixtures/itemNoUrl.json')
 
   var fixture = nock('http://www.arcgis.com/')
   fixture.get('/sharing/rest/content/items/97743c604c1d43d088043e25683aca5c?f=json')

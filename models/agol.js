@@ -1,10 +1,10 @@
 /* @flow */
 'use strict'
-var Cache = require('../lib/cache')
-var FeatureQueue = require('../lib/feature-queue')
-var CSVQueue = require('../lib/csv-queue')
-var Portal = require('../lib/portal')
-var Dataset = require('../lib/dataset')
+var Cache = require('./cache')
+var FeatureQueue = require('./feature-queue')
+var CSVQueue = require('./csv-queue')
+var Portal = require('./portal')
+var Dataset = require('./dataset')
 var Utils = require('../lib/utils')
 var async = require('async')
 var SpatialReference = require('spatialreference')
