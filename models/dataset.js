@@ -1,4 +1,5 @@
 var Utils = require('../lib/utils')
+var dsQuery = require('../lib/dataset-query')
 var _ = require('lodash')
 
 function Dataset (options) {
@@ -21,11 +22,7 @@ Dataset.prototype.findRecord = function (options, callback) {
 }
 
 Dataset.prototype.findRecords = function (query, callback) {
-  var sql = 'SELECT id, info FROM koopinfo'
-  sql += buildWhere(query)
-  sql += buildSort(query)
-  sql += buildLimit(query)
-  sql += ';'
+  var sql = dsQuery.buildSearchSql(query)
   this.cache.db.query(sql, function (err, results) {
     if (err) return callback(err)
     if (results.rows.length < 1) return callback(null, [])
@@ -33,41 +30,6 @@ Dataset.prototype.findRecords = function (query, callback) {
     var datasets = formatDatasets(results.rows)
     callback(null, datasets)
   })
-}
-
-function buildWhere (query) {
-  var where = ' WHERE'
-  var stringTypes = ['failedLastImport', 'status', 'name', 'url']
-  stringTypes.forEach(function (param) {
-    if (query[param] && query[param].trim().length > 0) {
-      where += stringLike(param, query[param]) + ' AND'
-    }
-  })
-  // remove trailing AND
-  if (where === ' WHERE') return ''
-  where = where.slice(0, -4)
-  return where
-}
-
-function stringLike (field, value) {
-  return " info->>'" + field + "' ilike '%" + value + "%'"
-}
-
-function buildSort (query) {
-  var sort = " ORDER BY info->>'"
-  sort += query.sort && query.sort.trim().length > 0 ? query.sort : 'retrieved_at'
-  sort += "'"
-  return sort
-}
-
-function buildLimit (query) {
-  if (!query.limit || query.limit.trim().length < 1) {
-    return ' LIMIT 100'
-  } else if (query.limit > 100) {
-    return ' LIMIT 100'
-  } else {
-    return ' LIMIT ' + Number(query.limit)
-  }
 }
 
 function formatDatasets (rows) {
