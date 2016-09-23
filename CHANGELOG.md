@@ -2,8 +2,8 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-## Changed
+## [3.11.3] - 2016-09-23
+### Changed
 * Adjust generated sql for dataset queries
 
 ### Fixed
@@ -961,6 +961,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.11.3]: https://github.com/koopjs/koop-agol/compare/v3.11.2..v3.11.3
 [3.11.2]: https://github.com/koopjs/koop-agol/compare/v3.11.1..v3.11.2
 [3.11.1]: https://github.com/koopjs/koop-agol/compare/v3.11.0..v3.11.1
 [3.11.0]: https://github.com/koopjs/koop-agol/compare/v3.10.0..v3.11.0
