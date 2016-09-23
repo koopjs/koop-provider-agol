@@ -1,18 +1,21 @@
 /* global before, after, it, describe */ //eslint-disable-line
 var should = require('should')
 var sinon = require('sinon')
-var koop = require('koop/lib')
+var infoDoc = require('./fixtures/infoDoc.json')
 
+var koop = require('koop/lib')
 var config = {}
 // setup koop
 koop.config = config
 koop.cache = new koop.DataCache(koop)
+koop.cache.db = koop.LocalDB
+koop.cache.db.query = function () {}
+koop.cache.db.log = koop.log
 
 var agol = require('../models/agol.js')(koop)
 
-describe('The datasets model', function () {
-  describe('GET', function () {
-    var infoDoc = require('./fixtures/infoDoc.json')
+describe('The dataset model', function () {
+  describe('findRecord', function () {
     before(function (done) {
       sinon.stub(agol.dataset.cache, 'getInfo', function (key, callback) {
         callback(null, infoDoc)
@@ -72,5 +75,34 @@ describe('The datasets model', function () {
         done()
       })
     })
-  })
-})
+  }) // end findRecord
+
+  describe.only('findRecords', function () {
+    before(function (done) {
+      sinon.stub(agol.dataset.cache.db, 'query', function (key, callback) {
+        var rows = [
+          {
+            id: 'agol:foo:bar',
+            info: infoDoc
+          }
+        ]
+        callback(null, {rows: rows})
+      })
+      done()
+    })
+
+    after(function (done) {
+      agol.dataset.cache.db.query.restore()
+      done()
+    })
+
+    it('should serialize records correctly', function (done) {
+      agol.dataset.findRecords({}, function (err, datasets) {
+        should.not.exist(err)
+        datasets[0].id.should.equal('foo_bar')
+        should.exist(datasets[0].downloads)
+        done()
+      })
+    })
+  })// end findRecords
+}) // end dataset model
