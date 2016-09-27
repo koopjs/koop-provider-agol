@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Worker module references are now correct
+
 ## [3.11.3] - 2016-09-23
 ### Changed
 * Adjust generated sql for dataset queries
