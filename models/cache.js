@@ -359,9 +359,11 @@ Cache.prototype.drop = function (item, layer, options, callback) {
 Cache.prototype.checkExpiration = function (info, layer, callback) {
   if (info.type === 'CSV') return this._csvExpiration(info, layer, callback)
 
-  if (!info.lastEditDate) return this._featureExpiration(info, layer, callback)
+  // always send hosted services to hostedFeatureExp
+  var hosted = new RegExp(/services[0-9]?\.arcgis/)
+  if (info.lastEditDate || hosted.test(info.url)) return this._hostedFeatureExpiration(info, layer, callback)
 
-  this._hostedFeatureExpiration(info, layer, callback)
+  this._featureExpiration(info, layer, callback)
 }
 
 /**
@@ -406,6 +408,8 @@ Cache.prototype._hostedFeatureExpiration = function (info, layer, callback) {
     self.log.debug('Checking hosted feature service expiration took:', (Date.now() - start) / 1000, 'seconds')
     if (err) return callback(err)
     if (!layerInfo.editingInfo) return callback(null, true, info)
+    // Handle the case where there was no editing info the first time we imported
+    if (layerInfo.editingInfo.lastEditDate && !info.lastEditDate) return callback(null, true, info)
     var expired = layerInfo.editingInfo.lastEditDate > info.lastEditDate
     callback(null, expired, info)
   })

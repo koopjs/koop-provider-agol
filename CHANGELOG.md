@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Expire cache when editing info is added for the first time
+
 ## [3.11.4] - 2016-09-27
 ### Fixed
 * Worker module references are now correct

@@ -324,14 +324,34 @@ describe('checking expiration', function () {
     })
   })
 
+  it('should call back with expired when editing info is added for the first time', function (done) {
+    var info = {
+      url: 'https://services2.arcgis.com/FeatureServer/0',
+      lastEditDate: undefined,
+      version: 3,
+      foo: 'bar'
+    }
+
+    var fixture = nock('https://services2.arcgis.com')
+    fixture.get('/FeatureServer/0?f=json')
+      .reply(200, JSON.stringify({editingInfo: {lastEditDate: Date.now()}}))
+
+    cache.checkExpiration(info, 0, function (err, expired, newInfo) {
+      should.not.exist(err)
+      expired.should.equal(true)
+      should.exist(newInfo)
+      done()
+    })
+  })
+
   it('should call back with not expired when a hosted feature service is not expired', function (done) {
     var info = {
-      url: 'http://expired.com/FeatureServer/0',
+      url: 'http://expired3.com/FeatureServer/0',
       lastEditDate: new Date('2015').getTime(),
       version: 3
     }
 
-    var fixture = nock('http://expired.com')
+    var fixture = nock('http://expired3.com')
     fixture.get('/FeatureServer/0?f=json')
       .reply(200, JSON.stringify({editingInfo: {lastEditDate: new Date('2015').getTime()}}))
 
