@@ -175,11 +175,11 @@ module.exports = function (agol, controller) {
       expired: fileOutdated(dataInfo, fileInfo) || dataInfo.status === 'Expired'
     })
     var acceptsGzip = new RegExp(/gzip/i).test(req.headers['accept-encoding'])
-    if (canRedirect(acceptsGzip, fileInfo, req.params.format)) redirect(res, filePath)
+    if (canRedirect(acceptsGzip, fileInfo, req.params.format, req.params.stream)) redirect(res, filePath)
     else stream(res, filePath, acceptsGzip)
   }
 
-  function canRedirect (acceptsGzip, fileInfo, format) {
+  function canRedirect (acceptsGzip, fileInfo, format, stream) {
     // NGINX is enabled
     return config.nginx &&
     // The file is stored on S3
@@ -189,7 +189,9 @@ module.exports = function (agol, controller) {
     // And the proper content type header
     fileInfo.ContentType === Utils.contentTypes[format] &&
     // The client accepts gzip or gunzip is enabled on NGINX
-    (acceptsGzip || config.nginx.gunzip)
+    (acceptsGzip || config.nginx.gunzip) &&
+    // manual stream switch
+    !stream
   }
 
   function redirect (res, filePath) {

@@ -23,6 +23,7 @@ module.exports = {
 
   // datasets controller
   'get /agol/:id/datasets': 'dataset',
+  'get /agol/:id/datasets/:dataset.:format': 'dataset',
   'get /agol/:id/datasets/:dataset': 'dataset',
   'post /agol/:id/datasets/:dataset/:method': 'dataset',
   'delete /agol/:id/datasets/:dataset': 'dataset',

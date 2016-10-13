@@ -7,8 +7,18 @@ module.exports = function (agol, controller) {
      * @param {object} res - the outgoing response object
      */
     GET: function (req, res) {
-      if (req.params.dataset) getDataset(req, res)
-      else getDatasets(req, res)
+      agol.log.debug({route: 'dataset:get', params: req.params, query: req.query})
+      if (req.params.format) {
+        var ids = decomposeId(req.params.dataset)
+        req.params.item = ids.item
+        req.params.layer = ids.layer
+        req.params.redirect = false
+        controller.getResource(req, res)
+      } else if (req.params.dataset) {
+        getDataset(req, res)
+      } else {
+        getDatasets(req, res)
+      }
     },
     /**
      * Put a specific dataset on the queue
