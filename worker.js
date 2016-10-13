@@ -7,9 +7,15 @@ var Work = require('./lib/work.js')
 var koop = require('koop')(config)
 var Cache = require('./models/cache.js')
 var pgCache = require('koop-pgcache')
-var fs = config.filesystem.s3 ? require('koop-s3fs') : require('koop-localfs')
 var stringify = require('json-stringify-safe')
 var _ = require('lodash')
+
+var fs
+if (config.filesystem.s3 && config.filesystem.s3.bucket) {
+  fs = require('koop-s3fs')
+} else {
+  fs = require('koop-localfs')
+}
 
 koop.register(pgCache)
 koop.register(fs)

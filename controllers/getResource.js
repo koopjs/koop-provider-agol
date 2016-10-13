@@ -1,5 +1,6 @@
 var Utils = require('../lib/utils.js')
 var config = require('config')
+// confusing statement, but min ttl defaults to 0
 var FILE_MIN_TTL = parseInt((config.agol && config.agol.file_min_ttl) || 0, 10)
 module.exports = function (agol, controller) {
   function failedResource (info) {
