@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Added
 * Download from the datasets API
+* Add offset parameter to datasets query
 
 ### Fixed
 * Expire cache when editing info is added for the first time

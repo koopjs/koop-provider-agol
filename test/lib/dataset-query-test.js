@@ -10,7 +10,8 @@ describe('Generating SQL for datasets queries', function () {
       failedLastImport: true,
       sort: 'retrieved',
       importStatus: 'Cached',
-      limit: 1
+      limit: 1,
+      offset: 1
     }
 
     var sql = dsQuery.buildSearchSql(query)
@@ -21,7 +22,8 @@ describe('Generating SQL for datasets queries', function () {
     expected += "AND info->>'failedLastImport' ilike 'true' "
     expected += "AND info->>'status' ilike 'Cached' "
     expected += "ORDER BY info->>'retrieved_at' "
-    expected += 'LIMIT 1;'
+    expected += 'LIMIT 1 '
+    expected += 'OFFSET 1;'
     sql.should.equal(expected)
     done()
   })
