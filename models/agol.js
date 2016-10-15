@@ -242,9 +242,10 @@ var AGOL = function (koop) {
           agol.updateJob('finish', options)
         }, 1000)
       })
-      .once('fail', function () {
+      .once('fail', function (status) {
         xport.removeAllListeners()
-        agol.updateJob('fail', options)
+        var error = status.errorReport && status.errorReport.message
+        agol.updateJob('Error: ' + error, options)
       })
       agol.updateJob('queued', options, callback)
     })

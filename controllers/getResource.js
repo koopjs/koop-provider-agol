@@ -49,7 +49,10 @@ module.exports = function (agol, controller) {
     // if a job is already running or we don't actually have the data in the cache yet
     // hand off to returnStatus for a 202 response
     var exportStatus = Utils.determineExportStatus(req, info)
-    var error = exportStatus === 'fail' ? new Error('Export process failed') : undefined
+    var error
+    if (exportStatus === 'fail' || /error/i.test(exportStatus)) {
+      error = new Error(exportStatus)
+    }
     if (error) error.code = 500
     if (exportStatus || info.status === 'Processing') return returnStatus(req, res, info, error)
     var options = Utils.createExportOptions(req, info)
