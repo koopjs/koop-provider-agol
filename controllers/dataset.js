@@ -9,11 +9,7 @@ module.exports = function (agol, controller) {
     GET: function (req, res) {
       agol.log.debug({route: 'dataset:get', params: req.params, query: req.query})
       if (req.params.format) {
-        var ids = decomposeId(req.params.dataset)
-        req.params.item = ids.item
-        req.params.layer = ids.layer
-        req.params.redirect = false
-        controller.getResource(req, res)
+        download(req, res)
       } else if (req.params.dataset) {
         getDataset(req, res)
       } else {
@@ -77,6 +73,14 @@ module.exports = function (agol, controller) {
       if (err) return res.status(500).json({error: err.message})
       res.status(200).json({datasets: datasets})
     })
+  }
+
+  function download (req, res) {
+    var ids = decomposeId(req.params.dataset)
+    req.params.item = ids.item
+    req.params.layer = ids.layer
+    req.params.redirect = false
+    controller.getResource(req, res)
   }
 
   return function (req, res) {
