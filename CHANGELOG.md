@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Set host before handling POST to datasets controller
+
 ## [3.12.0] - 2016-10-15
 ### Added
 * Download from the datasets API

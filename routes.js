@@ -13,6 +13,7 @@ module.exports = {
 
   // these routes fire so there is a host and option key
   'get /agol/:id/datasets/*': 'setHost',
+  'post /agol/:id/datasets/*': 'setHost',
   'get /agol/:id/:item/*': 'setHost',
   'put /agol/:id/:item/*': 'setHost',
   'post /agol/:id/:item/*': 'setHost',
