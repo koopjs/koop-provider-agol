@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.12.1] - 2016-10-19
 ### Changed
 * Set host before handling POST to datasets controller
 
@@ -977,6 +977,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.12.1]: https://github.com/koopjs/koop-agol/compare/v3.12.0..v3.12.1
 [3.12.0]: https://github.com/koopjs/koop-agol/compare/v3.11.3..v3.12.0
 [3.11.3]: https://github.com/koopjs/koop-agol/compare/v3.11.2..v3.11.3
 [3.11.2]: https://github.com/koopjs/koop-agol/compare/v3.11.1..v3.11.2
