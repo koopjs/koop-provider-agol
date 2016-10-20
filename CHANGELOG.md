@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Clean up listeners after import service completes
+
 ## [3.12.1] - 2016-10-19
 ### Changed
 * Set host before handling POST to datasets controller
