@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Changed
 * Refactor export functions into separate model
+* Always update exports if lastEditDate changes
 
 ### Fixed
 * Remove possible exception in datasets serialization
