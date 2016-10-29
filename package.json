@@ -35,8 +35,6 @@
     "documentation": "^2.0.1",
     "istanbul": "^0.3.17",
     "koop": "^3.0.0-alpha.26",
-    "koop-localfs": "^1.1.0",
-    "lodash": "^2.4.2",
     "mocha": "~2.2.5",
     "nock": "^2.13.0",
     "should": "~3.3.1",
@@ -44,6 +42,9 @@
     "standard": "^5.3.0",
     "supertest": "~0.11.0"
   },
+	"peerDependencies": {
+   "koop": "^3.0.0-alpha.26"
+	},
   "homepage": "https://github.com/koopjs/koop-agol",
   "keywords": [
     "ago",
