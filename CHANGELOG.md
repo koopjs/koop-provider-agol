@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Refactor export functions into separate model
 * Always update exports if lastEditDate changes
+* Enqueue exports directly instead of using HTTP after import
 
 ### Fixed
 * Remove possible exception in datasets serialization
