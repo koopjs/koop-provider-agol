@@ -8,8 +8,7 @@ var Dataset = require('./dataset')
 var Utils = require('../lib/utils')
 var async = require('async')
 var SpatialReference = require('spatialreference')
-var formatSpatialRef = require('format-spatial-ref')
-
+var Exporter = require('./exporter')
 var AGOL = function (koop) {
   /**
    * inherits from the base model
@@ -49,6 +48,10 @@ var AGOL = function (koop) {
   })
 
   agol.dataset = new Dataset({
+    cache: koop.cache,
+    log: koop.log
+  })
+  agol.exporter = new Exporter({
     cache: koop.cache,
     log: koop.log
   })
@@ -201,16 +204,6 @@ var AGOL = function (koop) {
   }
 
   /**
-   * Wraps export enqueing
-   *
-   * @param {object} options - directions for what to export
-   * @return {object} new export job
-   */
-  agol.enqueueExport = function (options) {
-    return koop.queue.enqueue('exportFile', options)
-  }
-
-  /**
    * Wraps copy enqueing
    *
    * @param {object} options - directions for what to export
@@ -218,81 +211,6 @@ var AGOL = function (koop) {
    */
   agol.enqueueCopy = function (options) {
     return koop.queue.enqueue('copyFile', options)
-  }
-
-  /**
-   * Exports a dataset to a file
-   *
-   * @param {object} options - file export parameters
-   * @param {function} callback - calls back with an error or status and whether a new job was created
-   */
-  agol.generateExport = function (options, callback) {
-    getWkt(options.outSR, function (err, wkt) {
-      if (err) return callback(err)
-      options.srs = wkt
-      var xport = agol.enqueueExport(options)
-
-      xport
-      .once('start', function () { agol.updateJob('start', options) })
-      .once('progress', function () { agol.updateJob('progress', options) })
-      .once('finish', function () {
-        xport.removeAllListeners()
-        // Hack to make sure this fires after other progress updates have been saved
-        setTimeout(function () {
-          agol.updateJob('finish', options)
-        }, 1000)
-      })
-      .once('fail', function (status) {
-        xport.removeAllListeners()
-        var error = status.errorReport && status.errorReport.message
-        agol.updateJob('Error: ' + error, options)
-      })
-      agol.updateJob('queued', options, callback)
-    })
-  }
-
-  agol.updateJob = function (status, options, callback) {
-    agol.log.info('Export Job', status, options)
-    agol.cache.getInfo(options.table, function (err, info) {
-      if (err) {
-        if (callback) callback(err, info)
-        return agol.log.error(err)
-      }
-      info.generating = info.generating || {}
-      var generating = info.generating[options.key] = info.generating[options.key] || {}
-      if (status === 'finish') {
-        info.generated = info.generated || {}
-        info.generated[options.key] = info.generated[options.key] || {}
-        info.generated[options.key][options.format] = info.retrieved_at
-        delete info.generating[options.key][options.format]
-      } else {
-        generating[options.format] = status
-      }
-      agol.cache.updateInfo(options.table, info, function (err) {
-        if (err) agol.log.error(err)
-        if (callback) callback(err, info)
-      })
-    })
-  }
-
-  /**
-   * Gets projection information for a shapefile export
-   * @param {object} options - contains info on spatial reference, wkid and wkt
-   * @param {function} callback - calls back with an error or wkt
-   * @private
-   */
-  function getWkt (outSr, callback) {
-    var wkt
-    // if there is a passed in WKT just use that
-    if (!outSr) return callback()
-    if (outSr.wkt) {
-      wkt = outSr.wkt.replace(/lambert_conformal_conic(?!_)/i, 'Lambert_Conformal_Conic_2SP')
-      return callback(null, wkt)
-    }
-    var spatialRef = formatSpatialRef(outSr)
-    // latest WKID is the more modern value
-    var wkid = spatialRef.latestWkid || spatialRef.wkid
-    agol.spatialReference.wkidToWkt(wkid, callback)
   }
 
   /**
@@ -371,40 +289,7 @@ var AGOL = function (koop) {
     }
   }
 
-  /**
-   * Enqueues a set of export jobs
-   * @param {object} req - the incoming request object
-   * @param {array} jobs - the set of jobs to enqueue
-   * @param {function} callback - calls back with information about the enqueued jobs
-   */
-  agol.bulkExport = function (req, jobs, callback) {
-    var errors = []
-    async.each(jobs, xport, function () {
-      finishBulk(jobs, errors, callback)
-    })
-
-    function xport (job, next) {
-      agol.cache.getInfo('agol' + ':' + job.item + ':' + job.layer, function (err, info) {
-        if (err) {
-          errors.push(formatJobError(job, err))
-          return next()
-        }
-        var formats = job.formats || ['kml', 'csv', 'zip', 'geohash']
-        async.each(formats, function (format, done) {
-          req.optionKey = Utils.createCacheKey(job, {
-            where: job.where,
-            outSR: job.outSr,
-            geometry: job.geometry
-          })
-          var options = Utils.createExportOptions(req, info, job, format)
-          agol.generateExport(options, function (err) {
-            if (err) errors.push(formatJobError(job, err))
-            done()
-          })
-        }, function () { next() })
-      })
-    }
-  }
+// TODO (low priority) these two functions are now duplicated in Exporter
 
   function formatJobError (job, error) {
     return {

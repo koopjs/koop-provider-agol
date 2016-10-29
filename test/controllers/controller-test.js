@@ -330,7 +330,7 @@ describe('AGOL Controller', function () {
           callback(new Error('ENOENT'))
         })
 
-        sinon.stub(agol, 'generateExport', function (options, callback) {
+        sinon.stub(agol.exporter, 'generate', function (options, callback) {
           callback(null, {status: 'Cached', generating: {}})
         })
         done()
@@ -340,7 +340,7 @@ describe('AGOL Controller', function () {
         agol.files.stat.restore()
         agol.cache.getInfo.restore()
         agol.find.restore()
-        agol.generateExport.restore()
+        agol.exporter.generate.restore()
         done()
       })
 
@@ -351,7 +351,7 @@ describe('AGOL Controller', function () {
           .end(function (err, res) {
             should.not.exist(err)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(true)
+            agol.exporter.generate.called.should.equal(true)
             done()
           })
       })
@@ -382,7 +382,7 @@ describe('AGOL Controller', function () {
           callback(new Error('ENOENT'))
         })
 
-        sinon.stub(agol, 'generateExport', function (options, callback) {
+        sinon.stub(agol.exporter, 'generate', function (options, callback) {
           callback(null, {status: 'Cached', generating: {}})
         })
         done()
@@ -392,7 +392,7 @@ describe('AGOL Controller', function () {
         agol.files.stat.restore()
         agol.cache.getInfo.restore()
         agol.find.restore()
-        agol.generateExport.restore()
+        agol.exporter.generate.restore()
         done()
       })
 
@@ -404,7 +404,7 @@ describe('AGOL Controller', function () {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(false)
+            agol.exporter.generate.called.should.equal(false)
             done()
           })
       })
@@ -435,7 +435,7 @@ describe('AGOL Controller', function () {
           callback(new Error('ENOENT'))
         })
 
-        sinon.stub(agol, 'generateExport', function (options, callback) {
+        sinon.stub(agol.exporter, 'generate', function (options, callback) {
           callback(null, {status: 'Cached', generating: {}})
         })
         done()
@@ -445,7 +445,7 @@ describe('AGOL Controller', function () {
         agol.files.stat.restore()
         agol.cache.getInfo.restore()
         agol.find.restore()
-        agol.generateExport.restore()
+        agol.exporter.generate.restore()
         done()
       })
 
@@ -457,7 +457,7 @@ describe('AGOL Controller', function () {
             should.not.exist(err)
             agol.files.stat.called.should.equal(true)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(false)
+            agol.exporter.generate.called.should.equal(false)
             done()
           })
       })
@@ -489,7 +489,11 @@ describe('AGOL Controller', function () {
           callback(null, info)
         })
 
-        sinon.stub(agol, 'generateExport', function (options, callback) {
+        sinon.stub(agol.exporter.cache, 'getInfo', function (key, callback) {
+          callback(null, info)
+        })
+
+        sinon.stub(agol.exporter, 'generate', function (options, callback) {
           callback(null, {status: 'Cached', generating: {}})
         })
 
@@ -508,7 +512,8 @@ describe('AGOL Controller', function () {
       afterEach(function (done) {
         agol.find.restore()
         agol.cache.getInfo.restore()
-        agol.generateExport.restore()
+        agol.exporter.cache.getInfo.restore()
+        agol.exporter.generate.restore()
         agol.updateResource.restore()
         agol.files.createReadStream.restore()
         agol.files.stat.restore()
@@ -535,7 +540,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(true)
+            agol.exporter.generate.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
             done()
           })
@@ -557,7 +562,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(true)
+            agol.exporter.generate.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
             done()
           })
@@ -580,7 +585,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(true)
+            agol.exporter.generate.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
             done()
           })
@@ -606,7 +611,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(true)
+            agol.exporter.generate.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(false)
             done()
           })
@@ -625,7 +630,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(true)
+            agol.exporter.generate.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(true)
             done()
           })
@@ -644,7 +649,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(true)
+            agol.exporter.generate.called.should.equal(true)
             agol.files.createReadStream.called.should.equal(false)
             done()
           })
@@ -663,7 +668,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(false)
+            agol.exporter.generate.called.should.equal(false)
             agol.files.createReadStream.called.should.equal(false)
             done()
           })
@@ -682,7 +687,7 @@ describe('AGOL Controller', function () {
             agol.files.stat.called.should.equal(true)
             agol.updateResource.called.should.equal(false)
             agol.cache.getInfo.called.should.equal(true)
-            agol.generateExport.called.should.equal(false)
+            agol.exporter.generate.called.should.equal(false)
             agol.files.createReadStream.called.should.equal(false)
             done()
           })
@@ -835,7 +840,11 @@ describe('AGOL Controller', function () {
         callback(infoError, { name: 'Test_Download', metadata: 'foobar' })
       })
 
-      sinon.stub(agol, 'generateExport', function (options, callback) {
+      sinon.stub(agol.exporter.cache, 'getInfo', function (id, callback) {
+        callback(infoError, { name: 'Test_Download', metadata: 'foobar' })
+      })
+
+      sinon.stub(agol.exporter, 'generate', function (options, callback) {
         callback(null)
       })
 
@@ -846,7 +855,8 @@ describe('AGOL Controller', function () {
       agol.find.restore()
       agol.cacheResource.restore()
       agol.cache.getInfo.restore()
-      agol.generateExport.restore()
+      agol.exporter.cache.getInfo.restore()
+      agol.exporter.generate.restore()
       done()
     })
 

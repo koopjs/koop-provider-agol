@@ -160,7 +160,7 @@ describe('AGOL Model', function () {
 
     beforeEach(function (done) {
       var fakeJob = new FakeJob()
-      sinon.stub(agol, 'enqueueExport', function (options) {
+      sinon.stub(agol.exporter, 'enqueue', function (options) {
         return fakeJob
       })
 
@@ -168,7 +168,7 @@ describe('AGOL Model', function () {
         return fakeJob
       })
 
-      sinon.stub(agol, 'updateJob', function (a, b, callback) {
+      sinon.stub(agol.exporter, 'updateJob', function (a, b, callback) {
         fakeJob.emit('finish')
         if (callback) callback(null)
       })
@@ -177,14 +177,14 @@ describe('AGOL Model', function () {
     })
 
     afterEach(function (done) {
-      agol.enqueueExport.restore()
+      agol.exporter.enqueue.restore()
       agol.enqueueCopy.restore()
-      agol.updateJob.restore()
+      agol.exporter.updateJob.restore()
       done()
     })
 
     it('Should create a copyLatest job on finish when there are no query paramters', function (done) {
-      agol.generateExport({filePath: 'foo', where: 'foo'}, function () {
+      agol.exporter.generate({filePath: 'foo', where: 'foo'}, function () {
         agol.enqueueCopy.called.should.equal(false)
         done()
       })

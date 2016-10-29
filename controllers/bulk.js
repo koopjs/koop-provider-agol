@@ -1,7 +1,8 @@
 module.exports = function (agol, controller) {
   var actions = {
-    import: agol.bulkImport,
-    export: agol.bulkExport
+    // Henious hack to please Mocha
+    import: agol.bulkImport.bind(agol),
+    export: agol.exporter.bulk.bind(agol.exporter)
   }
   return function (req, res) {
     var action = actions[req.params.action]

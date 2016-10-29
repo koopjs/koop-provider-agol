@@ -5,3 +5,4 @@ test/config/*
 *.log
 ..*
 test.log.*
+.vscode

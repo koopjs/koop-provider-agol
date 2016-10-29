@@ -37,7 +37,7 @@ module.exports = function (agol, controller) {
     if (!outdated || isFullGeojson(req)) return returnFile(req, res, options.output, dataInfo, fileInfo)
     // if we are not storing data in the db we should never be writing new full geojson exports
     var exportStatus = Utils.determineExportStatus(req, dataInfo)
-    if (!exportStatus && dataInfo.version === 3.0) agol.generateExport(options, function (err, status) { if (err) agol.log.error(err) })
+    if (!exportStatus && dataInfo.version === 3.0) agol.exporter.generate(options, function (err, status) { if (err) agol.log.error(err) })
 
     // always serve filtered data from the same cache as the full export
     var isFiltered = req.query.where || req.query.geometry
@@ -57,7 +57,7 @@ module.exports = function (agol, controller) {
     if (exportStatus || info.status === 'Processing') return returnStatus(req, res, info, error)
     var options = Utils.createExportOptions(req, info)
     // only enqueue a job if it's not already queued or running
-    agol.generateExport(options, function (err, status, created) {
+    agol.exporter.generate(options, function (err, status, created) {
       returnStatus(req, res, status, err)
     })
   }
