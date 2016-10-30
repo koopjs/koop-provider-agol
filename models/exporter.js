@@ -1,6 +1,7 @@
 var Exporter = module.exports = function (options) {
   this.cache = options.cache
   this.log = options.log
+  this.queue = options.queue
   try {
     this.spatialReference = new SpatialReference({db: this.cache.db, logger: this.log})
   } catch (e) {
@@ -10,8 +11,6 @@ var Exporter = module.exports = function (options) {
 
 var async = require('async')
 var Utils = require('../lib/utils')
-var config = require('config')
-var koop = require('koop')(config)
 var SpatialReference = require('spatialreference')
 var formatSpatialRef = require('format-spatial-ref')
 
@@ -22,7 +21,7 @@ var formatSpatialRef = require('format-spatial-ref')
  * @return {object} new export job
  */
 Exporter.prototype.enqueue = function (options) {
-  return koop.queue.enqueue('exportFile', options)
+  return this.queue.enqueue('exportFile', options)
 }
 
 /**
@@ -66,7 +65,11 @@ Exporter.prototype.generate = function (options, callback) {
 Exporter.prototype.bulk = function (req, jobs, callback) {
   var self = this
   var errors = []
-  var xport = function (job, next) {
+  async.each(jobs, xport, function () {
+    finishBulk(jobs, errors, callback)
+  })
+
+  function xport (job, next) {
     self.cache.getInfo('agol' + ':' + job.item + ':' + job.layer, function (err, info) {
       if (err) {
         errors.push(formatJobError(job, err))
@@ -87,10 +90,6 @@ Exporter.prototype.bulk = function (req, jobs, callback) {
       }, function () { next() })
     })
   }
-
-  async.each(jobs, xport, function () {
-    finishBulk(jobs, errors, callback)
-  })
 }
 
 Exporter.prototype.updateJob = function (status, options, callback) {

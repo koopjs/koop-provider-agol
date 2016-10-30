@@ -23,8 +23,9 @@ module.exports = function (agol, controller) {
      * @param {object} res - the outgoing response object
      */
     POST: function (req, res) {
+      agol.log.debug({route: 'POST', params: req.params, query: req.query})
       if (req.params.method === 'import') enqueue(agol.bulkImport, req, res)
-      else if (req.params.method === 'export') enqueue(agol.bulkExport, req, res)
+      else if (req.params.method === 'export') enqueue(agol.exporter.bulk, req, res)
       else return res.status(400).json({error: 'Unsupported method'})
     },
     /**
@@ -44,7 +45,7 @@ module.exports = function (agol, controller) {
   }
 
   function enqueue (enqueueAction, req, res) {
-    agol.log.debug(JSON.stringify({route: 'queue:' + req.params.action, params: req.params, query: req.query}))
+    agol.log.debug(JSON.stringify({route: 'queue:' + req.params.method, params: req.params, query: req.query}))
     var formats
     if (req.query.formats) {
       formats = req.query.formats.split(',')

@@ -5,6 +5,7 @@ var https = require('https')
 var MultiWorker = require('node-resque').multiWorker
 var Work = require('./lib/work.js')
 var koop = require('koop')(config)
+var queue = require('koop-queue')
 var Cache = require('./models/cache.js')
 var pgCache = require('koop-pgcache')
 var stringify = require('json-stringify-safe')
@@ -19,6 +20,7 @@ if (config.filesystem.s3 && config.filesystem.s3.bucket) {
 
 koop.register(pgCache)
 koop.register(fs)
+koop.register(queue)
 
 // set global number of sockets if in the config
 // node version > 0.12 sets max sockets to infinity
@@ -35,7 +37,8 @@ var workOpts = {
   connection: config.queue.connection,
   cache: cache,
   log: koop.log,
-  files: koop.fs
+  files: koop.fs,
+  queue: koop.queue
 }
 
 var work = new Work(workOpts)

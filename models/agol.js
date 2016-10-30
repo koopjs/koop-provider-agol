@@ -51,9 +51,11 @@ var AGOL = function (koop) {
     cache: koop.cache,
     log: koop.log
   })
+
   agol.exporter = new Exporter({
     cache: koop.cache,
-    log: koop.log
+    log: koop.log,
+    queue: koop.queue
   })
 
   agol.files = koop.fs
