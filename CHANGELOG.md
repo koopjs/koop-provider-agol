@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Koop-Queue dep of worker is added to package.json
+
 ## [3.13.0] - 2016-10-31
 ### Added
 * Sort order sub param to dataset search e.g. (retrieved:ASC, retrieved:DESC)

@@ -24,6 +24,7 @@
     "koop-localfs": "^1.1.0",
     "koop-logger": "^1.0.1",
     "koop-pgcache": "^1.6.6",
+    "koop-queue": "^0.1.2",
     "koop-s3fs": "^1.0.2",
     "lodash": "^2.4.1",
     "node-resque": "^2.1.2",
