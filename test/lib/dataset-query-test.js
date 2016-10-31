@@ -8,7 +8,7 @@ describe('Generating SQL for datasets queries', function () {
       name: 'bar',
       itemTitle: 'baz',
       failedLastImport: true,
-      sort: 'retrieved',
+      sort: 'retrieved:ASC',
       importStatus: 'Cached',
       limit: 1,
       offset: 1
@@ -21,7 +21,7 @@ describe('Generating SQL for datasets queries', function () {
     expected += "AND info->>'itemTitle' ilike '%baz%' "
     expected += "AND info->>'failedLastImport' ilike 'true' "
     expected += "AND info->>'status' ilike 'Cached' "
-    expected += "ORDER BY info->>'retrieved_at' "
+    expected += "ORDER BY info->>'retrieved_at' ASC "
     expected += 'LIMIT 1 '
     expected += 'OFFSET 1;'
     sql.should.equal(expected)
@@ -39,7 +39,7 @@ describe('Generating SQL for datasets queries', function () {
     var expected = 'SELECT id, info FROM koopinfo WHERE '
     expected += "info->>'url' ilike '%foo%' "
     expected += "AND info->>'failedLastImport' ilike 'true' "
-    expected += "ORDER BY info->>'retrieved_at' "
+    expected += "ORDER BY info->>'retrieved_at' DESC "
     expected += 'LIMIT 1;'
     sql.should.equal(expected)
     done()
@@ -54,7 +54,7 @@ describe('Generating SQL for datasets queries', function () {
     var sql = dsQuery.buildSearchSql(query)
     var expected = 'SELECT id, info FROM koopinfo WHERE '
     expected += "info->>'url' ilike '%foo%' "
-    expected += "ORDER BY info->>'retrieved_at' "
+    expected += "ORDER BY info->>'retrieved_at' DESC "
     expected += 'LIMIT 1;'
     sql.should.equal(expected)
     done()
@@ -67,7 +67,7 @@ describe('Generating SQL for datasets queries', function () {
 
     var sql = dsQuery.buildSearchSql(query)
     var expected = 'SELECT id, info FROM koopinfo '
-    expected += "ORDER BY info->>'retrieved_at' "
+    expected += "ORDER BY info->>'retrieved_at' DESC "
     expected += 'LIMIT 1;'
     sql.should.equal(expected)
     done()

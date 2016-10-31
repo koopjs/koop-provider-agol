@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Added
+* Sort order sub param to dataset search e.g. (retrieved:ASC, retrieved:DESC)
+
 ### Changed
 * Refactor export functions into separate model
 * Always update exports if lastEditDate changes
