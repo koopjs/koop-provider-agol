@@ -38,9 +38,10 @@ Exporter.prototype.generate = function (options, callback) {
     var job = self.enqueue(options)
 
     job
-    .once('start', function () { self.updateJob('start', options) })
-    .once('progress', function () { self.updateJob('progress', options) })
+    .once('start', function () { if (!job.locked) self.updateJob('start', options) })
+    .once('progress', function () { if (!job.locked) self.updateJob('progress', options) })
     .once('finish', function () {
+      job.locked = true
       job.removeAllListeners()
       // Hack to make sure this fires after other progress updates have been saved
       setTimeout(function () {
@@ -48,6 +49,7 @@ Exporter.prototype.generate = function (options, callback) {
       }, 1000)
     })
     .once('fail', function (status) {
+      job.locked = true
       job.removeAllListeners()
       var error = status.errorReport && status.errorReport.message
       self.updateJob('Error: ' + error, options)

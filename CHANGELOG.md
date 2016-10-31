@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 * Remove possible exception in datasets serialization
+* Don't allow updates to export job status after finish or fail
 
 ## [3.12.2] - 2016-10-20
 ### Fixed
