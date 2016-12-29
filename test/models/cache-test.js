@@ -66,7 +66,7 @@ describe('caching feature services', function () {
     .reply(200, serviceFixture)
   fixture.get('/FeatureServer/0?f=json')
     .reply(200, layerFixture)
-  fixture.get('/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
+  fixture.get('/FeatureServer/0/query?where=1=1&returnGeometry=true&outFields=*&outSR=4326&f=json')
     .reply(200, pageFixture)
   fixture.get('/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
     .reply(200, countFixture)

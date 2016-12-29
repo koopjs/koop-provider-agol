@@ -59,7 +59,7 @@ describe('importing a feature service into the cache', function () {
 
   it('should update the info doc with status: Cached when the job is complete', function (done) {
     var fixture = nock('https://services3.arcgis.com')
-    fixture.get('/layer/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
+    fixture.get('/layer/FeatureServer/0/query?where=1=1&returnGeometry=true&outFields=*&outSR=4326&f=json')
       .reply(200, require('../fixtures/smallPage.json'))
 
     fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
@@ -120,7 +120,7 @@ describe('importing a feature service into the cache', function () {
     fixture.get('/layer/FeatureServer/0?f=json')
       .reply(200, require('../fixtures/layerInfo.json'))
 
-    fixture.get('/layer/FeatureServer/0/query?outSR=4326&f=json&outFields=*&where=1=1&geometry=&returnGeometry=true&geometryPrecision=')
+    fixture.get('/layer/FeatureServer/0/query?where=1=1&returnGeometry=true&outFields=*&outSR=4326&f=json')
       .reply(200, require('../fixtures/smallPage.json'))
 
     sinon.stub(importService.cache, 'insertPartial', function (item, layer, geojson, callback) {
