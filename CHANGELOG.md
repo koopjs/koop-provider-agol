@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Fixed
 * Koop-Queue dep of worker is added to package.json
+* Don't enqueue exports while import is processing
 
 ## [3.13.0] - 2016-10-31
 ### Added

@@ -3,10 +3,6 @@ var config = require('config')
 // confusing statement, but min ttl defaults to 0
 var FILE_MIN_TTL = parseInt((config.agol && config.agol.file_min_ttl) || 0, 10)
 module.exports = function (agol, controller) {
-  function failedResource (info) {
-    return info && info.status && info.status === 'Failed'
-  }
-
   /**
    * Handles requests for data when the resource is cached
    *
@@ -37,7 +33,10 @@ module.exports = function (agol, controller) {
     if (!outdated || isFullGeojson(req)) return returnFile(req, res, options.output, dataInfo, fileInfo)
     // if we are not storing data in the db we should never be writing new full geojson exports
     var exportStatus = Utils.determineExportStatus(req, dataInfo)
-    if (!exportStatus && dataInfo.version === 3.0) agol.exporter.generate(options, function (err, status) { if (err) agol.log.error(err) })
+    if (!exportStatus && dataInfo.version === 3.0) {
+      agol.log.debug({fileExists: true, status: 'enqueueing-exports'})
+      agol.exporter.generate(options, function (err, status) { if (err) agol.log.error(err) })
+    }
 
     // always serve filtered data from the same cache as the full export
     var isFiltered = req.query.where || req.query.geometry
@@ -57,6 +56,7 @@ module.exports = function (agol, controller) {
     if (exportStatus || info.status === 'Processing') return returnStatus(req, res, info, error)
     var options = Utils.createExportOptions(req, info)
     // only enqueue a job if it's not already queued or running
+    agol.log.debug({fileExists: false, status: 'enqueueing-exports', cache: info.status})
     agol.exporter.generate(options, function (err, status, created) {
       returnStatus(req, res, status, err)
     })
@@ -235,4 +235,8 @@ module.exports = function (agol, controller) {
       else return handleCached(req, res, info)
     })
   }
+}
+
+function failedResource (info) {
+  return info && info.status && info.status === 'Failed'
 }
