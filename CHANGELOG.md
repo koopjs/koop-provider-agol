@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.13.1] - 2016-12-29
 ### Fixed
 * Koop-Queue dep of worker is added to package.json
 * Don't enqueue exports while import is processing
@@ -1000,6 +1000,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.13.1]: https://github.com/koopjs/koop-agol/compare/v3.13.0..v3.13.1
 [3.13.0]: https://github.com/koopjs/koop-agol/compare/v3.12.2..v3.13.0
 [3.12.2]: https://github.com/koopjs/koop-agol/compare/v3.12.1..v3.12.2
 [3.12.1]: https://github.com/koopjs/koop-agol/compare/v3.12.0..v3.12.1
