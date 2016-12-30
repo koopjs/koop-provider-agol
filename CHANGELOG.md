@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Enqueue exports is called with the result of an import
+
 ## [3.13.1] - 2016-12-29
 ### Fixed
 * Koop-Queue dep of worker is added to package.json
