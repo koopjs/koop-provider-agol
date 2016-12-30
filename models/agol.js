@@ -151,15 +151,15 @@ var AGOL = function (koop) {
   * Updates a resource that has already been cached
   *
   * @param {object} options - options describing the resource to be cached
-  * @param {function} callback - the callback for when all is gone
+  * @param {function} callback - the callback for when all is done
   */
   agol.updateResource = function (info, options, callback) {
     agol.log.debug(options)
     // this will only work if data is not being stored in the database
     if (info.type === 'Feature Service') {
-      agol.cache.updateFeatureService(options, callback)
       agol.updateItemInfo(options, function (err) {
-        if (err) agol.log.error(err)
+        if (err) return callback(err)
+        agol.cache.updateFeatureService(options, callback)
       })
     } else {
       agol.dropResource(info.item, info.layer, null, function (err) {
