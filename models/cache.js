@@ -234,11 +234,11 @@ Cache.prototype.csv = function (options, callback) {
   this.get(options.item, options.layer, options.query, function (err, entry) {
     if (err) {
       self.log.debug(err)
-      if (err.message !== 'Resource not found') {
+      if (/does not exist/i.test(err.message) || /create table/i.test(err.message)) {
+        task.passthru = true
+      } else if (!/resource not found/i.test(err.message)) {
         err.code = 500
         return callback(err)
-      } else {
-        task.passthru = true
       }
     }
     if (entry && entry[0]) return callback(null, null, entry[0])

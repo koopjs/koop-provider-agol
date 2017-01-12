@@ -186,7 +186,7 @@ describe('updating feature services', function () {
   })
 })
 
-describe('caching csvs', function () {
+describe.only('caching csvs', function () {
   var options = {
     itemInfo: require('../fixtures/csvItem.json'),
     item: 'itemCSV',
