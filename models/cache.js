@@ -237,8 +237,8 @@ Cache.prototype.csv = function (options, callback) {
       if (err.message !== 'Resource not found') {
         err.code = 500
         return callback(err)
-      } else if (/relation .+ does not exist/i.test(err.message)) {
-        task.store = false
+      } else {
+        task.passthru = true
       }
     }
     if (entry && entry[0]) return callback(null, null, entry[0])

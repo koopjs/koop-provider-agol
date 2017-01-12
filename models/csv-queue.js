@@ -29,7 +29,7 @@ CSVQueue.prototype.push = function (task, callback) {
   var self = this
   self._checkLock(task, function (err, locked) {
     if (err) return callback(err)
-    if (!locked) {
+    if (!locked && !task.passthru) {
       task.store = true
       self._lockTask(task, function () {
         self._queue.push(task, callback)

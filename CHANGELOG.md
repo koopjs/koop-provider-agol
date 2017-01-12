@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Use different strategy for locking csvs
+
 ## [3.13.5] - 2017-01-12
 ### Fixed
 * Intermittent 500 when updating csvs
