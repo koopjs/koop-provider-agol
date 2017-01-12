@@ -112,6 +112,7 @@ var AGOL = function (koop) {
     // don't try to update things while they are processing
     if (info.status === 'Processing') return callback(null, info)
     agol.cache.checkExpiration(info, options, function (err, expired) {
+      agol.log.debug({method: 'updateIfExpired', item: options.item, layer: options.layer, expired: expired})
       if (err || !expired) return callback(err)
       agol.updateResource(info, options, function (err, status) {
         callback(err, status)
@@ -154,7 +155,6 @@ var AGOL = function (koop) {
   * @param {function} callback - the callback for when all is gone
   */
   agol.updateResource = function (info, options, callback) {
-    agol.log.debug(options)
     // this will only work if data is not being stored in the database
     if (info.type === 'Feature Service') {
       agol.cache.updateFeatureService(options, callback)
@@ -162,7 +162,7 @@ var AGOL = function (koop) {
         if (err) agol.log.error(err)
       })
     } else {
-      agol.dropResource(info.item, info.layer, null, function (err) {
+      agol.dropResource(options.item, options.layer, null, function (err) {
         if (err) return callback(err)
         agol.cacheResource(options, callback)
       })

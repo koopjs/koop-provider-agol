@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Fix drop and recache flow
+
 ## [3.13.3] - 2017-01-12
 ### Fixed
 * UpdateIfExpired properly updates csv
