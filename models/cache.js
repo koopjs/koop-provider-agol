@@ -3,12 +3,15 @@ var esriToGeojson = require('esri-to-geojson').fromEsri
 var async = require('async')
 var CACHE_LIFE = 24 * 60 * 60 * 1000
 var path = require('path')
+var Portal = require('./portal')
+
 function Cache (options) {
   this._cache = options.cache
   this.files = options.files
   this.log = options.log
   this.featureQueue = options.featureQueue
   this.csvQueue = options.csvQueue
+  this.portal = new Portal({log: this.log})
   this.indexFields = options.indexFields
   // max csv file size
   this.maxSize = 5000000
@@ -353,30 +356,32 @@ Cache.prototype.drop = function (item, layer, options, callback) {
  * Checks to see if an item is expired or not
  *
  * @param {object} info - metadata from the service
- * @param {number} layerId - the number of the layer in the request
+ * @param {object} options
  * @param {function} callback - callback to call when the requests are done
  */
-Cache.prototype.checkExpiration = function (info, layer, callback) {
-  if (info.type === 'CSV') return this._csvExpiration(info, layer, callback)
+Cache.prototype.checkExpiration = function (info, options, callback) {
+  if (info.type === 'CSV') return this._csvExpiration(info, options, callback)
 
   // always send hosted services to hostedFeatureExp
   var hosted = new RegExp(/services[0-9]?\.arcgis/)
-  if (info.lastEditDate || hosted.test(info.url)) return this._hostedFeatureExpiration(info, layer, callback)
+  if (info.lastEditDate || hosted.test(info.url)) return this._hostedFeatureExpiration(info, options.layer, callback)
 
-  this._featureExpiration(info, layer, callback)
+  this._featureExpiration(info, options.layer, callback)
 }
 
 /**
  * Checks to see if a csv is expired or not
  *
  * @param {object} info - metadata from the service
- * @param {number} layerId - the number of the layer in the request
  * @param {function} callback - callback to call when the requests are done
  * @private
  */
-Cache.prototype._csvExpiration = function (info, layer, callback) {
-  var expired = info.modified_at > info.retrieved_at
-  callback(null, expired, info)
+Cache.prototype._csvExpiration = function (info, options, callback) {
+  this.portal.getItem(options.host, options.item, function (err, item) {
+    if (err) return callback(err)
+    var expired = item.modified > info.retrieved_at
+    callback(null, expired, info)
+  })
 }
 
 /**

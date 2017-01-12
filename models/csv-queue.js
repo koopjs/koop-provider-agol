@@ -13,7 +13,7 @@ var path = require('path')
 function CSVQueue (options) {
   this.cache = options.cache
   this.log = options.log
-  this._queue = async.queue(this._getCSV.bind(this), 1)
+  this._queue = async.queue(this._getCSV.bind(this), 10)
   this.files = options.files
   this.lockDir = 'koop_agol_csv'
   this.locks = {}
