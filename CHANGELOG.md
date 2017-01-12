@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.13.5] - 2017-01-12
 ### Fixed
 * Intermittent 500 when updating csvs
 
@@ -1016,6 +1016,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.13.5]: https://github.com/koopjs/koop-agol/compare/v3.13.4..v3.13.5
 [3.13.4]: https://github.com/koopjs/koop-agol/compare/v3.13.3..v3.13.4
 [3.13.3]: https://github.com/koopjs/koop-agol/compare/v3.13.2..v3.13.3
 [3.13.2]: https://github.com/koopjs/koop-agol/compare/v3.13.1..v3.13.2
