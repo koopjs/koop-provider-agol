@@ -241,37 +241,49 @@ describe('caching csvs', function () {
 })
 
 describe('checking expiration', function () {
-  it('should call back with expired when a csv is expired', function (done) {
-    var info = {
-      modified_at: Date.now(),
-      retrieved_at: Date.now() - 100,
-      url: 'foo',
-      type: 'CSV',
-      version: 3
+  describe('for csvs', function () {
+    var options = {
+      host: 'http://portal.com',
+      item: '1ef'
     }
+    it('should call back with expired when a csv is expired', function (done) {
+      var info = {
+        retrieved_at: 1434991535000 - 1,
+        url: 'foo',
+        type: 'CSV',
+        version: 3
+      }
 
-    cache.checkExpiration(info, 0, function (err, expired, info) {
-      should.not.exist(err)
-      expired.should.equal(true)
-      should.exist(info)
-      done()
+      nock('http://portal.com')
+      .get('/sharing/rest/content/items/1ef?f=json')
+      .reply(200, require('../fixtures/csvItem.json'))
+
+      cache.checkExpiration(info, options, function (err, expired, info) {
+        should.not.exist(err)
+        expired.should.equal(true)
+        should.exist(info)
+        done()
+      })
     })
-  })
 
-  it('should call back with not expired when a csv is not expired', function (done) {
-    var info = {
-      modified_at: Date.now(),
-      retrieved_at: Date.now() + 100,
-      url: 'foo',
-      type: 'CSV',
-      version: 3
-    }
+    it('should call back with not expired when a csv is not expired', function (done) {
+      var info = {
+        retrieved_at: 1434991535000 + 1,
+        url: 'foo',
+        type: 'CSV',
+        version: 3
+      }
 
-    cache.checkExpiration(info, 0, function (err, expired, info) {
-      should.not.exist(err)
-      expired.should.equal(false)
-      should.exist(info)
-      done()
+      nock('http://portal.com')
+      .get('/sharing/rest/content/items/1ef?f=json')
+      .reply(200, require('../fixtures/csvItem.json'))
+
+      cache.checkExpiration(info, options, function (err, expired, info) {
+        should.not.exist(err)
+        expired.should.equal(false)
+        should.exist(info)
+        done()
+      })
     })
   })
 

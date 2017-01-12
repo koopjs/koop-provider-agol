@@ -111,7 +111,7 @@ var AGOL = function (koop) {
   agol.updateIfExpired = function (info, options, callback) {
     // don't try to update things while they are processing
     if (info.status === 'Processing') return callback(null, info)
-    agol.cache.checkExpiration(info, options.layer, function (err, expired) {
+    agol.cache.checkExpiration(info, options, function (err, expired) {
       if (err || !expired) return callback(err)
       agol.updateResource(info, options, function (err, status) {
         callback(err, status)
