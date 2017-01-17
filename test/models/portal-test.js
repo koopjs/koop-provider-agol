@@ -1,4 +1,4 @@
-/* global describe, it*/
+/* global describe, it */
 var fs = require('fs')
 var nock = require('nock')
 var Portal = require('../../models/portal.js')

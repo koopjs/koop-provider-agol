@@ -108,6 +108,26 @@ describe('importing a feature service into the cache', function () {
     importService.run()
   })
 
+  it('should call setFail when the job fails because there are no features', function (done) {
+    var fixture = nock('https://services3.arcgis.com')
+    fixture.get('/layer/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
+      .reply(200, require('../fixtures/featureCount.json'))
+
+    fixture.get('/layer/FeatureServer/0?f=json')
+      .reply(200, require('../fixtures/layerInfo.json'))
+
+    fixture.get('/layer/FeatureServer/0/query?where=1=1')
+      .reply(200, require('../fixtures/emptyPage.json'))
+
+    importService.on('fail', function (error) {
+      importService._fail(error)
+      importService.cache.setFail.called.should.equal(true)
+      done()
+    })
+
+    importService.run()
+  })
+
   it('should not call setFail when the job fails during a db insert', function (done) {
     var fixture = nock('https://services3.arcgis.com')
 

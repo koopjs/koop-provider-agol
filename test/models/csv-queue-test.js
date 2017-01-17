@@ -1,4 +1,4 @@
-/* global describe, it, afterEach, beforeEach*/
+/* global describe, it, afterEach, beforeEach */
 var sinon = require('sinon')
 var CSVQueue = require('../../models/csv-queue')
 var should = require('should')

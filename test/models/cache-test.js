@@ -1,4 +1,4 @@
-/* global describe, it, before, after, beforeEach, afterEach*/
+/* global describe, it, before, after, beforeEach, afterEach */
 
 var should = require('should')
 var Cache = require('../../models/cache.js')
@@ -186,7 +186,7 @@ describe('updating feature services', function () {
   })
 })
 
-describe.only('caching csvs', function () {
+describe('caching csvs', function () {
   var options = {
     itemInfo: require('../fixtures/csvItem.json'),
     item: 'itemCSV',

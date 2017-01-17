@@ -1,4 +1,4 @@
-  var Utils = require('../lib/utils.js')
+var Utils = require('../lib/utils.js')
 var csvToGeojson = require('esri-to-geojson').fromCSV
 var Csv = require('csv')
 
@@ -56,12 +56,13 @@ CSVRequest.prototype._get = function (callback) {
  */
 CSVRequest.prototype._parse = function (data, callback) {
   Csv.parse(data.body, function (err, csv) {
+    var error
     if (err) {
-      var error = new Error('Unable to parse the csv')
+      error = new Error('Unable to parse the csv')
       error.code = 400
       callback(error)
     } else if (csv.length < 2) {
-      var error = new Error('No features in csv')
+      error = new Error('No features in csv')
       error.code = 400
       callback(error)
     } else {
