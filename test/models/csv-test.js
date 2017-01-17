@@ -64,10 +64,7 @@ describe('when calling getCSV', function () {
     fixture.get('/csv')
       .reply(200, '"id","lat","lon"\n')
     csvRequest.submit(function (err, status, data) {
-      should.not.exist(err)
-      cache.get.called.should.equal(false)
-      cache.insert.called.should.equal(true)
-      cache.insertPartial.called.should.equal(false)
+      should.exist(err)
       done()
     })
   })

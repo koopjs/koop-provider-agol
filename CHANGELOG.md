@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Return error when csv has no features
+
 ## [3.13.7] - 2017-01-12
 ### Fixed
 * Be more specific about which cache errors to trap
