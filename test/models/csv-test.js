@@ -3,13 +3,11 @@
 var CSVRequest = require('../../models/csv-request.js')
 var sinon = require('sinon')
 var nock = require('nock')
-var cache = require('koop/lib').DataCache()
+var Koop = require('koop')
+var koop = new Koop()
+var cache = koop.cache
 var should = require('should')
-var koop = {
-  GeoJSON: {
-    fromCSV: function () {}
-  }
-}
+koop.GeoJSON = { fromCSV: function () {} }
 
 describe('when calling getCSV', function () {
   var csvRequest

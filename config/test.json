@@ -6,5 +6,8 @@
     "local": {
       "rootDir": "test/data"
     }
+  },
+  "agol": {
+    "env": "arcgis"
   }
 }

@@ -4,25 +4,16 @@ var should = require('should')
 var sinon = require('sinon')
 var EventEmitter = require('events').EventEmitter
 var util = require('util')
-var koop = require('koop/lib')
+var Koop = require('koop')
+var koop = new Koop()
 
 var config = {}
 // setup koop
 config.data_dir = __dirname + '/output/'
 config.agol = {env: 'arcgis'}
-koop.config = config
-var Logger = require('koop-logger')
-koop.log = new Logger({logfile: './test.log'})
 
-koop.cache = new koop.DataCache(koop)
-koop.cache.db = koop.LocalDB
-koop.cache.db.log = koop.log
-
-var LocalFs = require('koop-localfs')
-var path = require('path')
-koop.fs = new LocalFs({rootDir: path.join(__dirname, 'data')})
-
-var agol = require('../../models/agol.js')(koop)
+var Agol = require('../../models/agol.js')
+var agol = new Agol(koop)
 
 describe('AGOL Model', function () {
   describe('getting the host portal', function () {

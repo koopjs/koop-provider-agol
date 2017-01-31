@@ -3,20 +3,15 @@ var Tiles = require('./tiles.js')
 var Queue = require('./queue.js')
 var Dataset = require('./dataset.js')
 var Bulk = require('./bulk.js')
-var FeatureServer = require('./featureServer.js')
 var GetResource = require('./getResource.js')
 var Drop = require('./drop.js')
 var Hosts = require('./hosts.js')
 var Expiration = require('./expiration.js')
 var Utils = require('../lib/utils.js')
 
-var Controller = function (agol, BaseController) {
-  /**
-   * The primary controller onto which all methods are attached
-   * @module Controller
-   */
-  var controller = BaseController()
-
+function Controller (agol) {
+  // have to set this so the FeatureServer plugin can use it
+  this.model = agol
   /**
    * Manages shared logic for any request that needs a host or key
    *
@@ -24,7 +19,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} res - the outgoing response object
    * @param {function} next - calls the next route handler
    */
-  controller.setHost = function (req, res, next) {
+  this.setHost = function (req, res, next) {
     agol.log.debug(JSON.stringify({route: 'setHost', params: req.params, query: req.query}))
     req.params.silent = false
     if (!req.params.id) return next()
@@ -41,7 +36,7 @@ var Controller = function (agol, BaseController) {
    * @param {object} req - the incoming request object
    * @param {object} res - the outgoing response object
    */
-  controller.getInfo = function (req, res) {
+  this.getInfo = function (req, res) {
     agol.log.debug(JSON.stringify({route: 'getInfo', params: req.params, query: req.query}))
     var table = Utils.createTableKey(req.params)
     agol.cache.getInfo(table, function (err, info) {
@@ -56,9 +51,9 @@ var Controller = function (agol, BaseController) {
   * @param {object} req - the incoming request
   * @param {object} res - the outgoing response
   */
-  controller.getGeohash = function (req, res) {
+  this.getGeohash = function (req, res) {
     req.params.format = 'geohash'
-    controller.getResource(req, res)
+    this.getResource(req, res)
   }
 
   /**
@@ -67,32 +62,28 @@ var Controller = function (agol, BaseController) {
    * @param {object} req - the incoming request object
    * @param {object} res - the outgoing response object
    */
-  controller.preview = function (req, res) {
+  this.preview = function (req, res) {
     agol.log.debug(JSON.stringify({route: 'preview', params: req.params, query: req.query}))
     agol.log.info('Render preview ' + JSON.stringify(req.params))
     res.render(__dirname + '/../views/demo', { locals: { host: req.params.id, item: req.params.item } })
   }
 
   // init sub controllers
-  controller.hosts = Hosts(agol, controller)
+  this.hosts = Hosts(agol, this)
 
-  controller.getResource = GetResource(agol, controller)
+  this.getResource = GetResource(agol, this)
 
-  controller.drop = Drop(agol, controller)
+  this.drop = Drop(agol, this)
 
-  controller.bulk = Bulk(agol, controller)
+  this.bulk = Bulk(agol, this)
 
-  controller.queue = Queue(agol, controller)
+  this.queue = Queue(agol, this)
 
-  controller.dataset = Dataset(agol, controller)
+  this.dataset = Dataset(agol, this)
 
-  controller.featureserver = FeatureServer(agol, controller)
+  this.expiration = Expiration(agol, this)
 
-  controller.expiration = Expiration(agol, controller)
-
-  controller.tiles = Tiles(agol, controller)
-
-  return controller
+  this.tiles = Tiles(agol, this)
 }
 
 module.exports = Controller

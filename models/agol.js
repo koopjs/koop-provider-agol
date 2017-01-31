@@ -9,11 +9,11 @@ var Utils = require('../lib/utils')
 var async = require('async')
 var SpatialReference = require('spatialreference')
 var Exporter = require('./exporter')
-var AGOL = function (koop) {
+function AGOL (koop) {
   /**
    * inherits from the base model
    */
-  var agol = {}
+  var agol = this
   var config = koop.config
   // set field indexing off by default
   var indexFields
@@ -65,6 +65,36 @@ var AGOL = function (koop) {
   agol.portal = new Portal({log: koop.log})
 
   if (config.export_workers && config.export_workers.force) agol.forceExportWorker = true
+
+  agol.getData = function (req, callback) {
+    agol.log.debug(JSON.stringify({method: 'getData', params: req.params, query: req.query}))
+    var table = Utils.createTableKey(req.params)
+    agol.find(req.params.host, function (err, data) {
+      if (err) return callback(err)
+      agol.cache.getInfo(table, function (err, info) {
+        if (err && err.message !== 'Resource not found') return callback(err)
+        fetchCSVData(req, data.host, callback)
+        // need to stop here if this is a new dataset
+        if (err) return
+        var updateOpts = { host: data.host, key: table, item: req.params.id, layer: 0 }
+        agol.updateIfExpired(info, updateOpts, function (err) {
+          if (err) agol.log.error(err)
+        })
+      })
+    })
+  }
+
+  function fetchCSVData (req, portal, callback) {
+    agol.log.debug(JSON.stringify({method: 'fetchServiceData', params: req.params, query: req.query}))
+    // until koop-pgcache supports JSONB we need to fetch all the features from the cache in order to
+    // give accurate responses
+    req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
+    var options = {item: req.params.id, layer: 0, host: portal, query: req.query}
+    agol.cacheResource(options, function (error, info, data) {
+      if (error) return callback(error)
+      callback(null, data)
+    })
+  }
 
   /**
    * Adds a service to the Cache
@@ -360,8 +390,6 @@ var AGOL = function (koop) {
       if (callback) callback(err, report)
     }
   }
-
-  return agol
 }
 
 module.exports = AGOL

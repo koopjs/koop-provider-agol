@@ -3,16 +3,12 @@ var should = require('should')
 var sinon = require('sinon')
 var infoDoc = require('../fixtures/infoDoc.json')
 
-var koop = require('koop/lib')
-var config = {}
-// setup koop
-koop.config = config
-koop.cache = new koop.DataCache(koop)
-koop.cache.db = koop.LocalDB
+var Koop = require('koop')
+var koop = new Koop()
 koop.cache.db.query = function () {}
-koop.cache.db.log = koop.log
 
-var agol = require('../../models/agol.js')(koop)
+var Agol = require('../../models/agol.js')
+var agol = new Agol(koop)
 
 describe('The dataset model', function () {
   describe('findRecord', function () {
