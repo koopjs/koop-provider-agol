@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.14.2] - 2017-01-31
 ### Fixed
 * Dont look for stat.Metadata when using localfs
 
@@ -1040,6 +1040,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.14.2]: https://github.com/koopjs/koop-agol/compare/v3.14.1..v3.14.2
 [3.14.1]: https://github.com/koopjs/koop-agol/compare/v3.14.0..v3.14.1
 [3.14.0]: https://github.com/koopjs/koop-agol/compare/v3.13.7..v3.14.0
 [3.13.7]: https://github.com/koopjs/koop-agol/compare/v3.13.6..v3.13.7
