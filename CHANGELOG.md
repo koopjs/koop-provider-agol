@@ -2,9 +2,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.14.0] - 2017-01-31
 ### Changed
-* Compatability with latest koop 3.x
+* Compatible with latest Koop 3.x
 
 ### Fixed
 * Return error when csv has no features
@@ -1032,6 +1032,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.14.0]: https://github.com/koopjs/koop-agol/compare/v3.13.7..v3.14.0
 [3.13.7]: https://github.com/koopjs/koop-agol/compare/v3.13.6..v3.13.7
 [3.13.6]: https://github.com/koopjs/koop-agol/compare/v3.13.5..v3.13.6
 [3.13.5]: https://github.com/koopjs/koop-agol/compare/v3.13.4..v3.13.5
