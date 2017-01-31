@@ -4,22 +4,20 @@ var http = require('http')
 var https = require('https')
 var MultiWorker = require('node-resque').multiWorker
 var Work = require('./lib/work.js')
-var koop = require('koop')(config)
+var Koop = require('koop')
+var koop = new Koop(config)
 var queue = require('koop-queue')
 var Cache = require('./models/cache.js')
 var pgCache = require('koop-pgcache')
 var stringify = require('json-stringify-safe')
 var _ = require('lodash')
 
-var fs
 if (config.filesystem.s3 && config.filesystem.s3.bucket) {
-  fs = require('koop-s3fs')
-} else {
-  fs = require('koop-localfs')
+  var fs = require('koop-s3fs')
+  koop.register(fs)
 }
 
 koop.register(pgCache)
-koop.register(fs)
 koop.register(queue)
 
 // set global number of sockets if in the config

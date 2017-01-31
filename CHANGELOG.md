@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Worker.js is compatible with latest koop
+
 ## [3.14.0] - 2017-01-31
 ### Changed
 * Compatible with latest Koop 3.x
