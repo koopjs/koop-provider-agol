@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+* Dont look for stat.Metadata when using localfs
+
 ## [3.14.1] - 2017-01-31
 ### Fixed
 * Worker.js is compatible with latest koop
