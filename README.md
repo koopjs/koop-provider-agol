@@ -7,8 +7,8 @@
 
 [npm-img]: https://img.shields.io/npm/v/koop-agol.svg?style=flat-square
 [npm-url]: https://www.npmjs.com/package/koop-agol
-[travis-img]: https://img.shields.io/travis/koopjs/koop-agol.svg?style=flat-square
-[travis-url]: https://travis-ci.org/koopjs/koop-agol
+[travis-img]: https://img.shields.io/travis/koopjs/koop-provider-agol.svg?style=flat-square
+[travis-url]: https://travis-ci.org/koopjs/koop-provier-agol
 
 ## Install
 
