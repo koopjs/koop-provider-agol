@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Delegate orderByFields, resultOffset and resultRecordCount to upstream featureserver code
+
 ## [3.14.2] - 2017-01-31
 ### Fixed
 * Dont look for stat.Metadata when using localfs

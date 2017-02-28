@@ -9,6 +9,8 @@ var Utils = require('../lib/utils')
 var async = require('async')
 var SpatialReference = require('spatialreference')
 var Exporter = require('./exporter')
+var _ = require('lodash')
+
 function AGOL (koop) {
   /**
    * inherits from the base model
@@ -68,6 +70,7 @@ function AGOL (koop) {
 
   agol.getData = function (req, callback) {
     agol.log.debug(JSON.stringify({method: 'getData', params: req.params, query: req.query}))
+    req.params.item = req.params.id
     var table = Utils.createTableKey(req.params)
     agol.find(req.params.host, function (err, data) {
       if (err) return callback(err)
@@ -88,8 +91,14 @@ function AGOL (koop) {
     agol.log.debug(JSON.stringify({method: 'fetchServiceData', params: req.params, query: req.query}))
     // until koop-pgcache supports JSONB we need to fetch all the features from the cache in order to
     // give accurate responses
-    req.query.limit = req.query.limit || req.query.resultRecordCount || 1000000000
-    var options = {item: req.params.id, layer: 0, host: portal, query: req.query}
+    var query = _.cloneDeep(req.query)
+    if (query.orderByFields || query.resultOffset) {
+      query.orderByFields - null
+      query.resultRecordCount = 1000000000
+      query.resultOffset = null
+    }
+
+    var options = {item: req.params.id, layer: 0, host: portal, query: query}
     agol.cacheResource(options, function (error, info, data) {
       if (error) return callback(error)
       callback(null, data)
