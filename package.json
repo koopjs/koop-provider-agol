@@ -1,5 +1,5 @@
 {
-  "name": "koop-agol",
+  "name": "koop-provider-agol",
   "description": "ArcGIS Online provider for Koop (public services only).",
   "version": "3.14.4",
   "author": "Chris Helm",
