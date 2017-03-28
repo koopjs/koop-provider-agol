@@ -1,7 +1,7 @@
 {
   "name": "koop-provider-agol",
   "description": "ArcGIS Online provider for Koop (public services only).",
-  "version": "3.14.4",
+  "version": "3.14.5",
   "author": "Chris Helm",
   "bugs": {
     "url": "https://github.com/koopjs/koop-agol/issues"

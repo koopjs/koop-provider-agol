@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.14.5] - 2017-03-27
 ### Fixed
 * Fix field inclusing in export options
 
@@ -1052,6 +1052,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.14.5]: https://github.com/koopjs/koop-agol/compare/v3.14.4..v3.14.5
+[3.14.4]: https://github.com/koopjs/koop-agol/compare/v3.14.4..v3.14.3
 [3.14.3]: https://github.com/koopjs/koop-agol/compare/v3.14.3..v3.14.2
 [3.14.2]: https://github.com/koopjs/koop-agol/compare/v3.14.1..v3.14.2
 [3.14.1]: https://github.com/koopjs/koop-agol/compare/v3.14.0..v3.14.1
