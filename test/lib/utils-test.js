@@ -315,7 +315,7 @@ describe('Utils', function () {
         name: 'download',
         metadata: 'metadata',
         version: 3,
-        info: { fields: [] }
+        fields: []
       }
       var eOpts = Utils.createExportOptions(req, table)
       eOpts.table.should.equal('agol:1ef:1')

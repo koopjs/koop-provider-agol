@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 * Use @koopjs/filesystem-s3 instead of koop-s3fs
 
+## [3.14.5] - 2017-03-27
+### Fixed
+* Fix field inclusion in export options
+
 ## [3.14.4] - 2017-02-27
 ### Fixed
 * Republish
@@ -1052,6 +1056,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.14.5]: https://github.com/koopjs/koop-agol/compare/v3.14.4..v3.14.5
+[3.14.4]: https://github.com/koopjs/koop-agol/compare/v3.14.4..v3.14.3
 [3.14.3]: https://github.com/koopjs/koop-agol/compare/v3.14.3..v3.14.2
 [3.14.2]: https://github.com/koopjs/koop-agol/compare/v3.14.1..v3.14.2
 [3.14.1]: https://github.com/koopjs/koop-agol/compare/v3.14.0..v3.14.1

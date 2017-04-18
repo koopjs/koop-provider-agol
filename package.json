@@ -1,10 +1,10 @@
 {
-  "name": "koop-agol",
+  "name": "koop-provider-agol",
   "description": "ArcGIS Online provider for Koop (public services only).",
-  "version": "3.14.4",
+  "version": "3.14.5",
   "author": "Chris Helm",
   "bugs": {
-    "url": "https://github.com/koopjs/koop-agol/issues"
+    "url": "https://github.com/koopjs/koop-provider-agol/issues"
   },
   "contributors": [
     "Daniel Fenton",
@@ -46,7 +46,7 @@
   "peerDependencies": {
     "koop": "3.0.0-alpha.29"
   },
-  "homepage": "https://github.com/koopjs/koop-agol",
+  "homepage": "https://github.com/koopjs/koop-provider-agol",
   "keywords": [
     "ago",
     "agol",
@@ -62,11 +62,11 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:koopjs/koop-agol.git"
+    "url": "git@github.com:koopjs/koop-provider-agol.git"
   },
   "scripts": {
     "coverage": "istanbul cover _mocha test/*-test.js",
-    "docs": "documentation -f html --name koop-agol -g -o docs",
+    "docs": "documentation -f html --name koop-provider-agol -g -o docs",
     "test": "standard && NODE_ENV=test mocha test/**/*.js -t 5000"
   }
 }
