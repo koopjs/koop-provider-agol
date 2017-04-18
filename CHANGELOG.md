@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [3.14.6] - 2017-04-18
 ### Changed
 * Use @koopjs/filesystem-s3 instead of koop-s3fs
 
@@ -1056,6 +1056,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[3.14.6]: https://github.com/koopjs/koop-agol/compare/v3.14.6..v3.14.5
 [3.14.5]: https://github.com/koopjs/koop-agol/compare/v3.14.4..v3.14.5
 [3.14.4]: https://github.com/koopjs/koop-agol/compare/v3.14.4..v3.14.3
 [3.14.3]: https://github.com/koopjs/koop-agol/compare/v3.14.3..v3.14.2
