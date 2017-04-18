@@ -13,7 +13,7 @@ var stringify = require('json-stringify-safe')
 var _ = require('lodash')
 
 if (config.filesystem.s3 && config.filesystem.s3.bucket) {
-  var fs = require('koop-s3fs')
+  var fs = require('@koopjs/filesystem-s3')
   koop.register(fs)
 }
 

@@ -11,6 +11,7 @@
     "Nate Goldman"
   ],
   "dependencies": {
+    "@koopjs/filesystem-s3": "^1.2.4",
     "async": "^1.5.0",
     "config": "^1.19.0",
     "csv": "~0.4.0",
@@ -25,7 +26,6 @@
     "koop-logger": "^1.0.1",
     "koop-pgcache": "^1.6.6",
     "koop-queue": "^0.1.2",
-    "koop-s3fs": "^1.0.2",
     "lodash": "^2.4.1",
     "node-resque": "^2.1.2",
     "request": "^2.67.0",
