@@ -14,13 +14,8 @@
     "@koopjs/filesystem-s3": "^1.2.4",
     "async": "^2.5.0",
     "config": "^1.19.0",
-<<<<<<< HEAD
-    "csv": "~0.4.0",
-    "ejs": "^2.5.5",
-=======
     "csv": "~1.1.1",
     "ejs": "~2.5.7",
->>>>>>> chore(package): update dependencies
     "esri-to-geojson": "^1.0.2",
     "featureservice": "^1.5.6",
     "format-spatial-ref": "^1.0.0",
