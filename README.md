@@ -1,5 +1,7 @@
 # koop-agol
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/koopjs/koop-provider-agol.svg)](https://greenkeeper.io/)
+
 > ArcGIS Online provider for [Koop](https://github.com/Esri/koop) (public services only).
 
 [![npm version][npm-img]][npm-url]
