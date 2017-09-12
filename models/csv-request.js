@@ -128,9 +128,9 @@ CSVRequest.prototype._store = function (geojson, callback) {
     var info = {
       status: 'Cached',
       retrieved_at: Date.now(),
-      count: geojson.features.length
+      count: geojson.features.length,
+      name: table.name
     }
-    geojson.name = table.name
     callback(null, info, geojson)
   })
 }

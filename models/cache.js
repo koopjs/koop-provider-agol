@@ -242,7 +242,9 @@ Cache.prototype.csv = function (options, callback) {
       }
     }
     if (entry && entry[0]) return callback(null, null, entry[0])
-    if (itemInfo.size > self.maxSize) return callback({ code: 413, error: 'The requested CSV exceeds the allowable size of ' + self.maxSize + ' bytes' }, null)
+    if (itemInfo.size > self.maxSize) {
+      return callback({ code: 413, error: 'The requested CSV exceeds the allowable size of ' + self.maxSize + ' bytes' }, null)
+    }
     task.url = options.host + Utils.agol_path + id + '/data'
     task.itemInfo = itemInfo
     task.id = id
@@ -269,7 +271,7 @@ Cache.prototype.featureCollection = function (params, callback) {
   var hostId = params.id
 
   // for large datasets enforce koop's large data limit
-  var options = options || {}
+  var options = {}
   options.enforce_limit = true
 
   self._cache.get('agol', item, options, function (err, entry) {

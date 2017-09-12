@@ -8,6 +8,7 @@ var Drop = require('./drop.js')
 var Hosts = require('./hosts.js')
 var Expiration = require('./expiration.js')
 var Utils = require('../lib/utils.js')
+var path = require('path')
 
 function Controller (agol) {
   // have to set this so the FeatureServer plugin can use it
@@ -65,7 +66,7 @@ function Controller (agol) {
   this.preview = function (req, res) {
     agol.log.debug(JSON.stringify({route: 'preview', params: req.params, query: req.query}))
     agol.log.info('Render preview ' + JSON.stringify(req.params))
-    res.render(__dirname + '/../views/demo', { locals: { host: req.params.id, item: req.params.item } })
+    res.render(path.join(__dirname, '/../views/demo'), { locals: { host: req.params.id, item: req.params.item } })
   }
 
   // init sub controllers
