@@ -101,8 +101,9 @@ function AGOL (koop) {
     var options = {item: req.params.id, layer: 0, host: portal, query: query}
     agol.cacheResource(options, function (error, info, data) {
       if (error) return callback(error)
+      info = info || {}
       data.metadata = {
-        name: info.name
+        name: info.name || data.name
       }
       callback(null, data)
     })
