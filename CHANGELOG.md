@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Pass csv name in metadata.name
+
 ## [3.14.6] - 2017-04-18
 ### Changed
 * Use @koopjs/filesystem-s3 instead of koop-s3fs
