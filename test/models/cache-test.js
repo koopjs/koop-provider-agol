@@ -67,14 +67,14 @@ describe('cache model', function () {
       .reply(200, serviceFixture)
     fixture.get('/FeatureServer/0?f=json')
       .reply(200, layerFixture)
-    fixture.get('/FeatureServer/0/query?where=1=1&returnGeometry=true&outFields=*&outSR=4326&f=json')
+    fixture.get('/FeatureServer/0/query?where=1=1&returnGeometry=true&returnZ=true&outFields=*&outSR=4326&f=json')
       .reply(200, pageFixture)
     fixture.get('/FeatureServer/0/query?where=1=1&returnCountOnly=true&f=json')
       .reply(200, countFixture)
 
     nock('http://koop.dev')
-    .post('/agol/test/bulk/export')
-    .reply(200)
+      .post('/agol/test/bulk/export')
+      .reply(200)
 
     before(function (done) {
       cache.insertFeatureService(options, function (err, info) {
@@ -115,7 +115,7 @@ describe('cache model', function () {
     }
     beforeEach(function (done) {
       sinon.stub(featureQueue, 'enqueue', function (queue, options) {
-        return
+
       })
 
       sinon.stub(koop.cache, 'updateInfo', function (key, info, callback) {
@@ -256,8 +256,8 @@ describe('cache model', function () {
         }
 
         nock('http://portal.com')
-        .get('/sharing/rest/content/items/1ef?f=json')
-        .reply(200, require('../fixtures/csvItem.json'))
+          .get('/sharing/rest/content/items/1ef?f=json')
+          .reply(200, require('../fixtures/csvItem.json'))
 
         cache.checkExpiration(info, options, function (err, expired, info) {
           should.not.exist(err)
@@ -276,8 +276,8 @@ describe('cache model', function () {
         }
 
         nock('http://portal.com')
-        .get('/sharing/rest/content/items/1ef?f=json')
-        .reply(200, require('../fixtures/csvItem.json'))
+          .get('/sharing/rest/content/items/1ef?f=json')
+          .reply(200, require('../fixtures/csvItem.json'))
 
         cache.checkExpiration(info, options, function (err, expired, info) {
           should.not.exist(err)
@@ -408,7 +408,7 @@ describe('cache model', function () {
 
       cache.setFail(key, error, function (info) {
         info.status.should.equal('Failed')
-        info.error.should.exist
+        info.error.should.exist // eslint-disable-line
         info.error.timestamp.should.equal('time')
         info.error.code.should.equal(999)
         info.error.request.should.equal('http://www.error.com')

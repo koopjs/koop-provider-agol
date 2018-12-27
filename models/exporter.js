@@ -38,22 +38,22 @@ Exporter.prototype.generate = function (options, callback) {
     var job = self.enqueue(options)
 
     job
-    .once('start', function () { if (!job.locked) self.updateJob('start', options) })
-    .once('progress', function () { if (!job.locked) self.updateJob('progress', options) })
-    .once('finish', function () {
-      job.locked = true
-      job.removeAllListeners()
-      // Hack to make sure this fires after other progress updates have been saved
-      setTimeout(function () {
-        self.updateJob('finish', options)
-      }, 1000)
-    })
-    .once('fail', function (status) {
-      job.locked = true
-      job.removeAllListeners()
-      var error = status.errorReport && status.errorReport.message
-      self.updateJob('Error: ' + error, options)
-    })
+      .once('start', function () { if (!job.locked) self.updateJob('start', options) })
+      .once('progress', function () { if (!job.locked) self.updateJob('progress', options) })
+      .once('finish', function () {
+        job.locked = true
+        job.removeAllListeners()
+        // Hack to make sure this fires after other progress updates have been saved
+        setTimeout(function () {
+          self.updateJob('finish', options)
+        }, 1000)
+      })
+      .once('fail', function (status) {
+        job.locked = true
+        job.removeAllListeners()
+        var error = status.errorReport && status.errorReport.message
+        self.updateJob('Error: ' + error, options)
+      })
     self.updateJob('queued', options, callback)
   })
 }
