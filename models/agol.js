@@ -93,7 +93,7 @@ function AGOL (koop) {
     // give accurate responses
     var query = _.cloneDeep(req.query)
     if (query.orderByFields || query.resultOffset) {
-      query.orderByFields - null
+      query.orderByFields = null
       query.resultRecordCount = 1000000000
       query.resultOffset = null
     }
@@ -101,6 +101,10 @@ function AGOL (koop) {
     var options = {item: req.params.id, layer: 0, host: portal, query: query}
     agol.cacheResource(options, function (error, info, data) {
       if (error) return callback(error)
+      info = info || {}
+      data.metadata = {
+        name: info.name || data.name
+      }
       callback(null, data)
     })
   }
@@ -132,7 +136,7 @@ function AGOL (koop) {
     var host = hosts[id]
     if (host) return callback(null, {host: host})
     koop.cache.db.serviceGet('agol:services', parseInt(id, 0) || id, function (err, res) {
-      if (err) return callback('No service table found for that id. Try POSTing {"id":"arcgis", "host":"http://www.arcgis.com"} to /agol', null)
+      if (err) return callback(new Error('No service table found for that id. Try POSTing {"id":"arcgis", "host":"http://www.arcgis.com"} to /agol'), null)
       callback(null, res)
     })
   }
