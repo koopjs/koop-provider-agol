@@ -243,7 +243,9 @@ Cache.prototype.csv = function (options, callback) {
     }
     if (entry && entry[0]) return callback(null, null, entry[0])
     if (itemInfo.size > self.maxSize) {
-      return callback({ code: 413, error: 'The requested CSV exceeds the allowable size of ' + self.maxSize + ' bytes' }, null)
+      const sizeError = new Error('The requested CSV exceeds the allowable size of ' + self.maxSize + ' bytes')
+      sizeError.code = 413
+      return callback(sizeError, null)
     }
     task.url = options.host + Utils.agol_path + id + '/data'
     task.itemInfo = itemInfo

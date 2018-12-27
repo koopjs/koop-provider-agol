@@ -336,7 +336,7 @@ function AGOL (koop) {
     }
   }
 
-// TODO (low priority) these two functions are now duplicated in Exporter
+  // TODO (low priority) these two functions are now duplicated in Exporter
 
   function formatJobError (job, error) {
     return {

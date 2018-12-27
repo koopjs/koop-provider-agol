@@ -211,9 +211,9 @@ module.exports = function (agol, controller) {
       res.setHeader('Content-Encoding', 'gzip')
     }
     agol.files.createReadStream(filePath, options)
-    .on('error', function (e) { agol.log.error(e) })
-    .pipe(res)
-    .on('error', function (e) { agol.log.error(e) })
+      .on('error', function (e) { agol.log.error(e) })
+      .pipe(res)
+      .on('error', function (e) { agol.log.error(e) })
   }
 
   /**

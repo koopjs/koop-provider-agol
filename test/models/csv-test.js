@@ -18,7 +18,7 @@ describe('when calling getCSV', function () {
       itemInfo: require('../fixtures/itemInfo.json')
     })
     sinon.stub(cache, 'get', function (type, id, options, callback) {
-      callback('Error', null)
+      callback(new Error(), null)
     })
     sinon.stub(cache, 'insert', function (type, id, data, options, callback) {
       callback(null, true)

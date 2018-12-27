@@ -33,84 +33,84 @@ describe('Utils', function () {
       layer: 0,
       format: 'kml'
     }
-    var reference_query = {
+    var referenceQuery = {
       foo: 1,
       bar: 1
     }
-    var test_query = {
+    var testQuery = {
       bar: 1,
       foo: 1
     }
-    var test_query2 = {
+    var testQuery2 = {
       foo: 1,
       bar: 2,
       where: 'where clause1'
     }
-    var test_query3 = {
+    var testQuery3 = {
       foo: 1,
       bar: 2,
       where: 'where clause2'
     }
 
-    var test_query4 = {
+    var testQuery4 = {
       outSR: {
         latestWkid: 2927,
         wkid: 2927
       }
     }
 
-    var expected_key = Utils.createCacheKey(params, reference_query)
+    var expectedKey = Utils.createCacheKey(params, referenceQuery)
 
     it('should create the same cache key when query params are out of order', function (done) {
-      var test_key = Utils.createCacheKey(params, test_query)
-      test_key.should.equal(expected_key)
+      var testKey = Utils.createCacheKey(params, testQuery)
+      testKey.should.equal(expectedKey)
       done()
     })
 
     it('should not include the featureserver method in cache keys', function (done) {
-      var key1 = Utils.createCacheKey(params, reference_query)
-      var key2 = Utils.createCacheKey(params3, reference_query)
+      var key1 = Utils.createCacheKey(params, referenceQuery)
+      var key2 = Utils.createCacheKey(params3, referenceQuery)
       key1.should.equal(key2)
       done()
     })
 
     it('should create the same cache key when formats are included in the request', function (done) {
-      var key1 = Utils.createCacheKey(params2, reference_query)
-      var key2 = Utils.createCacheKey(params4, reference_query)
+      var key1 = Utils.createCacheKey(params2, referenceQuery)
+      var key2 = Utils.createCacheKey(params4, referenceQuery)
       key1.should.equal(key2)
       done()
     })
 
     it('should create a difference cache key when there is different where clauses', function (done) {
-      var key1 = Utils.createCacheKey(params, test_query2)
-      var key2 = Utils.createCacheKey(params, test_query3)
+      var key1 = Utils.createCacheKey(params, testQuery2)
+      var key2 = Utils.createCacheKey(params, testQuery3)
       key1.should.not.equal(key2)
       done()
     })
 
     it('should create a difference cache key when there is different outSR', function (done) {
-      var key1 = Utils.createCacheKey(params, reference_query)
-      var key2 = Utils.createCacheKey(params, test_query4)
+      var key1 = Utils.createCacheKey(params, referenceQuery)
+      var key2 = Utils.createCacheKey(params, testQuery4)
       key1.should.not.equal(key2)
       done()
     })
 
     it('should ignore the outSR parameter when the format requested is not a shapefile', function (done) {
-      var key1 = Utils.createCacheKey(params5, test_query4)
-      var key2 = Utils.createCacheKey(params6, test_query4)
+      var key1 = Utils.createCacheKey(params5, testQuery4)
+      var key2 = Utils.createCacheKey(params6, testQuery4)
       key1.should.equal(key2)
       done()
     })
 
     it('should create the same cache key on requests with omitted params', function (done) {
-      test_query.url_only = true
-      test_query.format = 'zip'
-      test_query.callback = {}
-      var test_key = Utils.createCacheKey(params, test_query)
-      test_key.should.equal(expected_key)
-      delete test_query.url_only
-      delete test_query.callback
-      delete test_query.format
+      testQuery.url_only = true
+      testQuery.format = 'zip'
+      testQuery.callback = {}
+      var testKey = Utils.createCacheKey(params, testQuery)
+      testKey.should.equal(expectedKey)
+      delete testQuery.url_only
+      delete testQuery.callback
+      delete testQuery.format
       done()
     })
   })
@@ -505,7 +505,7 @@ describe('Utils', function () {
       var query = {
         geometry: {
           spatialReference: {
-            wkt: 'PROJCS["WGS_1984_Web_Mercator",GEOGCS["GCS_WGS_1984_Major_Auxiliary_Sphere",DATUM["D_WGS_1984_Major_Auxiliary_Sphere",SPHEROID["WGS_1984_Major_Auxiliary_Sphere",6378137.0,0.0]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Mercator"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",${Central_Meridian}],PARAMETER["Standard_Parallel_1",0.0],UNIT["Meter",1.0]]'
+            wkt: 'PROJCS["WGS_1984_Web_Mercator",GEOGCS["GCS_WGS_1984_Major_Auxiliary_Sphere",DATUM["D_WGS_1984_Major_Auxiliary_Sphere",SPHEROID["WGS_1984_Major_Auxiliary_Sphere",6378137.0,0.0]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Mercator"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",${Central_Meridian}],PARAMETER["Standard_Parallel_1",0.0],UNIT["Meter",1.0]]' // eslint-disable-line
           }
         }
       }
