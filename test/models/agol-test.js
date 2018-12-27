@@ -1,5 +1,5 @@
 /* global before, after, beforeEach, afterEach, it, describe */
-
+var path = require('path')
 var should = require('should')
 var sinon = require('sinon')
 var EventEmitter = require('events').EventEmitter
@@ -9,7 +9,7 @@ var koop = new Koop()
 
 var config = {}
 // setup koop
-config.data_dir = __dirname + '/output/'
+config.data_dir = path.join(__dirname, 'output')
 config.agol = {env: 'arcgis'}
 
 var Agol = require('../../models/agol.js')

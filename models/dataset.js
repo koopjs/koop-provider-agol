@@ -65,8 +65,8 @@ function formatDataset (record, id) {
 function computeDownloads (record) {
   return ['csv', 'kml', 'zip', 'geohash'].map(function (type) {
     if (!record) return
-    var generating = record.generating && record.generating.full || {}
-    var generated = record.generated && record.generated.full || {}
+    var generating = record.generating && (record.generating.full || {})
+    var generated = record.generated && (record.generated.full || {})
 
     return {
       type: type,
