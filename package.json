@@ -33,7 +33,7 @@
     "sphericalmercator": "~1.0.2"
   },
   "devDependencies": {
-    "documentation": "^5.2.1",
+    "documentation": "^9.2.1",
     "istanbul": "^0.4.5",
     "koop": "3.0.0-alpha.29",
     "mocha": "~3.5.0",
