@@ -28,7 +28,7 @@
     "koop-queue": "^0.2.0",
     "lodash": "^4.17.4",
     "node-resque": "^4.0.7",
-    "request": "^2.67.0",
+    "request": "^2.88.2",
     "spatialreference": "^1.0.3",
     "sphericalmercator": "~1.0.2"
   },
