@@ -13,7 +13,7 @@
   "dependencies": {
     "@koopjs/filesystem-s3": "^1.2.4",
     "async": "^2.5.0",
-    "config": "^1.19.0",
+    "config": "^3.3.0",
     "csv": "~1.1.1",
     "ejs": "~2.5.7",
     "esri-to-geojson": "^1.0.2",
