@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Removed all file caching code; limits provide to fetching and translating AGOL CSV items to GeoJSON.
+
 ## [3.14.8] - 2017-09-12
 ### Fixed
 * Only use info.name when info is passed
