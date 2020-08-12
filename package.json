@@ -3,6 +3,11 @@
   "version": "4.0.0",
   "description": "Provider for AGOL CSV items",
   "main": "index.js",
+  "author": "Rich Gwozdz",
+  "contributors": [
+    "Daniel Fenton",
+    "Chris Helm"
+  ],
   "scripts": {
     "test": "standard && mocha 'test/**/*.test.js'"
   },
@@ -16,6 +21,9 @@
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-form-data": "^2.0.0"
   },
+  "peerDependencies": {
+    "koop": "^4.0.0"
+  },
   "devDependencies": {
     "@koopjs/cli": "^0.3.3",
     "chai": "^4.2.0",
@@ -25,7 +33,11 @@
     "sinon": "^9.0.2",
     "standard": "^14.3.4"
   },
-  "repository": "",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:koopjs/koop-provider-agol.git"
+  },
   "keywords": [
     "koop",
     "plugin",
