@@ -1,15 +1,10 @@
-var pkg = require('./package.json')
-
-var provider = {
-  plugin_name: 'agol',
+const provider = {
+  type: 'provider',
+  name: 'agol',
+  version: '4.0.0',
   hosts: true,
-  Controller: require('./controllers'),
-  routes: require('./routes.js'),
-  Model: require('./models/agol.js'),
-  status: {
-    version: pkg.version
-  },
-  type: 'provider'
+  disableIdParam: false,
+  Model: require('./lib/model')
 }
 
 module.exports = provider

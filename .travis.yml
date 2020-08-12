@@ -1,12 +1,17 @@
+os:
+  - linux
+  - osx
+  - windows
+
 language: node_js
+
 node_js:
-  - 6
   - 10
+  - lts/*
 sudo: false # Enable docker-based containers
 cache:
   directories: # Cache dependencies
     - node_modules
-env:
-  -NODE_ENV=test
+
 script:
   - npm test
