@@ -4,7 +4,7 @@
   "description": "Provider for AGOL CSV items",
   "main": "index.js",
   "scripts": {
-    "test": "standard && mocha 'test/**/*.test.js'",
+    "test": "standard && mocha 'test/**/*.test.js'"
   },
   "dependencies": {
     "@esri/arcgis-rest-portal": "^2.14.1",
