@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [4.0.1] - 2021-04-14
 ### Changed
 * Cast maxCsvSize as a number, it may originate as a ENV variable that is a string
 
@@ -1072,6 +1072,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[4.0.1]: https://github.com/koopjs/koop-agol/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/koopjs/koop-agol/compare/v3.14.7..v4.0.0
 [3.14.8]: https://github.com/koopjs/koop-agol/compare/v3.14.7..v3.14.8
 [3.14.7]: https://github.com/koopjs/koop-agol/compare/v3.14.6..v3.14.7
