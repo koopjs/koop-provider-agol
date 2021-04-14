@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Changed
+* Cast maxCsvSize as a number, it may originate as a ENV variable that is a string
+
 ## [4.0.0] - 2020-08-12
 ### Changed
 * Removed all file caching code; limits provider to fetching and translating AGOL CSV items to GeoJSON.
