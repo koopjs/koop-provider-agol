@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+* Add configuration option to set user-agent in arcgis-rest requests
+
 ## [4.0.1] - 2021-04-14
 ### Changed
 * Cast maxCsvSize as a number, it may originate as a ENV variable that is a string
