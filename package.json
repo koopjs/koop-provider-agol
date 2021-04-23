@@ -1,6 +1,6 @@
 {
   "name": "@koopjs/provider-agol",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "Provider for AGOL CSV items",
   "main": "index.js",
   "author": "Rich Gwozdz",

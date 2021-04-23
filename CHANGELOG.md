@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [4.1.0] - 2021-04-23
 ### Added
 * Add configuration option to set user-agent in arcgis-rest requests
 
@@ -1076,6 +1076,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 2014-08-25
   * working on tests
 
+[4.1.0]: https://github.com/koopjs/koop-agol/compare/v4.0.1...v4.1.0
 [4.0.1]: https://github.com/koopjs/koop-agol/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/koopjs/koop-agol/compare/v3.14.7..v4.0.0
 [3.14.8]: https://github.com/koopjs/koop-agol/compare/v3.14.7..v3.14.8
