@@ -195,14 +195,122 @@ describe('Koop AGOL provider - model', () => {
       expect(getItemSpy.calledOnce).to.equal(true)
       expect(getItemSpy.firstCall.args).to.deep.equal([
         '9899c1989c80499487995d52ebf1fb78',
-        { portal: 'https://qaext.arcgis.com/sharing/rest' }
+        {
+          portal: 'https://qaext.arcgis.com/sharing/rest',
+          headers: { 'user-agent': 'Koop API' }
+        }
       ])
       expect(getItemDataSpy.calledOnce).to.equal(true)
       expect(getItemDataSpy.firstCall.args).to.deep.equal([
         '9899c1989c80499487995d52ebf1fb78',
         {
           portal: 'https://qaext.arcgis.com/sharing/rest',
-          rawResponse: true
+          rawResponse: true,
+          headers: { 'user-agent': 'Koop API' }
+        }])
+      console.log(JSON.stringify(geojson))
+      expect(geojson).to.deep.equal({
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            id: 0,
+            properties: {
+              X: -88,
+              Y: 40,
+              FID: 1,
+              rownum: 1,
+              latitude: 40,
+              longitude: -88,
+              quant_val: 1002,
+              expected_c: 'red',
+              FID_1: 1,
+              OBJECTID: 0
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: [
+                -88,
+                40
+              ]
+            }
+          },
+          {
+            type: 'Feature',
+            id: 1,
+            properties: {
+              X: -87.9,
+              Y: 40,
+              FID: 2,
+              rownum: 2,
+              latitude: 40,
+              longitude: -87.9,
+              quant_val: 1003,
+              expected_c: 'red',
+              FID_1: 2,
+              OBJECTID: 1
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: [
+                -87.9,
+                40
+              ]
+            }
+          }
+        ],
+        metadata: {
+          name: 'Test item'
+        }
+      })
+      done()
+    })
+    sinon.restore()
+  })
+
+  it('uses custom user agent', (done) => {
+    const getItemSpy = sinon.spy(async () => {
+      return Promise.resolve({ type: 'CSV', size: 1000, title: 'Test item' })
+    })
+
+    const getItemDataSpy = sinon.spy(async () => {
+      return Promise.resolve({
+        ok: true,
+        text: async () => {
+          return Promise.resolve('X,Y,FID,rownum,latitude,longitude,quant_val,expected_c,FID_1\n-88,40,1,1,40,-88,1002,red,1\n-87.9,40.0,2,2,40,-87.9,1003,red,2\n')
+        }
+      })
+    })
+
+    const Model = proxyquire('../../lib/model', {
+      '@esri/arcgis-rest-portal': {
+        getItem: getItemSpy,
+        getItemData: getItemDataSpy
+      },
+      config: {
+        koopProviderAgol: {
+          fetchUserAgent: 'hello-world'
+        }
+      }
+    })
+    const model = new Model()
+    model.getData({ params: { host: 'qaext', id: '9899c1989c80499487995d52ebf1fb78' } }, (err, geojson) => {
+      expect(err).to.equal(null)
+      expect(getItemSpy.calledOnce).to.equal(true)
+      expect(getItemSpy.firstCall.args).to.deep.equal([
+        '9899c1989c80499487995d52ebf1fb78',
+        {
+          portal: 'https://qaext.arcgis.com/sharing/rest',
+          headers: { 'user-agent': 'hello-world' }
+        }
+      ])
+      expect(getItemDataSpy.calledOnce).to.equal(true)
+      expect(getItemDataSpy.firstCall.args).to.deep.equal([
+        '9899c1989c80499487995d52ebf1fb78',
+        {
+          portal: 'https://qaext.arcgis.com/sharing/rest',
+          rawResponse: true,
+          headers: { 'user-agent': 'hello-world' }
         }])
       console.log(JSON.stringify(geojson))
       expect(geojson).to.deep.equal({
