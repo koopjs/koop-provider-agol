@@ -195,14 +195,18 @@ describe('Koop AGOL provider - model', () => {
       expect(getItemSpy.calledOnce).to.equal(true)
       expect(getItemSpy.firstCall.args).to.deep.equal([
         '9899c1989c80499487995d52ebf1fb78',
-        { portal: 'https://qaext.arcgis.com/sharing/rest' }
+        {
+          portal: 'https://qaext.arcgis.com/sharing/rest',
+          headers: { 'user-agent': 'Koop API' }
+        }
       ])
       expect(getItemDataSpy.calledOnce).to.equal(true)
       expect(getItemDataSpy.firstCall.args).to.deep.equal([
         '9899c1989c80499487995d52ebf1fb78',
         {
           portal: 'https://qaext.arcgis.com/sharing/rest',
-          rawResponse: true
+          rawResponse: true,
+          headers: { 'user-agent': 'Koop API' }
         }])
       console.log(JSON.stringify(geojson))
       expect(geojson).to.deep.equal({
